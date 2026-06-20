@@ -1,0 +1,7 @@
+pyomo>=6.0
+dill>=0.3
+# One local NLP solver is required. Either:
+#   (a) pip install cyipopt   (needs IPOPT system lib + PyNumero ASL build), or
+#   (b) put an 'ipopt' executable on PATH.
+cyipopt>=1.4
+pytest>=7.0
