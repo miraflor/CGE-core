@@ -1,0 +1,162 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast lane: structural tests only, no solver. Catches import errors,
+  # packaging mistakes, and degree-of-freedom regressions in ~1 minute
+  # across the full supported Python range.
+  structural:
+    name: structural (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package and test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Run tests (solver tests auto-skip)
+        run: pytest tests/ -v
+
+  # Full lane: real IPOPT from conda-forge, so the solver-dependent tests
+  # actually execute rather than skipping.
+  solver:
+    name: solver (ipopt, py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+          channel-priority: strict
+          auto-activate-base: false
+          activate-environment: cge
+
+      - name: Install IPOPT
+        run: conda install -y -c conda-forge ipopt
+
+      - name: Install package and test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Confirm the solver is actually present
+        run: |
+          ipopt -v
+          python -c "
+          from pyomo.environ import SolverFactory
+          assert SolverFactory('ipopt').available(exception_flag=False), 'ipopt not visible to Pyomo'
+          print('ipopt available to Pyomo')
+          "
+
+      - name: Run full suite
+        run: pytest tests/ -v
+
+      - name: Fail if any test skipped
+        # The point of this job is that nothing skips. If a solver test
+        # silently skips here, the suite is not proving what it claims.
+        run: |
+          pytest tests/ -q --no-header -rs 2>&1 | tee result.txt
+          if grep -q "SKIPPED" result.txt; then
+            echo "::error::Solver tests skipped in the solver job — IPOPT was not picked up."
+            exit 1
+          fi
+
+  # Packaging lane: the wheel must not leak the tests package, and the
+  # bundled SAM data must actually ship.
+  packaging:
+    name: packaging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: Check metadata
+        run: twine check dist/*
+
+      - name: Assert wheel contents
+        run: |
+          python - <<'PY'
+          import glob, zipfile, sys
+          names = zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist()
+          errors = []
+          leaked = [n for n in names if n.startswith('tests/')]
+          if leaked:
+              errors.append("tests package leaked into the wheel: %s" % leaked)
+          csvs = [n for n in names if n.endswith('.csv')]
+          if len(csvs) < 8:
+              errors.append("expected 8 bundled CSVs, found %d" % len(csvs))
+          if errors:
+              print("\n".join("ERROR: " + e for e in errors))
+              sys.exit(1)
+          print("wheel OK: %d data files, no tests leaked" % len(csvs))
+          PY
+
+      - name: Install from wheel and smoke-test
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/pip install dist/*.whl
+          /tmp/smoke/bin/python - <<'PY'
+          import cge_core
+          from cge_core import PyCGE, example_data
+          from cge_core.examples.stdcge_model_def import StdModelDef
+          d = example_data('stdcge')
+          assert d.is_dir(), "packaged SAM data missing from the wheel"
+          print("import OK, version", cge_core.__version__)
+          PY
+
+  # Docs lane: the Jupyter Book must build without errors so the PSL-style
+  # documentation cannot silently rot.
+  docs:
+    name: docs (jupyter-book)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install docs deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install "jupyter-book>=0.15,<2"
+
+      - name: Build the book
+        run: jupyter-book build docs/ -W --keep-going
