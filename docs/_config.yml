@@ -1,0 +1,29 @@
+# Jupyter Book configuration for the CGE-Core documentation.
+title: CGE-Core
+author: James Matthew Miraflor (fork maintainer; original PyCGE by Fung & Burtwistle, NIST)
+copyright: "2026"
+logo: ""
+
+execute:
+  execute_notebooks: "off"
+
+repository:
+  url: https://github.com/miraflor/CGE-core
+  path_to_book: docs
+  branch: main
+
+html:
+  use_issues_button: true
+  use_repository_button: true
+
+parse:
+  myst_enable_extensions:
+    - amsmath
+    - dollarmath
+    - linkify
+
+sphinx:
+  config:
+    mathjax3_config:
+      tex:
+        macros: {}

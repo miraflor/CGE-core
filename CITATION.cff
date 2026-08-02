@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+message: >-
+  If you use CGE-Core, please cite it as below, and additionally cite the
+  original PyCGE (Fung & Burtwistle, NIST) and the Hosoe, Gasawa & Hashimoto
+  (2010) textbook whose model it implements. See README.md ("Provenance and
+  license") for the BibTeX entries.
+title: "CGE-Core: a Pyomo-based computable general equilibrium framework"
+type: software
+authors:
+  - family-names: Miraflor
+    given-names: James Matthew
+    email: james.miraflor@gmail.com
+version: 0.3.0
+repository-code: "https://github.com/miraflor/CGE-core"
+license: MIT
+keywords:
+  - cge
+  - computable-general-equilibrium
+  - pyomo
+  - economics
+  - policy-simulation
+notes: >-
+  CGE-Core is a corrected and annotated fork of PyCGE by Juan Fung and
+  Charley Burtwistle (U.S. National Institute of Standards and Technology,
+  2017; public domain under 17 U.S.C. 105). The underlying model port is not
+  the fork maintainer's original work. The fork's revisions were produced
+  through an AI-assisted ("vibecoded") workflow directed and reviewed by
+  James Matthew Miraflor. The model equations were checked line-by-line
+  against the GAMS Model Library reference implementations (splcge.gms
+  SEQ=275, stdcge.gms SEQ=276); the bundled regression suite validates the
+  numerical benchmarks and engine workflow behaviour.
+references:
+  - type: software
+    title: "PyCGE: A Python Interface for Solving CGE Models"
+    authors:
+      - family-names: Fung
+        given-names: Juan
+      - family-names: Burtwistle
+        given-names: Charley
+    year: 2017
+    url: "https://github.com/juanfung/pycge"
+    institution:
+      name: "National Institute of Standards and Technology"
+  - type: book
+    title: >-
+      Textbook of Computable General Equilibrium Modelling: Programming and
+      Simulations
+    authors:
+      - family-names: Hosoe
+        given-names: Nobuhiro
+      - family-names: Gasawa
+        given-names: Kenji
+      - family-names: Hashimoto
+        given-names: Hideo
+    year: 2010
+    publisher:
+      name: "Palgrave Macmillan"
+    doi: "10.1057/9780230281653"

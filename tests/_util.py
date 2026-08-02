@@ -1,0 +1,97 @@
+# -*- coding: utf-8 -*-
+"""
+Shared helpers for the CGE-Core test suite.
+
+Centralises local-solver detection, data-directory resolution, and the
+instance-construction boilerplate so the individual test modules assert
+behaviour rather than repeat setup.
+"""
+import contextlib
+import io
+import os
+
+import pytest
+from pyomo.environ import SolverFactory
+
+DATA_ROOT = os.path.join(os.path.dirname(__file__), '..', 'cge_core', 'data')
+STD_DATA_DIR = os.path.join(DATA_ROOT, 'stdcge_data_dir')
+SPL_DATA_DIR = os.path.join(DATA_ROOT, 'splcge_data_dir')
+
+
+def _available_solver():
+    """Return the name of a usable local NLP solver, or None."""
+    for name in ('ipopt', 'cyipopt'):
+        try:
+            if SolverFactory(name).available(exception_flag=False):
+                return name
+        except Exception:
+            continue
+    return None
+
+
+SOLVER = _available_solver()
+
+requires_solver = pytest.mark.skipif(
+    SOLVER is None, reason="no local NLP solver (ipopt/cyipopt) available")
+
+
+@contextlib.contextmanager
+def quiet():
+    """Swallow explicitly requested stdout displays.
+
+    As of v0.3.0 the engine reports progress via logging (silent under
+    pytest by default), so this only matters around display calls such
+    as ``model_compare('print')``; it is retained where harmless.
+    """
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        yield buf
+
+
+def std_instance(drop_redundant=True, quiet_setup=True):
+    """Build a stdcge PyCGE with the numeraire fixed (Hosoe: pf_LAB = 1)."""
+    from cge_core.engine import PyCGE
+    from cge_core.examples.stdcge_model_def import StdModelDef
+
+    ctx = quiet() if quiet_setup else contextlib.nullcontext()
+    with ctx:
+        cge = PyCGE(StdModelDef())
+        cge.model_data(STD_DATA_DIR)
+        cge.model_instance('pf', 'LAB')
+        if drop_redundant:
+            cge.model_drop_redundant('eqpf', 'LAB')
+    return cge
+
+
+def spl_instance(drop_redundant=True, quiet_setup=True):
+    """Build a splcge PyCGE with the numeraire fixed (pf_LAB = 1)."""
+    from cge_core.engine import PyCGE
+    from cge_core.examples.splcge_model_def import SplModelDef
+
+    ctx = quiet() if quiet_setup else contextlib.nullcontext()
+    with ctx:
+        cge = PyCGE(SplModelDef())
+        cge.model_data(SPL_DATA_DIR)
+        cge.model_instance('pf', 'LAB')
+        if drop_redundant:
+            cge.model_drop_redundant('eqpf', 'LAB')
+    return cge
+
+
+def calibrated(builder=std_instance):
+    """Return a calibrated instance built by ``builder``."""
+    cge = builder()
+    with quiet():
+        cge.model_calibrate(SOLVER)
+    return cge
+
+
+def dof(instance):
+    """Degrees of freedom: free variables minus active equality constraints."""
+    from pyomo.environ import Constraint, Var
+
+    free = sum(1 for v in instance.component_data_objects(Var, active=True)
+               if not v.fixed)
+    con = sum(1 for _ in instance.component_data_objects(Constraint,
+                                                         active=True))
+    return free - con
