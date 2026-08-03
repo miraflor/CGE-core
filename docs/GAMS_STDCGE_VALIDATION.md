@@ -277,7 +277,7 @@ type listA1.csv
 
 A verified GAMS 54.2.1 / CONOPT 4.39.1 run produced:
 
-```csv
+```text
 "This is an example of usage of the Put command."
 
 "dXp(i)"
@@ -487,7 +487,7 @@ or any other license/access-code file.
 
 Add these only if they match the repository's intended validation workflow:
 
-```gitignore
+```text
 # GAMS-generated validation outputs
 validation/gams/**/225a/
 validation/gams/**/*.log
