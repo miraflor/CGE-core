@@ -4,3 +4,4 @@ chapters:
 - file: workflow
 - file: MODEL
 - file: OG_CORE_CROSSWALK
+- file: GAMS_STDCGE_VALIDATION
