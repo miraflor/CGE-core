@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from cge_core.ifpri import (
     IfpriDataError,
+    build_ifpri_benchmark_model,
     calibrate_ifpri_benchmark,
     load_ifpri_test_data,
+    validate_ifpri_benchmark_model,
     validate_ifpri_calibration,
 )
 
@@ -19,6 +21,8 @@ def main() -> int:
 
     calibration = calibrate_ifpri_benchmark(dataset)
     validate_ifpri_calibration(dataset, calibration)
+    model = build_ifpri_benchmark_model(dataset, calibration)
+    residual_report = validate_ifpri_benchmark_model(model)
 
     sets = dataset.sets
     sam = dataset.sam
@@ -34,6 +38,13 @@ def main() -> int:
     print("Benchmark calibration: algebraic identities passed (no solver)")
     print(f"Benchmark CPI: {calibration.system.consumer_price_index:.12g}")
     print(f"Benchmark absorption: {calibration.system.total_absorption:.12g}")
+    print(f"Pyomo benchmark equations: {residual_report.equation_count}")
+    print(
+        "Maximum Pyomo benchmark residual: "
+        f"{residual_report.max_abs_residual:.12g} "
+        f"({residual_report.worst_equation})"
+    )
+    print("Pyomo benchmark: initialized equation system passed (no solver)")
     return 0
 
 

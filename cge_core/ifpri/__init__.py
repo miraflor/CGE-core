@@ -3,6 +3,13 @@
 
 from .calibration import calibrate_ifpri_benchmark, validate_ifpri_calibration
 from .data import load_ifpri_test_data, parse_ifpri_test_dat, resolve_ifpri_source
+from .model import (
+    IfpriResidualReport,
+    build_ifpri_benchmark_model,
+    ifpri_benchmark_residuals,
+    summarize_ifpri_benchmark_residuals,
+    validate_ifpri_benchmark_model,
+)
 from .schema import (
     IfpriBenchmarkCalibration,
     IfpriBenchmarkPrices,
@@ -42,16 +49,21 @@ __all__ = [
     "IfpriInstitutionCalibration",
     "IfpriLesCalibration",
     "IfpriProductionCalibration",
+    "IfpriResidualReport",
     "IfpriSystemCalibration",
     "IfpriTaxCalibration",
     "IfpriSam",
     "IfpriSets",
     "IfpriTaxData",
+    "build_ifpri_benchmark_model",
     "calibrate_ifpri_benchmark",
+    "ifpri_benchmark_residuals",
     "load_ifpri_test_data",
     "parse_ifpri_test_dat",
     "resolve_ifpri_source",
+    "summarize_ifpri_benchmark_residuals",
     "validate_dataset",
+    "validate_ifpri_benchmark_model",
     "validate_ifpri_calibration",
     "validate_inputs",
     "validate_sam",
