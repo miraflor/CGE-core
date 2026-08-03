@@ -1,0 +1,13 @@
+formulation,solver,simulation,gams_model_status,model_status_meaning,gams_solver_status,solver_status_meaning,walras_residual,gdp_gap,walras_square_objective,diagnostic_warnings
+MCP,PATH,BASE,1,Optimal,1,Normal completion,2.22045e-16,2.978943e-09,,0
+MCP,PATH,TARCUT1,1,Optimal,1,Normal completion,-9.67886e-09,6.587527e-09,,0
+MCP,PATH,TARCUT2,1,Optimal,1,Normal completion,3.752892e-07,6.679873e-09,,0
+MCP,PATH,FSAVINCR,1,Optimal,1,Normal completion,-2.01452e-09,3.90799e-13,,0
+MCP,PATH,PWMINCR,1,Optimal,1,Normal completion,-1.05027e-08,1.855099e-09,,0
+MCP,PATH,DEVAL,1,Optimal,1,Normal completion,-1.97728e-09,5.8936e-11,,0
+NLP,CONOPT,BASE,2,Locally optimal,1,Normal completion,-2e-09,3.55271e-15,3.99999799739e-18,0
+NLP,CONOPT,TARCUT1,2,Locally optimal,1,Normal completion,-1.95193e-09,1.19655e-11,3.81001579752e-18,0
+NLP,CONOPT,TARCUT2,2,Locally optimal,1,Normal completion,-2.00024e-09,1.20046e-11,4.00096883506e-18,0
+NLP,CONOPT,FSAVINCR,2,Locally optimal,1,Normal completion,-2.01986e-09,1.19016e-12,4.07983734082e-18,0
+NLP,CONOPT,PWMINCR,2,Locally optimal,1,Normal completion,-1.88033e-09,4.83169e-13,3.53562630639e-18,0
+NLP,CONOPT,DEVAL,2,Locally optimal,1,Normal completion,-1.9906e-09,6.02789e-11,3.96248799027e-18,0

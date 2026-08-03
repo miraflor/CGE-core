@@ -1,0 +1,16 @@
+# Local IFPRI source package and GAMS working runs
+validation/gams/ifpri_standard/original/
+validation/gams/ifpri_standard/runs/
+validation/gams/ifpri_standard/StdCGEMod1.01-030317.zip
+validation/gams/ifpri_standard/ifpri_file_inventory.txt
+
+# GAMS-generated files
+validation/gams/**/*.lst
+validation/gams/**/*.log
+validation/gams/**/225*/
+validation/gams/**/SAVE/
+validation/gams/**/*.g00
+validation/gams/**/*.g0?
+
+# Never commit GAMS licence files
+**/gamslice.txt
