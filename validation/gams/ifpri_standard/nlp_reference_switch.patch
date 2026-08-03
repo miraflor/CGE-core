@@ -1,4 +1,6 @@
 --- a/sim101.gms
 +++ b/sim101.gms
-@@ -80,7 +80,7 @@
-  SIMBASINIT(SIM)   = YES;  *It is typically preferable to solve the MCP version of the model.- SIMMCP(SIM)     = YES;+ SIMMCP(SIM)     = NO;  DISPLAY SIMCUR, SIMBASINIT; 
+@@ -82,2 +82,2 @@
+ *It is typically preferable to solve the MCP version of the model.
+- SIMMCP(SIM)     = YES;
++ SIMMCP(SIM)     = NO;

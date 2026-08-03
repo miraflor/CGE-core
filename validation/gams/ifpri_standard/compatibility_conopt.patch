@@ -1,4 +1,6 @@
 --- a/mod101.gms
 +++ b/mod101.gms
-@@ -1570,7 +1570,7 @@
- *13. SOLUTION STATEMENT #############################################  OPTIONS ITERLIM = 1000, LIMROW = 3, LIMCOL = 3, SOLPRINT=ON,-        MCP=PATH, NLP=CONOPT2 ;+        MCP=PATH, NLP=CONOPT ;  $ontext These options are useful for debugging. When checking whether the
+@@ -1572,2 +1572,2 @@
+ OPTIONS ITERLIM = 1000, LIMROW = 3, LIMCOL = 3, SOLPRINT=ON,
+-        MCP=PATH, NLP=CONOPT2 ;
++        MCP=PATH, NLP=CONOPT ;
