@@ -57,7 +57,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
           channel-priority: strict
-          auto-activate-base: "true"
+          conda-remove-defaults: "true"
+          auto-activate: "false"
           activate-environment: cge
 
       - name: Install IPOPT
