@@ -1,0 +1,41 @@
+{
+  "compatibility_changes": [
+    "NLP solver alias changed from CONOPT2 to CONOPT in external run copies.",
+    "SIMMCP switched to NO only in the external NLP run copy.",
+    "A CGE-Core-authored reporting include was appended only to external run copies."
+  ],
+  "gams_banners": {
+    "MCP": "GAMS 54.2.1  d9889eb3 Jul 13, 2026          WEX-WEI x86 64bit/MS Windows - 08/04/26 01:48:39 Page 1",
+    "NLP": "GAMS 54.2.1  d9889eb3 Jul 13, 2026          WEX-WEI x86 64bit/MS Windows - 08/04/26 01:48:40 Page 1"
+  },
+  "generated_utc": "2026-08-03T17:57:28.115060+00:00",
+  "scenarios": [
+    "BASE",
+    "TARCUT1",
+    "TARCUT2",
+    "FSAVINCR",
+    "PWMINCR",
+    "DEVAL"
+  ],
+  "solvers": [
+    "MCP",
+    "NLP"
+  ],
+  "source_directory_committed": false,
+  "source_files": {
+    "mod101.gms": "9dda92eb6bd4985edab8253de9a0a24ce52b0fcae301bbc33c5b9280c4e5665e",
+    "sim101.gms": "ba80cc2f33d25da5f134e477e748e205e6d78d21851a26ccc685c4b6a749509d",
+    "test.dat": "359c3c79784e21e9f2bdfc3624935d38dc2f3c55a3f2463cd96bc352b69a2a2a"
+  },
+  "targets_file": "full_precision_targets.csv",
+  "targets_sha256": "1153a5add8a69534b2eb52048892418f24e39fbbcae3bc4756fced38cccdaf27",
+  "validation": {
+    "compared_mcp_nlp_rows": 3228,
+    "maximum_absolute_mcp_nlp_difference": 3.772894050513287e-07,
+    "maximum_absolute_walras": 3.752891628572286e-07,
+    "maximum_absolute_walras_scenario": "TARCUT2",
+    "maximum_absolute_walras_solver": "MCP",
+    "row_count": 6528,
+    "walras_absolute_tolerance": 1e-06
+  }
+}
