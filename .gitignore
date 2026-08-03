@@ -14,3 +14,8 @@ validation/gams/**/*.g0?
 
 # Never commit GAMS licence files
 **/gamslice.txt
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
