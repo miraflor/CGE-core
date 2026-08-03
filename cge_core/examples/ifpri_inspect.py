@@ -2,7 +2,12 @@
 """Inspect the external IFPRI test dataset without solving a model."""
 from __future__ import annotations
 
-from cge_core.ifpri import IfpriDataError, load_ifpri_test_data
+from cge_core.ifpri import (
+    IfpriDataError,
+    calibrate_ifpri_benchmark,
+    load_ifpri_test_data,
+    validate_ifpri_calibration,
+)
 
 
 def main() -> int:
@@ -11,6 +16,9 @@ def main() -> int:
     except IfpriDataError as exc:
         print(f"IFPRI data error: {exc}")
         return 1
+
+    calibration = calibrate_ifpri_benchmark(dataset)
+    validate_ifpri_calibration(dataset, calibration)
 
     sets = dataset.sets
     sam = dataset.sam
@@ -23,6 +31,9 @@ def main() -> int:
     print(f"SAM scale: {sam.scale:g}")
     print(f"Maximum absolute SAM imbalance: {sam.max_abs_imbalance():.12g}")
     print("Calibration inputs: trade, production, LES, home shares, factors, taxes")
+    print("Benchmark calibration: algebraic identities passed (no solver)")
+    print(f"Benchmark CPI: {calibration.system.consumer_price_index:.12g}")
+    print(f"Benchmark absorption: {calibration.system.total_absorption:.12g}")
     return 0
 
 

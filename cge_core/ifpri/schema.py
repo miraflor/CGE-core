@@ -119,3 +119,146 @@ class IfpriDataset:
     sets: IfpriSets
     sam: IfpriSam
     inputs: IfpriCalibrationInputs
+
+
+@dataclass(frozen=True)
+class IfpriBenchmarkPrices:
+    """Benchmark prices implied by the SAM normalization."""
+
+    exchange_rate: float
+    activity: Mapping[str, float]
+    activity_commodity: Mapping[Tuple[str, str], float]
+    value_added: Mapping[str, float]
+    intermediate_aggregate: Mapping[str, float]
+    marketed_output: Mapping[str, float]
+    domestic_supply: Mapping[str, float]
+    domestic_demand: Mapping[str, float]
+    export: Mapping[str, float]
+    import_: Mapping[str, float]
+    composite: Mapping[str, float]
+    world_export: Mapping[str, float]
+    world_import: Mapping[str, float]
+    factor: Mapping[str, float]
+    factor_activity: Mapping[Tuple[str, str], float]
+
+
+@dataclass(frozen=True)
+class IfpriBenchmarkQuantities:
+    """Benchmark quantities reconstructed from values and normalized prices."""
+
+    activity: Mapping[str, float]
+    value_added: Mapping[str, float]
+    activity_commodity: Mapping[Tuple[str, str], float]
+    home_consumption: Mapping[Tuple[str, str, str], float]
+    marketed_output: Mapping[str, float]
+    domestic_sales: Mapping[str, float]
+    exports: Mapping[str, float]
+    imports: Mapping[str, float]
+    composite_supply: Mapping[str, float]
+    factor_demand: Mapping[Tuple[str, str], float]
+    factor_supply: Mapping[str, float]
+    intermediate: Mapping[Tuple[str, str], float]
+    intermediate_aggregate: Mapping[str, float]
+    transaction_demand: Mapping[str, float]
+    household_market: Mapping[Tuple[str, str], float]
+    government: Mapping[str, float]
+    investment: Mapping[str, float]
+    stock_change: Mapping[str, float]
+
+
+@dataclass(frozen=True)
+class IfpriProductionCalibration:
+    """Calibrated production, output-aggregation, and trade parameters."""
+
+    value_added_coefficient: Mapping[str, float]
+    intermediate_coefficient: Mapping[str, float]
+    intermediate_shares: Mapping[Tuple[str, str], float]
+    yield_coefficient: Mapping[Tuple[str, str], float]
+    factor_exponent: Mapping[str, float]
+    factor_shares: Mapping[Tuple[str, str], float]
+    factor_scale: Mapping[str, float]
+    output_exponent: Mapping[str, float]
+    output_shares: Mapping[Tuple[str, str], float]
+    output_scale: Mapping[str, float]
+    armington_exponent: Mapping[str, float]
+    armington_share: Mapping[str, float]
+    armington_scale: Mapping[str, float]
+    cet_exponent: Mapping[str, float]
+    cet_share: Mapping[str, float]
+    cet_scale: Mapping[str, float]
+    transaction_domestic: Mapping[Tuple[str, str], float]
+    transaction_import: Mapping[Tuple[str, str], float]
+    transaction_export: Mapping[Tuple[str, str], float]
+
+
+@dataclass(frozen=True)
+class IfpriTaxCalibration:
+    """Benchmark ad-valorem tax rates."""
+
+    activity: Mapping[str, float]
+    value_added: Mapping[str, float]
+    commodity: Mapping[str, float]
+    import_: Mapping[str, float]
+    export: Mapping[str, float]
+    factor: Mapping[str, float]
+    institution: Mapping[str, float]
+
+
+@dataclass(frozen=True)
+class IfpriInstitutionCalibration:
+    """Institutional benchmark incomes, shares, transfers, and savings."""
+
+    institution_income: Mapping[str, float]
+    factor_income: Mapping[str, float]
+    institution_factor_income: Mapping[Tuple[str, str], float]
+    factor_income_share: Mapping[Tuple[str, str], float]
+    interinstitution_share: Mapping[Tuple[str, str], float]
+    savings_rate: Mapping[str, float]
+    household_expenditure: Mapping[str, float]
+    government_income: float
+    government_expenditure: float
+    government_saving: float
+
+
+@dataclass(frozen=True)
+class IfpriLesCalibration:
+    """Linear-expenditure-system benchmark parameters and checks."""
+
+    market_budget_share: Mapping[Tuple[str, str], float]
+    home_budget_share: Mapping[Tuple[str, str, str], float]
+    normalized_market_elasticity: Mapping[Tuple[str, str], float]
+    normalized_home_elasticity: Mapping[Tuple[str, str, str], float]
+    market_marginal_share: Mapping[Tuple[str, str], float]
+    home_marginal_share: Mapping[Tuple[str, str, str], float]
+    market_subsistence: Mapping[Tuple[str, str], float]
+    home_subsistence: Mapping[Tuple[str, str, str], float]
+    supernumerary_income: Mapping[str, float]
+    implied_frisch: Mapping[str, float]
+
+
+@dataclass(frozen=True)
+class IfpriSystemCalibration:
+    """Savings-investment and price-index benchmark aggregates."""
+
+    consumer_price_weights: Mapping[str, float]
+    domestic_price_weights: Mapping[str, float]
+    consumer_price_index: float
+    domestic_price_index: float
+    foreign_saving: float
+    total_absorption: float
+    investment_share: float
+    government_share: float
+    walras_residual: float
+
+
+@dataclass(frozen=True)
+class IfpriBenchmarkCalibration:
+    """Complete algebraic calibration of the supplied benchmark, without solve."""
+
+    prices: IfpriBenchmarkPrices
+    quantities: IfpriBenchmarkQuantities
+    production: IfpriProductionCalibration
+    taxes: IfpriTaxCalibration
+    institutions: IfpriInstitutionCalibration
+    les: IfpriLesCalibration
+    system: IfpriSystemCalibration
