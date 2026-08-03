@@ -215,7 +215,10 @@ def test_sim_export_writes_sim_values_not_base(tmp_path):
         cge.model_solve(SOLVER)
         cge.model_postprocess('vars', str(tmp_path), base=False)
 
-    exported = list(tmp_path.glob('*M_*.csv'))
+    exported = [
+        path for path in tmp_path.iterdir()
+        if path.name.startswith("varsM_") and path.suffix == ".csv"
+    ]
     assert exported, "no export written for M"
 
     rows = {}
@@ -238,7 +241,10 @@ def test_base_export_writes_base_values(tmp_path):
     with quiet():
         cge.model_postprocess('vars', str(tmp_path), base=True)
 
-    exported = list(tmp_path.glob('*Z_*.csv'))
+    exported = [
+        path for path in tmp_path.iterdir()
+        if path.name.startswith("varsZ_") and path.suffix == ".csv"
+    ]
     assert exported
     rows = {}
     for line in exported[0].read_text().splitlines()[1:]:
