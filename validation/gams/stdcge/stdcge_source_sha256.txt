@@ -1,0 +1,3 @@
+SHA256 hash of stdcge.gms:
+db4a0691cfcf424ababc91a7feca3f8d2ea22827a4961a92975ac7986e88b3a2
+CertUtil: -hashfile command completed successfully.

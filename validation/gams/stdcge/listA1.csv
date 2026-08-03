@@ -1,0 +1,22 @@
+"This is an example of usage of the Put command."
+
+"dXp(i)"
+"BRD",1.96
+"MLK",2.51
+
+
+"dTd",0.05
+
+
+"F(h,j)"
+"","BRD","MLK"
+"CAP",20.43,29.57
+"LAB",15.33,24.67
+
+
+"beta(h,j)"
+"","BRD","MLK"
+"CAP",0.57,0.55
+"LAB",0.43,0.45
+
+
