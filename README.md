@@ -29,7 +29,7 @@ the engine API, and the test suite — are released under the MIT License
 ### Authorship
 
 This fork is maintained by **James Matthew Miraflor**, who produced its
-revisions through an AI-assisted ("vibecoded") workflow that he directed and
+revisions through an AI-assisted workflow he directed and
 reviewed. **The underlying model port is not his original work** — it is by
 Charley Burtwistle and Juan Fung (NIST, 2017), and the model itself is Hosoe,
 Gasawa & Hashimoto's (2010). Every fork modification is validated against the
