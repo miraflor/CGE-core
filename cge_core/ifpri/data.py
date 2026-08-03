@@ -14,6 +14,7 @@ import re
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
+from .inputs import parse_calibration_inputs
 from .schema import IfpriDataset, IfpriSam, IfpriSets
 from .validation import IfpriDataError, require_source_file, validate_dataset
 
@@ -225,7 +226,10 @@ def parse_ifpri_test_dat(path: PathLike) -> IfpriDataset:
         values=scaled_values,
         scale=scale,
     )
-    dataset = IfpriDataset(source_path=source_path, sets=sets, sam=sam)
+    inputs = parse_calibration_inputs(clean_text, sets, sam)
+    dataset = IfpriDataset(
+        source_path=source_path, sets=sets, sam=sam, inputs=inputs
+    )
     validate_dataset(dataset)
     return dataset
 

@@ -61,9 +61,61 @@ class IfpriSam:
 
 
 @dataclass(frozen=True)
+class IfpriElasticities:
+    """Trade, production, and household-demand elasticities."""
+
+    armington: Mapping[str, float]
+    transformation: Mapping[str, float]
+    factor_substitution: Mapping[str, float]
+    top_level_substitution: Mapping[str, float]
+    output_aggregation: Mapping[str, float]
+    market_expenditure: Mapping[Tuple[str, str], float]
+    home_expenditure: Mapping[Tuple[str, str, str], float]
+    frisch: Mapping[str, float]
+
+
+@dataclass(frozen=True)
+class IfpriFactorQuantities:
+    """Optional physical factor supply and activity-demand quantities."""
+
+    supply: Mapping[str, float]
+    demand: Mapping[Tuple[str, str], float]
+
+
+@dataclass(frozen=True)
+class IfpriHomeConsumption:
+    """Commodity value shares for household home consumption."""
+
+    value_shares: Mapping[Tuple[str, str, str], float]
+
+
+@dataclass(frozen=True)
+class IfpriTaxData:
+    """Tax-account mapping and benchmark tax payments extracted from the SAM."""
+
+    source_accounts: Mapping[str, str]
+    payments: Mapping[Tuple[str, str], float]
+
+    def payment(self, tax_type: str, account: str) -> float:
+        """Return a benchmark tax payment, with omitted cells treated as zero."""
+        return float(self.payments.get((tax_type, account), 0.0))
+
+
+@dataclass(frozen=True)
+class IfpriCalibrationInputs:
+    """All non-SAM inputs needed by the benchmark calibration stage."""
+
+    elasticities: IfpriElasticities
+    factor_quantities: IfpriFactorQuantities
+    home_consumption: IfpriHomeConsumption
+    taxes: IfpriTaxData
+
+
+@dataclass(frozen=True)
 class IfpriDataset:
-    """Complete first-stage IFPRI dataset: sets plus benchmark SAM."""
+    """Parsed IFPRI benchmark data and calibration inputs."""
 
     source_path: Path
     sets: IfpriSets
     sam: IfpriSam
+    inputs: IfpriCalibrationInputs

@@ -22,6 +22,7 @@ def main() -> int:
     print(f"Active SAM accounts: {len(sam.accounts)}")
     print(f"SAM scale: {sam.scale:g}")
     print(f"Maximum absolute SAM imbalance: {sam.max_abs_imbalance():.12g}")
+    print("Calibration inputs: trade, production, LES, home shares, factors, taxes")
     return 0
 
 

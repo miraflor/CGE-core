@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Mapping, Sequence
 
-from .schema import IfpriDataset, IfpriSam, IfpriSets
+from .schema import (
+    IfpriCalibrationInputs,
+    IfpriDataset,
+    IfpriSam,
+    IfpriSets,
+)
 
 
 class IfpriDataError(ValueError):
@@ -132,9 +137,89 @@ def validate_sam(sam: IfpriSam, declared_accounts: Iterable[str],
         )
 
 
+def _require_finite_mapping(name: str, values: Mapping[object, float]) -> None:
+    for key, value in values.items():
+        if not math.isfinite(value):
+            raise IfpriDataError(f"{name}{key!r} is not finite: {value!r}")
+
+
+def validate_inputs(inputs: IfpriCalibrationInputs, sets: IfpriSets,
+                    sam: IfpriSam, tolerance: float = 1e-10) -> None:
+    """Validate calibration-input coverage, ranges, shares, and tax mappings."""
+    e = inputs.elasticities
+    expected_c = set(sets.commodities)
+    expected_a = set(sets.activities)
+    expected_h = set(sets.households)
+
+    for name, mapping, expected in (
+        ("armington", e.armington, expected_c),
+        ("transformation", e.transformation, expected_c),
+        ("factor_substitution", e.factor_substitution, expected_a),
+        ("top_level_substitution", e.top_level_substitution, expected_a),
+        ("output_aggregation", e.output_aggregation, expected_c),
+        ("frisch", e.frisch, expected_h),
+    ):
+        if set(mapping) != expected:
+            raise IfpriDataError(f"{name} coverage does not match its declared set.")
+        _require_finite_mapping(name, mapping)
+
+    expected_market = {(c, h) for c in sets.commodities for h in sets.households}
+    if set(e.market_expenditure) != expected_market:
+        raise IfpriDataError("Market LES elasticity coverage is incomplete.")
+    expected_home = {
+        (a, c, h)
+        for a in sets.activities
+        for c in sets.commodities
+        for h in sets.households
+    }
+    if set(e.home_expenditure) != expected_home:
+        raise IfpriDataError("Home LES elasticity coverage is incomplete.")
+    _require_finite_mapping("market_expenditure", e.market_expenditure)
+    _require_finite_mapping("home_expenditure", e.home_expenditure)
+
+    if any(value <= 0.0 for value in e.market_expenditure.values()):
+        raise IfpriDataError("Market expenditure elasticities must be positive.")
+    if any(value >= 0.0 for value in e.frisch.values()):
+        raise IfpriDataError("Frisch parameters must be negative.")
+
+    for activity in sets.activities:
+        for household in sets.households:
+            home_value = sam.value(activity, household)
+            shares = sum(
+                inputs.home_consumption.value_shares.get(
+                    (activity, commodity, household), 0.0
+                )
+                for commodity in sets.commodities
+            )
+            if home_value != 0.0 and abs(shares - 1.0) > tolerance:
+                raise IfpriDataError(
+                    f"SHRHOME shares for ({activity}, {household}) sum to "
+                    f"{shares:.12g}, not one."
+                )
+            if home_value == 0.0 and abs(shares) > tolerance:
+                raise IfpriDataError(
+                    f"SHRHOME has shares for inactive pair ({activity}, {household})."
+                )
+
+    expected_supply = set(sets.factors)
+    if set(inputs.factor_quantities.supply) != expected_supply:
+        raise IfpriDataError("Physical factor-supply coverage is incomplete.")
+    expected_demand = {(f, a) for f in sets.factors for a in sets.activities}
+    if set(inputs.factor_quantities.demand) != expected_demand:
+        raise IfpriDataError("Physical factor-demand coverage is incomplete.")
+
+    for tax_type, source in inputs.taxes.source_accounts.items():
+        if source not in sam.accounts:
+            raise IfpriDataError(
+                f"Tax type {tax_type} refers to missing SAM account {source}."
+            )
+    _require_finite_mapping("tax_payment", inputs.taxes.payments)
+
+
 def validate_dataset(dataset: IfpriDataset,
                      balance_tolerance: float = 1e-7) -> None:
-    """Run all first-stage structural checks."""
+    """Run all structural, accounting, and calibration-input checks."""
     require_source_file(dataset.source_path)
     validate_sets(dataset.sets)
     validate_sam(dataset.sam, dataset.sets.accounts, balance_tolerance)
+    validate_inputs(dataset.inputs, dataset.sets, dataset.sam)
