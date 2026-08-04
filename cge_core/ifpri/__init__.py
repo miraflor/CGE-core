@@ -20,6 +20,12 @@ from .scenarios import (
     normalize_ifpri_scenario,
     solve_ifpri_scenario,
 )
+from .reporting import (
+    compare_ifpri_models,
+    compare_ifpri_scenarios,
+    extract_ifpri_solution,
+    summarize_ifpri_results,
+)
 from .solve import (
     IfpriReferenceComparison,
     IfpriSolveReport,
@@ -89,6 +95,9 @@ __all__ = [
     "build_ifpri_scenario_model",
     "calibrate_ifpri_benchmark",
     "compare_ifpri_model_to_reference",
+    "compare_ifpri_models",
+    "compare_ifpri_scenarios",
+    "extract_ifpri_solution",
     "ifpri_benchmark_residuals",
     "ifpri_degrees_of_freedom",
     "load_ifpri_reference_targets",
@@ -100,6 +109,7 @@ __all__ = [
     "solve_ifpri_base",
     "solve_ifpri_scenario",
     "summarize_ifpri_benchmark_residuals",
+    "summarize_ifpri_results",
     "validate_dataset",
     "validate_ifpri_benchmark_model",
     "validate_ifpri_calibration",
