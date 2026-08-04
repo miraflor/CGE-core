@@ -34,11 +34,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[test]"
 
-      - name: Run tests (solver tests auto-skip)
-        run: pytest tests/ -v
+      - name: Run public tests (external IFPRI replication excluded)
+        run: pytest tests/ -v -m "not external_ifpri" --strict-markers
 
-  # Full lane: real IPOPT from conda-forge, so the solver-dependent tests
-  # actually execute rather than skipping.
+  # Full lane: real IPOPT from conda-forge. The redistributable synthetic
+  # IFPRI tests must execute here; official-source replication remains local.
   solver:
     name: solver (ipopt, py${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -78,18 +78,37 @@ jobs:
           print('ipopt available to Pyomo')
           "
 
-      - name: Run full suite
-        run: pytest tests/ -v
-
-      - name: Fail if any test skipped
-        # The point of this job is that nothing skips. If a solver test
-        # silently skips here, the suite is not proving what it claims.
+      - name: Run public IFPRI solver tests
         run: |
-          pytest tests/ -q --no-header -rs 2>&1 | tee result.txt
-          if grep -q "SKIPPED" result.txt; then
-            echo "::error::Solver tests skipped in the solver job — IPOPT was not picked up."
-            exit 1
-          fi
+          pytest tests/ifpri/test_public_synthetic.py -v \
+            -m public_ifpri_solver --strict-markers \
+            --junitxml=public-ifpri-solver.xml
+
+      - name: Assert public IFPRI solver coverage
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("public-ifpri-solver.xml").getroot()
+          suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
+          tests = sum(int(suite.attrib.get("tests", 0)) for suite in suites)
+          skipped = sum(int(suite.attrib.get("skipped", 0)) for suite in suites)
+          failures = sum(int(suite.attrib.get("failures", 0)) for suite in suites)
+          errors = sum(int(suite.attrib.get("errors", 0)) for suite in suites)
+          if tests < 2:
+              raise SystemExit(
+                  f"Expected at least 2 public IFPRI solver tests, collected {tests}."
+              )
+          if skipped or failures or errors:
+              raise SystemExit(
+                  "Public IFPRI solver coverage failed: "
+                  f"tests={tests}, skipped={skipped}, failures={failures}, errors={errors}."
+              )
+          print(f"public IFPRI solver coverage OK: {tests} tests, zero skips")
+          PY
+
+      - name: Run full public suite
+        run: pytest tests/ -v -m "not external_ifpri" --strict-markers
 
   # Packaging lane: the wheel must not leak the tests package, and the
   # bundled SAM data must actually ship.

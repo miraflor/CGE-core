@@ -67,3 +67,8 @@ cge_core = ["data/*/*.csv"]
 testpaths = ["tests"]
 addopts = "-q"
 filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "external_ifpri: requires the separately supplied official IFPRI source directory",
+    "public_ifpri: uses only the independently authored redistributable synthetic fixture",
+    "public_ifpri_solver: public IFPRI test that must execute with a real NLP solver",
+]
