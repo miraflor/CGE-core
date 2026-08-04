@@ -198,6 +198,9 @@ def build_ifpri_benchmark_model(
     model.qdst = Param(model.C, initialize=q.stock_change, default=0.0)
     model.tinsbar = Param(model.INSDNG, initialize=tax.institution, default=0.0)
     model.mpsbar = Param(model.INSDNG, initialize=inst.savings_rate, default=0.0)
+    # The official BASE closure allows a uniform rate-point change in the
+    # marginal propensity to save for all domestic nongovernment institutions.
+    model.mps01 = Param(model.INSDNG, initialize={i: 1.0 for i in INSDNG})
 
     tr_row_f = {f: sam.value("ROW", f) / p.exchange_rate for f in F}
     tr_i_row = {i: sam.value(i, "ROW") / p.exchange_rate for i in INSD}
@@ -257,6 +260,7 @@ def build_ifpri_benchmark_model(
     model.EG = Var(initialize=inst.government_expenditure)
     model.TINS = Var(model.INSDNG, initialize=tax.institution)
     model.MPS = Var(model.INSDNG, initialize=inst.savings_rate)
+    model.DMPS = Var(initialize=0.0)
 
     model.IADJ = Var(initialize=1.0)
     model.GADJ = Var(initialize=1.0)
@@ -551,7 +555,8 @@ def build_ifpri_benchmark_model(
         model.INSDNG, rule=lambda m, i: m.TINS[i] == m.tinsbar[i]
     )
     model.savings_rate_definition = Constraint(
-        model.INSDNG, rule=lambda m, i: m.MPS[i] == m.mpsbar[i]
+        model.INSDNG,
+        rule=lambda m, i: m.MPS[i] == m.mpsbar[i] + m.DMPS * m.mps01[i],
     )
 
     model.savings_investment_balance = Constraint(
