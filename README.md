@@ -4,9 +4,11 @@
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A Pyomo-based Computable General Equilibrium framework faithful to the textbook
-by Hosoe, Gasawa & Hashimoto (2010). Named to align with the Policy Simulation
-Library convention (cf. [OG-Core](https://github.com/PSLmodels/OG-Core)).
+A Pyomo-based Computable General Equilibrium framework with two verified
+Hosoe, Gasawa & Hashimoto (2010) textbook models and an independently written
+implementation of the IFPRI Standard CGE test economy. Named to align with the
+Policy Simulation Library convention
+(cf. [OG-Core](https://github.com/PSLmodels/OG-Core)).
 
 > **Note.** This is an independent project. It is *not* affiliated with or
 > endorsed by the [Policy Simulation Library](https://pslmodels.org/); it
@@ -23,8 +25,8 @@ in the **public domain** under [17 U.S.C. 105](https://www.law.cornell.edu/uscod
 the original NIST notice is preserved in `LICENSE_NIST.txt`.
 
 Modifications in this fork — the Walras'-law degree-of-freedom fix, bug fixes,
-the engine API, and the test suite — are released under the MIT License
-(`LICENSE`).
+the engine API, the clean-room IFPRI implementation, reporting utilities, and
+the test suite — are released under the MIT License (`LICENSE`).
 
 ### Authorship
 
@@ -32,9 +34,13 @@ This fork is maintained by **James Matthew Miraflor**, who produced its
 revisions through an AI-assisted workflow he directed and
 reviewed. **The underlying model port is not his original work** — it is by
 Charley Burtwistle and Juan Fung (NIST, 2017), and the model itself is Hosoe,
-Gasawa & Hashimoto's (2010). Every fork modification is validated against the
-GAMS Model Library reference implementations by the regression test suite;
-machine-readable citation metadata is in `CITATION.cff`.
+Gasawa & Hashimoto's (2010). The IFPRI subsystem, by contrast, was independently
+implemented within this fork from public mathematical descriptions; the
+official IFPRI source package and test data remain external. The inherited
+Hosoe models are regression-tested against the GAMS Model Library reference
+implementations, while the IFPRI benchmark and policy simulations are checked
+against full-precision external reference runs. Machine-readable citation
+metadata is in `CITATION.cff`.
 
 ### Documentation conventions
 
@@ -43,7 +49,9 @@ Model-definition docstrings follow the conventions of
 docstrings with each relationship stated in a `.. math::` block, cross-
 referenced to the GAMS equation names. If you know OG-Core, start with
 [`docs/OG_CORE_CROSSWALK.md`](docs/OG_CORE_CROSSWALK.md); the equation-by-
-equation mapping to Hosoe is in [`docs/MODEL.md`](docs/MODEL.md).
+equation mapping to Hosoe is in [`docs/MODEL.md`](docs/MODEL.md). The IFPRI
+loader, calibration, closures, scenarios, validation, and reporting workflow
+are documented in [`docs/IFPRI.md`](docs/IFPRI.md).
 
 ### Citing
 
@@ -69,20 +77,29 @@ textbook:
 }
 ```
 
+Users of `cge_core.ifpri` should additionally cite the official IFPRI Standard
+CGE documentation and source package they obtained separately.
+
 ---
 
 ## What this is
 
 CGE-Core separates **model definition** (the algebraic structure) from **model
-workflow** (calibration, simulation, comparison). The model equations are a
-verified 1:1 port of the GAMS Model Library files `splcge.gms` (SEQ=275) and
-`stdcge.gms` (SEQ=276). All 24 constraints of the standard model have been
-checked equation-by-equation against the GAMS source.
+workflow** (calibration, simulation, comparison). The two inherited textbook
+models are verified 1:1 ports of the GAMS Model Library files `splcge.gms`
+(SEQ=275) and `stdcge.gms` (SEQ=276). All 24 constraints of the standard model
+have been checked equation-by-equation against the GAMS source.
 
-| Model    | Hosoe ch. | Description                                          |
-| -------- | --------- | ---------------------------------------------------- |
-| `splcge` | 3–4       | Simple closed economy: 2 goods, 2 factors            |
-| `stdcge` | 5–6       | Open economy: Armington, CET, government, investment |
+The separate `cge_core.ifpri` subsystem implements the IFPRI Standard CGE test
+economy with algebraic calibration, explicit closures, five policy scenarios,
+full-precision external validation, and pandas reporting. Its official source
+package and `test.dat` are not distributed with CGE-Core.
+
+| Subsystem        | Reference                     | Description                                          |
+| ---------------- | ----------------------------- | ---------------------------------------------------- |
+| `splcge`         | Hosoe ch. 3–4                 | Simple closed economy: 2 goods, 2 factors            |
+| `stdcge`         | Hosoe ch. 5–6                 | Open economy: Armington, CET, government, investment |
+| `cge_core.ifpri` | IFPRI Standard CGE test model | External-data benchmark and five policy simulations  |
 
 ---
 

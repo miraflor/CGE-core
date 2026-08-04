@@ -2,15 +2,16 @@ cff-version: 1.2.0
 message: >-
   If you use CGE-Core, please cite it as below, and additionally cite the
   original PyCGE (Fung & Burtwistle, NIST) and the Hosoe, Gasawa & Hashimoto
-  (2010) textbook whose model it implements. See README.md ("Provenance and
-  license") for the BibTeX entries.
+  (2010) textbook whose models it implements. Users of the IFPRI subsystem
+  should also cite the separately obtained IFPRI Standard CGE documentation
+  and source package. See README.md ("Provenance and license") for details.
 title: "CGE-Core: a Pyomo-based computable general equilibrium framework"
 type: software
 authors:
   - family-names: Miraflor
     given-names: James Matthew
     email: james.miraflor@gmail.com
-version: 0.3.0
+version: 0.4.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
 keywords:
@@ -22,13 +23,17 @@ keywords:
 notes: >-
   CGE-Core is a corrected and annotated fork of PyCGE by Juan Fung and
   Charley Burtwistle (U.S. National Institute of Standards and Technology,
-  2017; public domain under 17 U.S.C. 105). The underlying model port is not
-  the fork maintainer's original work. The fork's revisions were produced
-  through an AI-assisted ("vibecoded") workflow directed and reviewed by
-  James Matthew Miraflor. The model equations were checked line-by-line
-  against the GAMS Model Library reference implementations (splcge.gms
-  SEQ=275, stdcge.gms SEQ=276); the bundled regression suite validates the
-  numerical benchmarks and engine workflow behaviour.
+  2017; public domain under 17 U.S.C. 105). The inherited PyCGE/Hosoe model
+  port is not the fork maintainer's original work. The IFPRI Standard CGE
+  subsystem was independently written within this fork from public
+  mathematical descriptions; the official IFPRI source package and test data
+  remain external. The fork's revisions were produced through an AI-assisted
+  ("vibecoded") workflow directed and reviewed by James Matthew Miraflor. The
+  inherited model equations were checked line-by-line against the GAMS Model
+  Library reference implementations (splcge.gms SEQ=275, stdcge.gms SEQ=276),
+  while the IFPRI benchmark and five policy simulations are checked against
+  full-precision external reference runs. The regression suite validates the
+  numerical benchmarks and workflow behaviour.
 references:
   - type: software
     title: "PyCGE: A Python Interface for Solving CGE Models"
