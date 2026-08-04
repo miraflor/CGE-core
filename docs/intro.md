@@ -20,10 +20,18 @@ Both are verified 1:1 ports of the GAMS Model Library files
 `splcge.gms` (SEQ=275) and `stdcge.gms` (SEQ=276), guarded by a
 regression suite that runs the real IPOPT solver in CI.
 
+CGE-Core also provides a separate clean-room implementation of the
+IFPRI Standard CGE test economy. It reads user-supplied IFPRI test data,
+reproduces the BASE benchmark and five policy simulations, and exposes
+pandas-based result extraction and comparison. The official IFPRI source
+package and `test.dat` are not distributed with CGE-Core.
+
 ## Where to start
 
 - **{doc}`workflow`** — install, quick start, the engine API, and how
   to load your own SAM.
+- **{doc}`IFPRI`** — set up the external IFPRI test data, solve BASE
+  and the five scenarios, extract results, and validate the replication.
 - **{doc}`MODEL`** — the standard model equation by equation: the
   crosswalk to the GAMS source, the closure, degrees of freedom, and
   calibration.

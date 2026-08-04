@@ -1,5 +1,72 @@
 # Changelog
 
+## v0.4.0 (2026) — IFPRI Standard CGE replication
+
+CGE-Core now includes a separate, independently written Python/Pyomo
+implementation of the IFPRI Standard CGE test economy. This is a bounded
+replication claim: it covers the recorded test benchmark and five policy
+simulations, not every IFPRI database, country application, closure, or later
+model variant.
+
+### IFPRI data, calibration, and model
+
+- Parse a separately supplied `test.dat` without copying or packaging the
+  official IFPRI source files.
+- Validate declared sets, SAM dimensions and balance, calibration-input
+  coverage and ranges, home-consumption shares, factor quantities, and tax
+  mappings.
+- Reconstruct normalized benchmark prices, quantities, production and trade
+  parameters, institutions, LES demand, taxes, savings-investment aggregates,
+  and price indices algebraically before building a solver model.
+- Build the initialized Pyomo equilibrium system and validate every active
+  benchmark equation before numerical solution.
+
+### Closures, policy simulations, and replication
+
+- Implement the recorded BASE closure and five counterfactuals: `TARCUT1`,
+  `TARCUT2`, `FSAVINCR`, `PWMINCR`, and `DEVAL`.
+- Solve BASE and scenarios with IPOPT or cyipopt, require optimal or locally
+  optimal termination, and report degrees of freedom and maximum equation
+  residuals.
+- Compare the Python results with full-precision external GAMS MCP/PATH and
+  NLP/CONOPT targets. BASE and all five policy simulations reproduce the
+  recorded NLP results to numerical solver tolerance.
+
+### Public testing and clean-room boundary
+
+- Add an independently authored, redistributable synthetic IFPRI-format
+  economy covering traded, pure-import, and pure-export commodities, tariffs,
+  foreign saving, calibration, closures, shocks, reporting, and real IPOPT
+  solves.
+- Mark official-data tests as `external_ifpri` and public synthetic tests as
+  `public_ifpri`, preventing unavailable external data from being mistaken for
+  a successful public replication run.
+- Keep the official IFPRI source package and `test.dat` outside the repository
+  and package artifacts. Only independently written Python code, synthetic
+  inputs, reporting helpers, and numerical validation targets are committed.
+
+### Reporting, documentation, and hardening
+
+- Add long-form pandas extraction, BASE-versus-scenario comparison tables,
+  multi-scenario summaries, percentage changes, and structured solver
+  diagnostics.
+- Add a complete IFPRI documentation chapter covering setup, calibration,
+  solving, scenarios, reporting, validation, and the clean-room boundary.
+- Reject merely feasible solver termination, normalize solver exceptions,
+  calculate equality and inequality violations correctly, and strengthen
+  validation of numeric tolerances and economic input ranges.
+- Expand CI across Python 3.9–3.14 with a dedicated real-IPOPT public solver
+  lane, clean wheel installation, package-content checks, and warning-free
+  documentation builds.
+
+### Validation completed
+
+- 83 complete IFPRI tests passed locally using the external test data.
+- 126 public tests passed with 47 external tests explicitly deselected.
+- 173 full project tests passed locally.
+- GitHub Actions passed structural tests on Python 3.9–3.14, public IPOPT
+  solver coverage, packaging, and documentation.
+
 ## v0.3.0 (2026) — programmatic API, generic SAMs, PSL compliance
 
 The model equations are untouched — the base equilibrium still reproduces
