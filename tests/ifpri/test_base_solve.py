@@ -13,7 +13,7 @@ from cge_core.ifpri import (
     perturb_ifpri_start,
     solve_ifpri_base,
 )
-from tests._util import SOLVER, requires_solver
+from .._util import SOLVER, requires_solver
 
 
 @pytest.fixture
