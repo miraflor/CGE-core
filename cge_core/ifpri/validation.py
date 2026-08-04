@@ -106,6 +106,8 @@ def validate_sets(sets: IfpriSets) -> None:
 def validate_sam(sam: IfpriSam, declared_accounts: Iterable[str],
                  balance_tolerance: float = 1e-7) -> None:
     """Validate SAM dimensions, numeric cells, account membership and balance."""
+    if not math.isfinite(balance_tolerance) or balance_tolerance < 0.0:
+        raise IfpriDataError("SAM balance tolerance must be finite and nonnegative.")
     if not sam.accounts:
         raise IfpriDataError("The parsed SAM has no active accounts.")
     if len(set(sam.accounts)) != len(sam.accounts):
@@ -143,9 +145,27 @@ def _require_finite_mapping(name: str, values: Mapping[object, float]) -> None:
             raise IfpriDataError(f"{name}{key!r} is not finite: {value!r}")
 
 
+def _require_nonnegative_mapping(
+    name: str,
+    values: Mapping[object, float],
+) -> None:
+    if any(value < 0.0 for value in values.values()):
+        raise IfpriDataError(f"{name} values must be nonnegative.")
+
+
+def _require_positive_mapping(
+    name: str,
+    values: Mapping[object, float],
+) -> None:
+    if any(value <= 0.0 for value in values.values()):
+        raise IfpriDataError(f"{name} values must be strictly positive.")
+
+
 def validate_inputs(inputs: IfpriCalibrationInputs, sets: IfpriSets,
                     sam: IfpriSam, tolerance: float = 1e-10) -> None:
     """Validate calibration-input coverage, ranges, shares, and tax mappings."""
+    if not math.isfinite(tolerance) or tolerance < 0.0:
+        raise IfpriDataError("Input tolerance must be finite and nonnegative.")
     e = inputs.elasticities
     expected_c = set(sets.commodities)
     expected_a = set(sets.activities)
@@ -177,16 +197,40 @@ def validate_inputs(inputs: IfpriCalibrationInputs, sets: IfpriSets,
     _require_finite_mapping("market_expenditure", e.market_expenditure)
     _require_finite_mapping("home_expenditure", e.home_expenditure)
 
-    if any(value <= 0.0 for value in e.market_expenditure.values()):
-        raise IfpriDataError("Market expenditure elasticities must be positive.")
+    _require_nonnegative_mapping("Armington elasticity", e.armington)
+    _require_nonnegative_mapping("Transformation elasticity", e.transformation)
+    _require_positive_mapping("Factor-substitution elasticity", e.factor_substitution)
+    _require_positive_mapping("Top-level substitution elasticity", e.top_level_substitution)
+    _require_positive_mapping("Output-aggregation elasticity", e.output_aggregation)
+    _require_positive_mapping("Market expenditure elasticity", e.market_expenditure)
+    _require_positive_mapping("Home expenditure elasticity", e.home_expenditure)
     if any(value >= 0.0 for value in e.frisch.values()):
         raise IfpriDataError("Frisch parameters must be negative.")
+
+    home_shares = inputs.home_consumption.value_shares
+    _require_finite_mapping("home_share", home_shares)
+    invalid_home_keys = [
+        key
+        for key in home_shares
+        if not isinstance(key, tuple)
+        or len(key) != 3
+        or key[0] not in expected_a
+        or key[1] not in expected_c
+        or key[2] not in expected_h
+    ]
+    if invalid_home_keys:
+        raise IfpriDataError(
+            f"SHRHOME contains keys outside A x C x H: {invalid_home_keys}"
+        )
+    if any(value < -tolerance or value > 1.0 + tolerance
+           for value in home_shares.values()):
+        raise IfpriDataError("SHRHOME shares must lie between zero and one.")
 
     for activity in sets.activities:
         for household in sets.households:
             home_value = sam.value(activity, household)
             shares = sum(
-                inputs.home_consumption.value_shares.get(
+                home_shares.get(
                     (activity, commodity, household), 0.0
                 )
                 for commodity in sets.commodities
@@ -207,12 +251,40 @@ def validate_inputs(inputs: IfpriCalibrationInputs, sets: IfpriSets,
     expected_demand = {(f, a) for f in sets.factors for a in sets.activities}
     if set(inputs.factor_quantities.demand) != expected_demand:
         raise IfpriDataError("Physical factor-demand coverage is incomplete.")
+    _require_finite_mapping(
+        "factor_supply", inputs.factor_quantities.supply
+    )
+    _require_finite_mapping(
+        "factor_demand", inputs.factor_quantities.demand
+    )
+    _require_nonnegative_mapping(
+        "Physical factor supply", inputs.factor_quantities.supply
+    )
+    _require_nonnegative_mapping(
+        "Physical factor demand", inputs.factor_quantities.demand
+    )
 
     for tax_type, source in inputs.taxes.source_accounts.items():
         if source not in sam.accounts:
             raise IfpriDataError(
                 f"Tax type {tax_type} refers to missing SAM account {source}."
             )
+    unknown_tax_types = sorted(
+        {tax_type for tax_type, _ in inputs.taxes.payments}
+        - set(inputs.taxes.source_accounts)
+    )
+    if unknown_tax_types:
+        raise IfpriDataError(
+            f"Tax payments use unmapped tax types: {unknown_tax_types}"
+        )
+    unknown_tax_accounts = sorted(
+        {account for _, account in inputs.taxes.payments}
+        - set(sam.accounts)
+    )
+    if unknown_tax_accounts:
+        raise IfpriDataError(
+            f"Tax payments refer to missing SAM accounts: {unknown_tax_accounts}"
+        )
     _require_finite_mapping("tax_payment", inputs.taxes.payments)
 
 

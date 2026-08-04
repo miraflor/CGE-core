@@ -26,6 +26,15 @@ from .validation import IfpriDataError
 
 PathLike = Union[str, Path]
 _POSITIVE_FLOOR = 1e-10
+_OPTIMAL_TERMINATIONS = {
+    TerminationCondition.optimal,
+    TerminationCondition.locallyOptimal,
+    getattr(
+        TerminationCondition,
+        "globallyOptimal",
+        TerminationCondition.optimal,
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -209,34 +218,78 @@ def _choose_solver(name: Optional[str]) -> str:
     raise IfpriDataError(f"No usable local NLP solver was found ({requested}).")
 
 
-def solve_ifpri_base(model, solver: Optional[str] = None, tee: bool = False) -> IfpriSolveReport:
-    """Solve a closed BASE model and require a normal optimal termination."""
+def _solve_label(model) -> str:
+    """Return BASE or the attached scenario name for solver diagnostics."""
+    scenario = getattr(model, "_ifpri_scenario", None)
+    return getattr(scenario, "value", "BASE")
+
+
+def _is_successful_termination(status, termination) -> bool:
+    """Return whether a solver result is optimal enough for replication."""
+    return (
+        status in {SolverStatus.ok, SolverStatus.warning}
+        and termination in _OPTIMAL_TERMINATIONS
+    )
+
+
+def _constraint_residual(data) -> float:
+    """Return signed equality residual or signed bound violation."""
+    body = float(value(data.body))
+    if data.equality:
+        return body - float(value(data.lower))
+
+    if data.lower is not None:
+        lower = float(value(data.lower))
+        if body < lower:
+            return body - lower
+    if data.upper is not None:
+        upper = float(value(data.upper))
+        if body > upper:
+            return body - upper
+    return 0.0
+
+
+def solve_ifpri_base(
+    model,
+    solver: Optional[str] = None,
+    tee: bool = False,
+) -> IfpriSolveReport:
+    """Solve a closed IFPRI model and require an optimal termination."""
     if ifpri_degrees_of_freedom(model) != 0:
-        raise IfpriDataError("The IFPRI model must have zero degrees of freedom before solving.")
+        raise IfpriDataError(
+            "The IFPRI model must have zero degrees of freedom before solving."
+        )
+    label = _solve_label(model)
     solver_name = _choose_solver(solver)
     opt = SolverFactory(solver_name)
     if solver_name == "ipopt":
         opt.options["tol"] = 1e-10
         opt.options["constr_viol_tol"] = 1e-9
         opt.options["max_iter"] = 3000
-    result = opt.solve(model, tee=tee)
+    try:
+        result = opt.solve(model, tee=tee)
+    except Exception as exc:
+        raise IfpriDataError(
+            f"IFPRI {label} solve raised {type(exc).__name__}: {exc}"
+        ) from exc
+
     status = result.solver.status
     termination = result.solver.termination_condition
-    acceptable = {
-        TerminationCondition.optimal,
-        TerminationCondition.locallyOptimal,
-        TerminationCondition.feasible,
-    }
-    if status not in {SolverStatus.ok, SolverStatus.warning} or termination not in acceptable:
+    if not _is_successful_termination(status, termination):
         raise IfpriDataError(
-            f"IFPRI BASE solve failed: status={status}; termination={termination}."
+            f"IFPRI {label} solve failed: "
+            f"status={status}; termination={termination}."
         )
+
     residuals = {}
     for component in model.component_objects(Constraint, active=True):
-        for index, data in component.items() if component.is_indexed() else ((None, component),):
-            body = float(value(data.body))
-            target = float(value(data.lower)) if data.equality else body
-            residuals[f"{component.name}[{index}]"] = body - target
+        entries = (
+            component.items()
+            if component.is_indexed()
+            else ((None, component),)
+        )
+        for index, data in entries:
+            residuals[f"{component.name}[{index}]"] = _constraint_residual(data)
     max_residual = max((abs(v) for v in residuals.values()), default=0.0)
     return IfpriSolveReport(
         solver=solver_name,
