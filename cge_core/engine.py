@@ -23,13 +23,14 @@ Error and reporting contract (v0.3.0):
 
 Provenance: fork of PyCGE (Fung & Burtwistle, NIST 2017, public domain);
 fork revisions by James Matthew Miraflor (2026) via an AI-assisted
-("vibecoded") workflow directed and reviewed by him. The original engine
+workflow directed and reviewed by him. The original engine
 design is not his work. See README.md and CITATION.cff.
 """
 from __future__ import annotations
 
 import copy
 import csv
+import importlib.util
 import logging
 import math
 import os
@@ -465,13 +466,23 @@ class PyCGE:
             ComponentError: if ``NAME`` is not a variable or ``INDEX``
                 is not one of its indexes. The half-created instance is
                 discarded, so ``self.base`` stays unchanged.
+            DataValidationError: if model-specific calibration cannot be
+                constructed from the supplied benchmark flows.
         """
         if self.m is None:
             raise WorkflowError("Model not loaded.")
         if self.data is None:
             raise WorkflowError("Data not loaded. Call `model_data` first.")
 
-        candidate = self.m.create_instance(self.data)
+        try:
+            candidate = self.m.create_instance(self.data)
+        except ZeroDivisionError as exc:
+            raise DataValidationError(
+                "Model instance construction failed with division by zero. "
+                "The bundled reference models require strictly positive "
+                "benchmark flows for ratios and CES/CET calibration; "
+                "inspect the SAM and the model-specific assumptions."
+            ) from exc
         component = candidate.component(NAME)
         if component is None or component.ctype is not Var:
             raise ComponentError(
@@ -835,8 +846,20 @@ class PyCGE:
             if not name:
                 continue
             try:
-                if SolverFactory(name).available(exception_flag=False):
-                    return name
+                if not SolverFactory(name).available(exception_flag=False):
+                    continue
+                if name == "cyipopt":
+                    # Pyomo's cyipopt route imports SciPy at runtime and
+                    # requires the PyNumero ASL bridge. SolverFactory can
+                    # report cyipopt as available even when either piece is
+                    # missing, so probe both before selecting it.
+                    if importlib.util.find_spec("scipy") is None:
+                        continue
+                    from pyomo.contrib.pynumero.asl import AmplInterface
+
+                    if not AmplInterface.available():
+                        continue
+                return name
             except Exception:
                 continue
         requested = preferred or "ipopt/cyipopt"

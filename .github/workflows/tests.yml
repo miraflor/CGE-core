@@ -108,7 +108,32 @@ jobs:
           PY
 
       - name: Run full public suite
-        run: pytest tests/ -v -m "not external_ifpri" --strict-markers
+        run: |
+          pytest tests/ -v -m "not external_ifpri" --strict-markers \
+            --junitxml=full-public-suite.xml
+
+      - name: Assert full public solver coverage
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("full-public-suite.xml").getroot()
+          suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
+          tests = sum(int(suite.attrib.get("tests", 0)) for suite in suites)
+          skipped = sum(int(suite.attrib.get("skipped", 0)) for suite in suites)
+          failures = sum(int(suite.attrib.get("failures", 0)) for suite in suites)
+          errors = sum(int(suite.attrib.get("errors", 0)) for suite in suites)
+          if tests < 130:
+              raise SystemExit(
+                  f"Expected at least 130 public tests, collected {tests}."
+              )
+          if skipped or failures or errors:
+              raise SystemExit(
+                  "Full public solver coverage failed: "
+                  f"tests={tests}, skipped={skipped}, failures={failures}, errors={errors}."
+              )
+          print(f"full public solver coverage OK: {tests} tests, zero skips")
+          PY
 
   # Packaging lane: the wheel must not leak the tests package, and the
   # bundled SAM data must actually ship.
@@ -124,11 +149,13 @@ jobs:
 
       - name: Build sdist and wheel
         run: |
-          python -m pip install --upgrade pip build twine
+          python -m pip install --upgrade pip build twine cffconvert
           python -m build
 
       - name: Check metadata
-        run: twine check dist/*
+        run: |
+          twine check dist/*
+          cffconvert --validate
 
       - name: Assert wheel contents
         run: |
@@ -146,6 +173,36 @@ jobs:
               print("\n".join("ERROR: " + e for e in errors))
               sys.exit(1)
           print("wheel OK: %d data files, no tests leaked" % len(csvs))
+          PY
+
+      - name: Assert source distribution contents
+        run: |
+          python - <<'PY'
+          import glob
+          import sys
+          import tarfile
+
+          archive = glob.glob("dist/*.tar.gz")[0]
+          with tarfile.open(archive, "r:gz") as handle:
+              names = handle.getnames()
+          required = [
+              "cam/__init__.py",
+              "cam/cam_model_def.py",
+              "cam/replicate_base.py",
+              "cam/replicate_experiments.py",
+              "cam/data/set-i-.csv",
+              "tests/cam/test_replication.py",
+              "CAMCGE_REPLICATION_GUIDE.md",
+              "CAMCGE_VALIDATION_REPORT.md",
+          ]
+          missing = [
+              item for item in required
+              if not any(name.endswith(item) for name in names)
+          ]
+          if missing:
+              print("ERROR: source distribution missing: " + ", ".join(missing))
+              sys.exit(1)
+          print("sdist OK: CAMCGE benchmark, tests, data, and docs included")
           PY
 
       - name: Install from wheel and smoke-test

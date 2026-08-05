@@ -29,6 +29,10 @@ set IFPRI_SOURCE_DIR=C:\path\to\ifpri-test-folder
 The directory is resolved only at runtime. The source file is parsed and
 validated but is neither copied into CGE-Core nor added to package artifacts.
 
+If `IFPRI_SOURCE_DIR` is set but the directory does not contain `test.dat`,
+the external replication tests fail deliberately rather than silently
+skipping. Correct or unset the environment variable before rerunning them.
+
 ## Load and calibrate the benchmark
 
 ```python

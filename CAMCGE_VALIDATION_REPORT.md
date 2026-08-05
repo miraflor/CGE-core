@@ -33,12 +33,15 @@ historical results independent of the Hosoe and IFPRI benchmarks.
 10. Documented an additional small Experiment 1 residual: forestry imports
     reproduce approximately `+4.6%`, while the paper prints `+4.8%`.
 
-## Independent numerical audit
+## Historical independent numerical audit
 
-A separate NumPy/SciPy reconstruction was used only as an audit tool and is not
-included in the integration package. It solved 242 variables against 242 active
-equations after imposing the savings closure and dropping the current-account
-equation.
+A separate NumPy/SciPy reconstruction was used during development as an audit
+tool. Its script was not retained in the repository, so the figures in this
+subsection are supporting historical narrative rather than independently
+reproducible repository evidence. The engine-side replication and pytest
+results in the later section are the reproducible validation record. The audit
+solved 242 variables against 242 active equations after imposing the savings
+closure and dropping the current-account equation.
 
 ### Base equilibrium
 
@@ -58,11 +61,15 @@ equation.
 - paper-deflated real wages: approximately `+1.489%`, `+5.109%`, and
   `+5.308%`.
 
-The accepted table cells were within approximately `0.10` percentage points.
-The disclosed residuals are the two near-zero services output cells and the
-forestry-import cell. The paper's printed export total is not used as a
-regression target because it is inconsistent with aggregation of the printed
-sector rows.
+The accepted sector cells were observed within approximately `0.10`
+percentage points. The committed regression gates allow `0.15` percentage
+points for sector cells, `0.25` for the aggregate domestic-price comparison,
+and `0.35` for aggregate composite prices and Experiment 1 real wages. The
+wider aggregate and real-wage gates cover printed-table aggregation and
+deflator interpretation documented in `cam/README.md`. The disclosed residuals
+are the two near-zero services output cells and the forestry-import cell. The
+paper's printed export total is not used as a regression target because it is
+inconsistent with aggregation of the printed sector rows.
 
 ### Experiment 2 — double the food-crop tariff
 

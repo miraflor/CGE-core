@@ -1,14 +1,19 @@
 # IFPRI Standard CGE Model 1.01 — GAMS reference record
 
 This directory contains a compact validation record for the official IFPRI/TMD
-Standard CGE Model, Version 1.01. It does **not** contain a CGE-Core/Pyomo port.
+Standard CGE Model, Version 1.01. It does **not** redistribute the official
+source package or `test.dat`; the independently written CGE-Core/Pyomo
+implementation lives under `cge_core/ifpri/`.
 
 ## Status
 
 - Official benchmark model (`mod101.gms`, `TEST.DAT`): reproduced in GAMS 54.2.1.
 - Official six simulations: reproduced as MCP/PATH and NLP/CONOPT.
-- CGE-Core implementation: not yet built.
-- CGE-Core replication against these results: not yet performed.
+- CGE-Core implementation: completed under `cge_core/ifpri/`.
+- CGE-Core replication: BASE and five policy simulations reproduced the
+  full-precision NLP reference targets in the maintainer's external-data run.
+- Third-party rerun: requires a separately obtained official `test.dat` and
+  `IFPRI_SOURCE_DIR` pointing to its directory.
 
 ## Source
 
@@ -102,10 +107,12 @@ Reference tables:
 
 ## What this proves
 
-This record proves that the official IFPRI GAMS model and its supplied test
-simulations run successfully in modern GAMS with the solver-name compatibility
-change. It supplies targets for a future Pyomo implementation.
+This record establishes that the official IFPRI GAMS model and its supplied
+test simulations run successfully in modern GAMS with the solver-name
+compatibility change. It also supplies the external full-precision targets
+used by CGE-Core's completed replication tests.
 
-It does **not** prove that CGE-Core replicates IFPRI. That claim becomes valid
-only after a CGE-Core/Pyomo implementation reproduces these reference results
-within documented tolerances.
+The record alone does not make the comparison self-contained because the
+official `test.dat` is deliberately not redistributed. A third party can
+independently rerun the comparison after legitimately obtaining the IFPRI
+package and setting `IFPRI_SOURCE_DIR`; see `docs/IFPRI.md`.
