@@ -34,6 +34,12 @@ from an independent adversarial review of `main` at commit `816b385`.
   savings-rate closure and document the actual CAMCGE assertion gates.
 - Bump package and citation metadata from `0.4.0` to `0.5.0`, preserving the
   earlier `v0.4.0` tag as the IFPRI-focused release.
+- Use the engine's hardened solver probe inside the test suite so a
+  half-installed `cyipopt` environment skips solver tests rather than failing.
+- Clear the existing Ruff E9/F findings and add a narrow correctness lint gate
+  covering `cge_core`, `cam`, and `tests`.
+- Clarify division-by-zero diagnostics, document the fixed Hosoe elasticity
+  assumptions, and add Linux/macOS equivalents to the GAMS validation guide.
 
 ### Validation scope
 

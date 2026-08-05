@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Dict, List, Mapping, Sequence, Tuple
 
 from .schema import (
     IfpriCalibrationInputs,

@@ -11,7 +11,6 @@ import io
 import os
 
 import pytest
-from pyomo.environ import SolverFactory
 
 DATA_ROOT = os.path.join(os.path.dirname(__file__), '..', 'cge_core', 'data')
 STD_DATA_DIR = os.path.join(DATA_ROOT, 'stdcge_data_dir')
@@ -19,14 +18,13 @@ SPL_DATA_DIR = os.path.join(DATA_ROOT, 'splcge_data_dir')
 
 
 def _available_solver():
-    """Return the name of a usable local NLP solver, or None."""
-    for name in ('ipopt', 'cyipopt'):
-        try:
-            if SolverFactory(name).available(exception_flag=False):
-                return name
-        except Exception:
-            continue
-    return None
+    """Return the engine's usable local NLP solver, or ``None``."""
+    from cge_core.engine import PyCGE, SolveError
+
+    try:
+        return PyCGE._available_solver()
+    except SolveError:
+        return None
 
 
 SOLVER = _available_solver()

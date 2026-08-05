@@ -12,7 +12,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 from .inputs import parse_calibration_inputs
 from .schema import IfpriDataset, IfpriSam, IfpriSets
