@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 from types import MappingProxyType
-from typing import Dict, Mapping, Optional, Tuple
+from typing import Dict, Mapping, Optional
 
 from pyomo.environ import (
     ConcreteModel,

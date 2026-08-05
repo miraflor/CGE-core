@@ -118,6 +118,13 @@ class StdModelDef:
             the ``set-i-.csv`` / ``set-h-.csv`` files (or
             :func:`cge_core.samtools.build_dataset`), so they need no
             mapping.
+
+    Notes:
+        The Armington and CET elasticities are fixed at
+        :math:`\sigma_i = \psi_i = 2`, exactly matching ``stdcge.gms``.
+        They are not currently constructor inputs. A model adapted to a
+        different SAM therefore retains these GAMS benchmark assumptions
+        unless its model definition is edited explicitly.
     """
 
     # Only market-clearing equations are valid Walras-law closures. This

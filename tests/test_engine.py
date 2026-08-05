@@ -528,7 +528,7 @@ def test_engine_progress_goes_through_logging(caplog):
     buf = io.StringIO()
     with caplog.at_level(logging.INFO, logger='cge_core'):
         with contextlib.redirect_stdout(buf):
-            cge = std_instance()
+            std_instance()
     assert buf.getvalue() == '', "engine wrote to stdout on the happy path"
     messages = ' '.join(record.message for record in caplog.records)
     assert 'numeraire' in messages

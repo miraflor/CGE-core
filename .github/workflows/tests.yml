@@ -135,6 +135,24 @@ jobs:
           print(f"full public solver coverage OK: {tests} tests, zero skips")
           PY
 
+  # Narrow correctness lint: syntax errors, undefined names, unused
+  # imports, and unused local variables. Formatting is intentionally out of
+  # scope so this remains a low-noise correctness gate.
+  lint:
+    name: lint (ruff E9/F)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Run narrow Ruff correctness checks
+        run: |
+          python -m pip install --upgrade pip "ruff>=0.8,<1"
+          ruff check cge_core cam tests --select E9,F
+
   # Packaging lane: the wheel must not leak the tests package, and the
   # bundled SAM data must actually ship.
   packaging:

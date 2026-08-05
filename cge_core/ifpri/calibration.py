@@ -10,7 +10,7 @@ no nonlinear solver is called.
 from __future__ import annotations
 
 import math
-from typing import Dict, Iterable, Mapping, Tuple
+from typing import Dict, Iterable, Tuple
 
 from .schema import (
     IfpriBenchmarkCalibration,

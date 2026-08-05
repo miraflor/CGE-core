@@ -479,9 +479,10 @@ class PyCGE:
         except ZeroDivisionError as exc:
             raise DataValidationError(
                 "Model instance construction failed with division by zero. "
-                "The bundled reference models require strictly positive "
-                "benchmark flows for ratios and CES/CET calibration; "
-                "inspect the SAM and the model-specific assumptions."
+                "This commonly indicates a zero benchmark flow that violates "
+                "the model's calibration assumptions, but it can also indicate "
+                "a defect in a custom model definition; inspect both the input "
+                "data and the model-specific initializer."
             ) from exc
         component = candidate.component(NAME)
         if component is None or component.ctype is not Var:

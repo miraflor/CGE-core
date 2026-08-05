@@ -40,14 +40,36 @@ This validation is specific to the small standard CGE model from Hosoe, Gasawa, 
 
 You need:
 
-- Windows;
-- VS Code;
 - a local clone of `CGE-core`;
 - GAMS installed;
 - a GAMS license that can solve the small `stdcge` model;
 - CONOPT available in the GAMS installation.
 
+The detailed walkthrough below uses Windows and VS Code. Linux and macOS users
+can use an ordinary terminal and the equivalent commands in the next section.
 The GAMS demo license is sufficient for this small model.
+
+### Linux and macOS command equivalents
+
+The GAMS commands themselves are platform-neutral:
+
+```bash
+gamslib stdcge
+gams stdcge.gms nlp=conopt o=stdcge_reference.lst \
+  lo=4 lf=stdcge_reference.log
+echo $?
+cat listA1.csv
+```
+
+Record the source checksum with:
+
+```bash
+sha256sum stdcge.gms > stdcge_source_sha256.txt  # Linux
+shasum -a 256 stdcge.gms > stdcge_source_sha256.txt  # macOS
+```
+
+Run these commands from `validation/gams/stdcge`, just as in the Windows
+walkthrough. The expected model results and comparison procedure are the same.
 
 ---
 

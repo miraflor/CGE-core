@@ -3,6 +3,7 @@
 import pytest
 
 import cge_core.engine as engine
+import tests._util as test_util
 from cge_core.engine import DataValidationError, PyCGE, SolveError
 from cge_core.examples.stdcge_model_def import StdModelDef
 
@@ -36,3 +37,21 @@ def test_cyipopt_probe_rejects_missing_scipy(monkeypatch):
     monkeypatch.setattr(engine.importlib.util, "find_spec", find_spec_without_scipy)
     with pytest.raises(SolveError, match="cyipopt"):
         PyCGE._available_solver("cyipopt")
+
+
+def test_test_suite_solver_probe_delegates_to_engine(monkeypatch):
+    calls = []
+
+    def available(preferred=None):
+        calls.append(preferred)
+        return "ipopt"
+
+    monkeypatch.setattr(PyCGE, "_available_solver", staticmethod(available))
+    assert test_util._available_solver() == "ipopt"
+    assert calls == [None]
+
+    def unavailable(preferred=None):
+        raise SolveError("no usable solver")
+
+    monkeypatch.setattr(PyCGE, "_available_solver", staticmethod(unavailable))
+    assert test_util._available_solver() is None

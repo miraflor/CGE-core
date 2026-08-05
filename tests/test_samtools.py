@@ -12,7 +12,6 @@ equilibrium, which is the strongest available check that the mapping is
 wired into every equation that needs it.
 """
 import csv
-import shutil
 
 import pytest
 
