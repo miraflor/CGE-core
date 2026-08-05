@@ -4,10 +4,11 @@
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-A Pyomo-based Computable General Equilibrium framework with two verified
-Hosoe, Gasawa & Hashimoto (2010) textbook models and an independently written
-implementation of the IFPRI Standard CGE test economy. Named to align with the
-Policy Simulation Library convention
+A Pyomo-based Computable General Equilibrium framework validated against
+three distinct benchmark families: two Hosoe, Gasawa & Hashimoto (2010)
+textbook models, an independently written implementation of the IFPRI Standard
+CGE test economy, and a repository-level replication of the published CAMCGE
+Cameroon model. Named to align with the Policy Simulation Library convention
 (cf. [OG-Core](https://github.com/PSLmodels/OG-Core)).
 
 > **Note.** This is an independent project. It is *not* affiliated with or
@@ -25,22 +26,27 @@ in the **public domain** under [17 U.S.C. 105](https://www.law.cornell.edu/uscod
 the original NIST notice is preserved in `LICENSE_NIST.txt`.
 
 Modifications in this fork — the Walras'-law degree-of-freedom fix, bug fixes,
-the engine API, the clean-room IFPRI implementation, reporting utilities, and
-the test suite — are released under the MIT License (`LICENSE`).
+the engine API, the clean-room IFPRI implementation, the CAMCGE replication
+benchmark, reporting utilities, documentation, and the test suite — are
+released under the MIT License (`LICENSE`).
 
 ### Authorship
 
-This fork is maintained by **James Matthew Miraflor**, who produced its
-revisions through an AI-assisted workflow he directed and
-reviewed. **The underlying model port is not his original work** — it is by
-Charley Burtwistle and Juan Fung (NIST, 2017), and the model itself is Hosoe,
-Gasawa & Hashimoto's (2010). The IFPRI subsystem, by contrast, was independently
-implemented within this fork from public mathematical descriptions; the
-official IFPRI source package and test data remain external. The inherited
-Hosoe models are regression-tested against the GAMS Model Library reference
-implementations, while the IFPRI benchmark and policy simulations are checked
-against full-precision external reference runs. Machine-readable citation
-metadata is in `CITATION.cff`.
+This fork is maintained by **James Matthew Miraflor**, who directed and
+reviewed an AI-assisted revision, testing, and documentation process. He is
+cited as the author and maintainer of CGE-Core as this revised software
+project, not as the original author of PyCGE, the inherited Hosoe model ports,
+or the underlying IFPRI and CAMCGE model specifications. Those works retain
+their original attribution.
+
+The IFPRI subsystem was independently implemented within this fork from public
+mathematical descriptions; the official IFPRI source package and test data
+remain external. The repository-level CAMCGE code is a replication benchmark,
+not an original economic model. The inherited Hosoe models are
+regression-tested against GAMS Model Library references, the IFPRI benchmark
+and policy simulations are checked against full-precision external reference
+runs, and CAMCGE is checked against its published base equilibrium and three
+policy experiments. Machine-readable citation metadata is in `CITATION.cff`.
 
 ### Documentation conventions
 
@@ -51,14 +57,26 @@ referenced to the GAMS equation names. If you know OG-Core, start with
 [`docs/OG_CORE_CROSSWALK.md`](docs/OG_CORE_CROSSWALK.md); the equation-by-
 equation mapping to Hosoe is in [`docs/MODEL.md`](docs/MODEL.md). The IFPRI
 loader, calibration, closures, scenarios, validation, and reporting workflow
-are documented in [`docs/IFPRI.md`](docs/IFPRI.md).
+are documented in [`docs/IFPRI.md`](docs/IFPRI.md). The CAMCGE replication
+procedure and completed validation are documented in
+[`CAMCGE_REPLICATION_GUIDE.md`](CAMCGE_REPLICATION_GUIDE.md) and
+[`CAMCGE_VALIDATION_REPORT.md`](CAMCGE_VALIDATION_REPORT.md), with execution
+instructions in [`cam/README.md`](cam/README.md).
 
 ### Citing
 
-If you use CGE-Core, please cite both the original PyCGE and the Hosoe
-textbook:
+If you use CGE-Core, please cite this software and also cite the original
+PyCGE and the relevant underlying model sources:
 
 ```bibtex
+@software{miraflor2026cgecore,
+  author  = {James Matthew Miraflor},
+  title   = {{CGE-Core}: a Pyomo-based computable general equilibrium framework},
+  year    = {2026},
+  version = {0.4.0},
+  url     = {https://github.com/miraflor/CGE-core}
+}
+
 @software{fung2017pycge,
   author      = {Juan Fung and Charley Burtwistle},
   title       = {{PyCGE}: A Python Interface for Solving {CGE} Models},
@@ -78,7 +96,9 @@ textbook:
 ```
 
 Users of `cge_core.ifpri` should additionally cite the official IFPRI Standard
-CGE documentation and source package they obtained separately.
+CGE documentation and source package they obtained separately. Users relying
+on the `cam/` replication benchmark should additionally cite Condon, Dahl, and
+Devarajan (1987) and the GAMS Model Library `camcge` model.
 
 ---
 
@@ -95,11 +115,19 @@ economy with algebraic calibration, explicit closures, five policy scenarios,
 full-precision external validation, and pandas reporting. Its official source
 package and `test.dat` are not distributed with CGE-Core.
 
+The repository-level `cam/` benchmark expresses the published CAMCGE Cameroon
+model as a CGE-Core model definition. It reproduces 98 published base-
+equilibrium variable levels, the objective value, and three published policy
+experiments within documented numerical tolerances. It remains outside the
+installed `cge_core` package because it is a replication and regression
+benchmark rather than an independently authored core subsystem.
+
 | Subsystem        | Reference                     | Description                                          |
 | ---------------- | ----------------------------- | ---------------------------------------------------- |
 | `splcge`         | Hosoe ch. 3–4                 | Simple closed economy: 2 goods, 2 factors            |
 | `stdcge`         | Hosoe ch. 5–6                 | Open economy: Armington, CET, government, investment |
 | `cge_core.ifpri` | IFPRI Standard CGE test model | External-data benchmark and five policy simulations  |
+| `cam/`           | CAMCGE, Condon et al. (1987)  | Cameroon benchmark and three policy experiments      |
 
 ---
 
@@ -282,19 +310,24 @@ that a fully relabelled SAM calibrates to the identical equilibrium.
 pytest tests/ -v
 ```
 
-86 test functions across five modules (plus parametrized cases):
+The suite covers the following main groups:
 
-| Module             | Covers                                                    |
-| ------------------ | --------------------------------------------------------- |
-| `test_stdcge.py`   | Structure (build, DOF before/after the drop), correctness (base reproduces the SAM, recovery from a perturbed start, the dropped market clears), economics (tariff abolition raises welfare), and that solving the sim leaves the base untouched |
-| `test_splcge.py`   | The same structural and correctness properties for the simple model, plus goods-market clearing and zero-profit factor-income exhaustion |
-| `test_engine.py`   | Engine workflow and failure-mode regressions: solver termination, state invalidation, safe equation dropping, reversible shocks, CSV export, SAM validation, persistence, and out-of-order guards |
-| `test_samtools.py` | Building datasets from a single SAM, deriving goods/factor sets, and calibrating a fully relabelled SAM to the identical equilibrium |
-| `test_datasets.py` | Installation-independent access to bundled example datasets |
+| Module or group     | Covers                                                    |
+| ------------------- | --------------------------------------------------------- |
+| `test_stdcge.py`    | Structure (build, DOF before/after the drop), correctness (base reproduces the SAM, recovery from a perturbed start, the dropped market clears), economics (tariff abolition raises welfare), and that solving the sim leaves the base untouched |
+| `test_splcge.py`    | The same structural and correctness properties for the simple model, plus goods-market clearing and zero-profit factor-income exhaustion |
+| `test_engine.py`    | Engine workflow and failure-mode regressions: solver termination, state invalidation, safe equation dropping, reversible shocks, CSV export, SAM validation, persistence, and out-of-order guards |
+| `test_samtools.py`  | Building datasets from a single SAM, deriving goods/factor sets, and calibrating a fully relabelled SAM to the identical equilibrium |
+| `test_datasets.py`  | Installation-independent access to bundled example datasets |
+| `tests/ifpri/`      | IFPRI loading, calibration, closures, reporting, and five policy-scenario regressions |
+| `tests/cam/`        | CAMCGE data transcription, structure, base equilibrium, and three published policy experiments |
 
 Solver-dependent tests auto-skip if no local NLP solver is present, so the
 suite is still useful without one. CI runs a job with a real IPOPT that
-**fails if anything skips**, so the solver path cannot silently rot.
+**fails if anything skips**, so the solver path cannot silently rot. At the
+CAMCGE integration point, the complete local suite passed 180 tests with no
+skips or failures; exact results are recorded in
+[`CAMCGE_VALIDATION_REPORT.md`](CAMCGE_VALIDATION_REPORT.md).
 
 ---
 
@@ -305,5 +338,9 @@ suite is still useful without one. CI runs a job with a real IPOPT that
 - GAMS Model Library:
   [splcge.gms](https://www.gams.com/latest/gamslib_ml/libhtml/gamslib_splcge.html),
   [stdcge.gms](https://www.gams.com/latest/gamslib_ml/libhtml/gamslib_stdcge.html)
+- Condon, T., Dahl, H. & Devarajan, S. (1987). *Implementing a Computable
+  General Equilibrium Model on GAMS: The Cameroon Model.* World Bank
+  Development Research Department Discussion Paper DRD290.
+- GAMS Model Library: `camcge.gms` (SEQ=81).
 - Original PyCGE: [github.com/juanfung/pycge](https://github.com/juanfung/pycge)
 - Naming convention: [github.com/PSLmodels/OG-Core](https://github.com/PSLmodels/OG-Core)
