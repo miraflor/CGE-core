@@ -1,0 +1,12 @@
+IMAT,ag-subsist,ag-exp+ind,sylvicult,ind-alim,biens-cons,biens-int,cim-int,biens-cap,construct,services,publiques
+ag-subsist,0.23637,0,0,0,0,0,0,0,0,0,0
+ag-exp+ind,0,0,0,0,0,0,0,0,0,0,0
+sylvicult,0,0,0,0,0,0,0,0,0,0,0
+ind-alim,0,0,0,0,0,0,0,0,0,0,0
+biens-cons,0,0,0,0,0,0,0,0,0,0,0
+biens-int,0,0,0,0,0,0,0,0,0,0,0
+cim-int,0,0,0,0,0,0,0,0,0,0,0
+biens-cap,0.5953,0.60608,0.63876,0.60608,0.78723,0.63876,0.63876,0.60608,0.71728,0.1761,0.1761
+construct,0.16833,0.39392,0.36124,0.39392,0.21277,0.36124,0.36124,0.39392,0.28272,0.8239,0.8239
+services,0,0,0,0,0,0,0,0,0,0,0
+publiques,0,0,0,0,0,0,0,0,0,0,0
