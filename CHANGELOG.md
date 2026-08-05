@@ -1,5 +1,48 @@
 # Changelog
 
+## v0.5.0 (2026) — CAMCGE benchmark and adversarial-review hardening
+
+This release incorporates the published CAMCGE Cameroon replication benchmark
+and addresses the concrete packaging, CI, metadata, and failure-mode findings
+from an independent adversarial review of `main` at commit `816b385`.
+
+### CAMCGE replication
+
+- Add the repository-level `cam/` model definition, transcribed benchmark data,
+  base-equilibrium comparison, and three policy-experiment replications.
+- Reproduce 98 published base-equilibrium levels with a maximum absolute
+  discrepancy of approximately `4.98e-05` and the printed objective within
+  approximately `2.42e-05`.
+- Document the three disclosed Experiment 1 residuals, the paper's internally
+  inconsistent aggregate totals, and the exact regression tolerances.
+- Include CAMCGE scripts, data, tests, and validation documents in the source
+  distribution while keeping them outside the installed `cge_core` wheel.
+
+### Review hardening
+
+- Add SciPy to the `solver` extra required by Pyomo's `cyipopt` interface and
+  refuse to auto-select a half-installed `cyipopt` route lacking SciPy or the
+  PyNumero ASL bridge.
+- Convert zero-division failures during model-specific benchmark calibration
+  into an actionable `DataValidationError`.
+- Restore a whole-public-suite zero-skip gate in the real-IPOPT CI job.
+- Validate `CITATION.cff` in CI and replace its invalid top-level `notes` field
+  with the CFF 1.2-compatible `abstract` field.
+- Repair the stale IFPRI GAMS validation status and clarify that independent
+  reruns require the separately obtained official `test.dat`.
+- Reconcile the generic closure-anchor documentation with CAMCGE's fixed
+  savings-rate closure and document the actual CAMCGE assertion gates.
+- Bump package and citation metadata from `0.4.0` to `0.5.0`, preserving the
+  earlier `v0.4.0` tag as the IFPRI-focused release.
+
+### Validation scope
+
+The Hosoe and CAMCGE benchmarks were independently re-executed during the
+adversarial review. The IFPRI implementation and reference machinery were
+reviewed and its public synthetic solver path was rerun, but the official-data
+comparison could not be independently repeated because `test.dat` is
+deliberately not redistributed.
+
 ## v0.4.0 (2026) — IFPRI Standard CGE replication
 
 CGE-Core now includes a separate, independently written Python/Pyomo

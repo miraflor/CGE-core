@@ -7,6 +7,6 @@ dill>=0.3
 pandas>=1.3
 
 # A local NLP solver is also required. Choose ONE:
-#   (a) pip install "cge-core[solver]"     -> cyipopt (needs the IPOPT
+#   (a) pip install "cge-core[solver]"     -> cyipopt + scipy (needs IPOPT
 #       system library and a PyNumero ASL build), or
 #   (b) conda install -c conda-forge ipopt -> 'ipopt' executable on PATH.

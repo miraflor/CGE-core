@@ -73,7 +73,7 @@ PyCGE and the relevant underlying model sources:
   author  = {James Matthew Miraflor},
   title   = {{CGE-Core}: a Pyomo-based computable general equilibrium framework},
   year    = {2026},
-  version = {0.4.0},
+  version = {0.5.0},
   url     = {https://github.com/miraflor/CGE-core}
 }
 
@@ -174,12 +174,15 @@ Then use solver name `'ipopt'`.
 sudo apt-get install -y coinor-libipopt-dev
 git clone https://github.com/miraflor/CGE-core.git
 cd CGE-core
-pip install -e ".[solver,test]"
+pip install -e ".[solver,test]"  # installs cyipopt and scipy
 # build PyNumero's ASL bridge (needs cmake + a C++ compiler)
 python -m pyomo.contrib.pynumero.build
 ```
 
 Then use solver name `'cyipopt'`.
+
+The `solver` extra includes SciPy because Pyomo's `cyipopt` interface
+imports it at runtime.
 
 > The bundled examples detect whichever solver is available, so you do not
 > normally need to name one explicitly.
@@ -293,11 +296,12 @@ that a fully relabelled SAM calibrates to the identical equilibrium.
 ### Reliability safeguards
 
 - Input SAMs are checked for square labels, finite numeric cells, and per-account relative balance before model construction.
+- Model-specific zero-flow calibration failures are converted to a clear `DataValidationError` rather than leaking a raw division-by-zero exception.
 - Bundled models reject incomplete data directories, inconsistent goods/factor/account sets, missing configured institutions, and files targeting unknown model components before Pyomo construction begins.
 - A solve is marked successful only when Pyomo reports an acceptable optimum; failed solves raise `SolveError`.
 - `model_drop_redundant` accepts only model-declared market-clearing candidates, deactivates one equation, and rolls back unless the resulting DOF is exactly zero.
 - Scenario shocks preserve the first value and fixed/unfixed state, so `undo=True` is reliable after repeated edits.
-- Only price variables can be selected as numeraires; shock values must be finite numeric scalars, failed edits/undo operations roll back completely, and the numeraire cannot be accidentally unfixed.
+- Only model-declared closure anchors can be fixed through `model_instance`; the Hosoe models declare price numeraires, while CAMCGE declares its published fixed savings-rate closure. Shock values must be finite numeric scalars, failed edits/undo operations roll back completely, and the selected closure anchor cannot be accidentally unfixed.
 - Changing the SAM or benchmark-only `*0` inputs in-place is blocked on BASE and SIM; factor endowments remain valid SIM shocks.
 - Multidimensional variables are exported as valid long-form CSV. Dill files are for trusted inputs only.
 

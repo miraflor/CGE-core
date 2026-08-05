@@ -11,7 +11,7 @@ authors:
   - family-names: Miraflor
     given-names: James Matthew
     email: james.miraflor@gmail.com
-version: 0.4.0
+version: 0.5.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
 keywords:
@@ -20,7 +20,7 @@ keywords:
   - pyomo
   - economics
   - policy-simulation
-notes: >-
+abstract: >-
   CGE-Core is a corrected and substantially revised fork of PyCGE by Juan Fung
   and Charley Burtwistle (U.S. National Institute of Standards and Technology,
   2017; public domain under 17 U.S.C. 105). The inherited PyCGE code and Hosoe

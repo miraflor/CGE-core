@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cge-core"
-version = "0.4.0"
-description = "A Pyomo-based CGE framework with Hosoe and IFPRI model implementations"
+version = "0.5.0"
+description = "A Pyomo-based CGE framework validated against Hosoe, IFPRI, and CAMCGE benchmarks"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE", "LICENSE_NIST.txt"]
 authors = [
     { name = "James Matthew Miraflor", email = "james.miraflor@gmail.com" },
 ]
@@ -19,11 +20,11 @@ keywords = [
     "economics",
     "policy-simulation",
     "ifpri-standard-cge",
+    "camcge",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -44,7 +45,7 @@ dependencies = [
 # A local NLP solver is required at runtime. Either install cyipopt (needs
 # the IPOPT system library plus a PyNumero ASL build), or put an 'ipopt'
 # executable on PATH -- e.g. `conda install -c conda-forge ipopt`.
-solver = ["cyipopt>=1.4"]
+solver = ["cyipopt>=1.4", "scipy>=1.8"]
 test = ["pytest>=7.0"]
 docs = ["jupyter-book>=0.15,<2"]
 dev = ["pytest>=7.0", "build>=1.0", "jupyter-book>=0.15,<2"]
