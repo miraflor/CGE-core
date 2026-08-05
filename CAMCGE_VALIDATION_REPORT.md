@@ -1,7 +1,9 @@
-# CAMCGE pre-integration validation report
+# CAMCGE validation report
 
-**Status:** Prepared and independently checked; final execution through the
-user's local CGE-Core/Pyomo/IPOPT stack remains required.
+**Status:** Completed. CGE-Core reproduced the published Cameroon base
+equilibrium and all three policy experiments through the local Pyomo/IPOPT
+stack. The full 180-test suite passed locally, all nine GitHub Actions checks
+passed, and pull request #2 was merged into `main`.
 
 ## Scope
 
@@ -82,18 +84,30 @@ sector rows.
 - paper-deflated real wages: approximately `-3.332%`, `-3.058%`, and
   `-3.194%`.
 
-## What has not yet been proven
+## Completed integration validation
 
-This environment did not contain the user's actual CGE-Core checkout or a
-working Pyomo/IPOPT interface. Therefore, the final claim that *CGE-Core itself*
-reproduces these results is intentionally not made here. That claim becomes
-supported only after the local base script, experiment script, focused tests,
-and full project suite pass using the commands in
-`CAMCGE_REPLICATION_GUIDE.md`.
+The replication was subsequently executed through the actual CGE-Core engine
+on Windows with Python 3.11 and the IPOPT executable:
 
-## Recommended repository status
+- base degrees of freedom changed from `-1` to `0` after dropping `caeq`;
+- welfare reproduced `191.7346` with a difference of approximately `2.42e-05`;
+- the maximum discrepancy across 98 published variable levels was
+  approximately `4.98e-05`;
+- the dropped current-account equation cleared with a gap of approximately
+  `-7.89e-13`;
+- all three published experiment regression checks passed;
+- all seven CAMCGE tests passed locally;
+- the complete project suite passed with 180 tests and no skips or failures;
+- all nine GitHub Actions checks passed, including packaging, documentation,
+  IPOPT solver, and structural tests across supported Python versions; and
+- pull request #2 was merged into `main` as merge commit `c9a4782`.
 
-Keep this work on `feature/camcge-replication` until the local acceptance
-criteria pass. Do not commit `cam/cge_base.dill`, `__pycache__`, solver logs, or
-other generated outputs. Review the provenance notice before publishing or
-redistributing the model port and transcribed benchmark data.
+These results support the claim that CGE-Core itself reproduces the historical
+Cameroon benchmark within the documented tolerances.
+
+## Repository status
+
+The CAMCGE benchmark is integrated into `main`. Generated artifacts such as
+`cam/cge_base.dill`, `__pycache__`, solver logs, and other runtime outputs must
+remain uncommitted. The provenance notice should accompany any redistribution
+or publication derived from the model port and transcribed benchmark data.
