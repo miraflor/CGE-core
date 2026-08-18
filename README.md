@@ -32,6 +32,12 @@ released under the MIT License (`LICENSE`).
 
 ### Authorship
 
+**James Matthew Miraflor**  
+Scientific Computing Laboratory  
+Department of Computer Science  
+University of the Philippines Diliman  
+<jbmiraflor@up.edu.ph>
+
 This fork is maintained by **James Matthew Miraflor**, who directed and
 reviewed an AI-assisted revision, testing, and documentation process. He is
 cited as the author and maintainer of CGE-Core as this revised software

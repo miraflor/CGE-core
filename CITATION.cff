@@ -10,7 +10,8 @@ type: software
 authors:
   - family-names: Miraflor
     given-names: James Matthew
-    email: james.miraflor@gmail.com
+    email: jbmiraflor@up.edu.ph
+    affiliation: "Scientific Computing Laboratory, Department of Computer Science, University of the Philippines Diliman"
 version: 0.5.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
