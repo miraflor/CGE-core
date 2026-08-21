@@ -15,11 +15,12 @@ It includes:
 
 The implementation follows Hosoe, Gasawa and Hashimoto and is checked against the GAMS Model Library `stdcge` model.
 
-For the equations, see:
+## Read it at three levels
 
-- {doc}`../theory/production`
-- {doc}`../theory/final-demand`
-- {doc}`../theory/trade`
-- {doc}`../theory/closure`
+| Level | Where to go |
+| --- | --- |
+| Economic intuition | {doc}`../theory/overview` |
+| Equation-by-equation specification | {doc}`../MODEL` |
+| Python implementation | {doc}`../api/model-definitions` |
 
-For the complete equation-level crosswalk, see {doc}`../MODEL`.
+For the relationship among data, the model definition, the solver and the counterfactual workflow, see {doc}`../architecture`.

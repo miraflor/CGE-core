@@ -4,6 +4,7 @@ root: intro
 parts:
   - caption: Getting Started
     chapters:
+      - file: architecture
       - file: getting-started/installation
       - file: getting-started/quickstart
       - file: getting-started/first-simulation

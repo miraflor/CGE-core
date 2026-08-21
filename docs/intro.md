@@ -2,41 +2,76 @@
 
 **A Python/Pyomo framework for computable general equilibrium modelling and reproducible policy simulation.**
 
-CGE-Core separates the **economic model** from the **simulation workflow**:
+CGE-Core separates the **economic model** from the **simulation workflow** and makes the whole counterfactual pipeline explicit:
 
 **load data → calibrate → shock → solve → compare**
 
-It includes textbook CGE implementations and independent validation benchmarks built around Hosoe, the IFPRI Standard CGE model, and CAMCGE.
+::::{grid} 1 2 2 3
+:gutter: 2
 
-## Start here
+:::{grid-item-card} Get started
+:link: getting-started/quickstart
+:link-type: doc
 
-| If you want to… | Go to |
-| --- | --- |
-| Install CGE-Core | {doc}`getting-started/installation` |
-| Run a model in a few minutes | {doc}`getting-started/quickstart` |
-| See a complete policy counterfactual | {doc}`getting-started/first-simulation` |
-| Understand the equations | {doc}`theory/overview` |
-| Compare the available models | {doc}`models/overview` |
-| Inspect validation evidence | {doc}`validation/overview` |
+Run the standard model and a policy counterfactual in a few minutes.
+:::
 
-## What CGE-Core provides
+:::{grid-item-card} Understand the model
+:link: theory/overview
+:link-type: doc
 
-- Pyomo-based CGE model definitions
-- calibration from benchmark data
-- baseline and counterfactual simulation
-- Social Accounting Matrix tooling
-- explicit model closure and Walras'-law handling
-- pandas-based comparison of simulation results
-- regression and replication benchmarks
+Read the economic blocks, equations, closure and benchmark accounting.
+:::
 
-## Models and benchmarks
+:::{grid-item-card} Inspect validation
+:link: validation/overview
+:link-type: doc
+
+See how Hosoe/GAMS, IFPRI and CAMCGE are used as independent benchmarks.
+:::
+::::
+
+## The workflow
+
+```{mermaid}
+flowchart LR
+    A[Benchmark data] --> B[Calibrate]
+    B --> C[Base equilibrium]
+    C --> D[Apply policy shock]
+    D --> E[Solve counterfactual]
+    E --> F[Compare with base]
+```
+
+CGE-Core is built around the idea that a policy experiment is not a single changed equation. It is a **new internally consistent equilibrium** after all endogenous prices and quantities have adjusted.
+
+## What is in the project?
 
 | Component | Role |
 | --- | --- |
-| Simple CGE | Small closed-economy teaching model |
-| Standard CGE | Open-economy model with trade, government and investment |
-| IFPRI Standard CGE | Independently implemented benchmark and policy scenarios |
-| CAMCGE | Published-model replication benchmark |
+| **Simple CGE** | Small closed-economy teaching model |
+| **Standard CGE** | Open economy with trade, government and investment |
+| **IFPRI Standard CGE** | Independently implemented benchmark and policy scenarios |
+| **CAMCGE** | Published-model replication benchmark |
+| **PyCGE engine** | Calibration, simulation, solving and comparison |
+| **SAM tools** | Convert benchmark accounting into model-ready data |
+
+::::{grid} 1 2 2 2
+:gutter: 2
+
+:::{grid-item-card} Architecture
+:link: architecture
+:link-type: doc
+
+See how data, model definitions, the solver, benchmark equilibria and counterfactuals fit together.
+:::
+
+:::{grid-item-card} API reference
+:link: api/index
+:link-type: doc
+
+Browse documentation generated directly from the Python docstrings.
+:::
+::::
 
 ```{note}
 CGE-Core is an independent project. It is not affiliated with or endorsed by the Policy Simulation Library. The `*-Core` name follows the same general scientific-software naming convention.

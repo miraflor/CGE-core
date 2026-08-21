@@ -2,7 +2,7 @@
 title: CGE-Core
 author: James Matthew Miraflor (fork maintainer; original PyCGE by Fung & Burtwistle, NIST)
 copyright: "2026"
-logo: ""
+logo: "_static/cge-core-logo.svg"
 
 execute:
   execute_notebooks: "off"
@@ -26,6 +26,8 @@ sphinx:
   extra_extensions:
     - sphinx.ext.autodoc
     - sphinx.ext.napoleon
+    - sphinx_design
+    - sphinxcontrib.mermaid
   config:
     autodoc_typehints: description
     napoleon_google_docstring: true
@@ -34,6 +36,13 @@ sphinx:
       - _static
     html_css_files:
       - custom.css
+    html_meta:
+      description: "CGE-Core: a Python/Pyomo framework for computable general equilibrium modelling and reproducible policy simulation."
+      og:title: "CGE-Core"
+      og:type: "website"
+      og:url: "https://miraflor.github.io/CGE-core/"
+      og:image: "https://miraflor.github.io/CGE-core/_static/cge-core-social-preview.png"
+      twitter:card: "summary_large_image"
     mathjax3_config:
       tex:
         macros: {}

@@ -57,3 +57,10 @@ The balance-of-payments condition is:
 \]
 
 Together, these equations allow a tariff, world-price or external-balance shock to propagate through domestic production and demand.
+
+## Follow this block
+
+- **Economic interpretation:** this page
+- **Full equation crosswalk:** {doc}`../MODEL`
+- **Python model definition:** {doc}`../api/model-definitions`
+- **Worked tariff experiment:** {doc}`../tutorials/tariff-reform`

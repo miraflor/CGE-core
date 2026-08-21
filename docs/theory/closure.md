@@ -28,4 +28,9 @@ This makes the nonlinear system square for IPOPT.
 
 The dropped market is not ignored economically: it should still clear at the solution. CGE-Core's regression tests check this consistency condition.
 
-For the scalar degree-of-freedom count and implementation details, see {doc}`../MODEL`.
+## Follow this block
+
+- **Economic interpretation:** this page
+- **Scalar degree-of-freedom accounting:** {doc}`../MODEL`
+- **Workflow implementation:** {doc}`../api/engine`
+- **System architecture:** {doc}`../architecture`

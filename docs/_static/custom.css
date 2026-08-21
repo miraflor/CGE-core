@@ -1,17 +1,29 @@
-/* CGE-Core: restrained documentation polish layered over Jupyter Book. */
+/* CGE-Core: restrained scientific-software identity layered over Jupyter Book. */
+
+:root {
+    --cge-ink: #17324d;
+    --cge-accent: #176b87;
+    --cge-soft: #eef5f7;
+}
 
 .bd-main .bd-content .bd-article-container {
     max-width: 980px;
 }
 
 .bd-article h1 {
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    color: var(--cge-ink);
+    font-weight: 750;
+    letter-spacing: -0.025em;
     margin-bottom: 1rem;
 }
 
 .bd-article h2 {
+    color: var(--cge-ink);
     margin-top: 2.25rem;
+}
+
+.bd-article a {
+    text-underline-offset: 0.16em;
 }
 
 .bd-article table {
@@ -19,11 +31,16 @@
 }
 
 .bd-article pre {
-    border-radius: 0.45rem;
+    border-radius: 0.5rem;
 }
 
 .bd-sidebar-primary {
     font-size: 0.95rem;
+}
+
+.bd-sidebar-primary .navbar-brand img {
+    max-height: 72px;
+    width: auto;
 }
 
 .bd-toc {
@@ -31,15 +48,35 @@
 }
 
 .admonition {
-    border-radius: 0.45rem;
+    border-radius: 0.5rem;
 }
 
 code {
     font-size: 0.92em;
 }
 
-/* Make the opening paragraph on the home page read as a software tagline. */
+.sd-card {
+    border-radius: 0.65rem;
+    border: 1px solid #d8e3e8;
+    box-shadow: none;
+}
+
+.sd-card:hover {
+    border-color: var(--cge-accent);
+}
+
+.sd-card-title {
+    color: var(--cge-ink);
+    font-weight: 700;
+}
+
+/* The homepage tagline should read like a product/scientific-software identity. */
 .bd-article > p:first-of-type {
-    font-size: 1.08rem;
+    font-size: 1.12rem;
     line-height: 1.65;
+}
+
+/* Give Mermaid diagrams a little breathing room without overpowering the page. */
+.mermaid {
+    margin: 1.5rem auto 2rem auto;
 }

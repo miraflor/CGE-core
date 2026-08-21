@@ -20,4 +20,13 @@ engine.
    :show-inheritance:
 ```
 
-For an economic explanation of these models, see {doc}`../models/overview`.
+## From code back to economics
+
+The implementation above corresponds to the economic blocks documented in:
+
+- {doc}`../theory/production`
+- {doc}`../theory/final-demand`
+- {doc}`../theory/trade`
+- {doc}`../theory/closure`
+
+For the complete equation-name crosswalk to the GAMS reference, see {doc}`../MODEL`.

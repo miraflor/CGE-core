@@ -48,3 +48,10 @@ a^y_jp^y_j+\sum_i a^x_{i,j}p^q_i.
 \]
 
 These relationships correspond to `eqpy`, `eqF`, `eqX`, `eqY`, and `eqpzs` in the standard model implementation.
+
+## Follow this block
+
+- **Economic interpretation:** this page
+- **Full equation crosswalk:** {doc}`../MODEL`
+- **Python model definition:** {doc}`../api/model-definitions`
+- **Where it sits in the whole system:** {doc}`../architecture`

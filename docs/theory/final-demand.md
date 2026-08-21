@@ -50,3 +50,10 @@ p^q_i
 Private and government saving are themselves defined as calibrated fractions of their respective income bases.
 
 These equations mean that a policy shock can affect final demand indirectly through income, taxes, saving and prices even when the shock is applied somewhere else in the model.
+
+## Follow this block
+
+- **Economic interpretation:** this page
+- **Full equation crosswalk:** {doc}`../MODEL`
+- **Python model definition:** {doc}`../api/model-definitions`
+- **Policy workflow:** {doc}`../getting-started/first-simulation`
