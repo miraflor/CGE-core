@@ -40,6 +40,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[docs]"
 
+      - name: Check documentation sources
+        run: |
+          python docs/check_docs.py
+
       - name: Build documentation
         run: |
           jupyter-book build docs

@@ -4,6 +4,7 @@ root: intro
 parts:
   - caption: Getting Started
     chapters:
+      - file: getting-started/overview
       - file: architecture
       - file: getting-started/installation
       - file: getting-started/quickstart
@@ -28,6 +29,7 @@ parts:
 
   - caption: Tutorials
     chapters:
+      - file: tutorials/overview
       - file: tutorials/loading-sam
       - file: tutorials/tariff-reform
 

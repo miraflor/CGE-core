@@ -1,6 +1,0 @@
-Fix documentation math rendering and audit issues
-
-Use MyST-compatible LaTeX math syntax throughout the theory and detailed
-standard-model pages, correct the source-install instructions, remove invalid
-Open Graph keys from the generic Sphinx metadata block, and improve CAMCGE
-reference links.

@@ -42,7 +42,9 @@ flowchart LR
     E --> F[Compare with base]
 ```
 
-CGE-Core is built around the idea that a policy experiment is not a single changed equation. It is a **new internally consistent equilibrium** after all endogenous prices and quantities have adjusted.
+CGE-Core is built around the idea that a policy experiment is not a single
+changed equation. It is a **new internally consistent equilibrium** after all
+endogenous prices and quantities have adjusted.
 
 ## What is in the project?
 
@@ -74,7 +76,11 @@ Browse documentation generated directly from the Python docstrings.
 ::::
 
 ```{note}
-CGE-Core is an independent project. It is not affiliated with or endorsed by the Policy Simulation Library. The `*-Core` name follows the same general scientific-software naming convention.
+CGE-Core is an independent project. It is not affiliated with or endorsed by
+the Policy Simulation Library. The `*-Core` name follows the same general
+scientific-software naming convention.
 ```
 
-For provenance, licensing and citation information, see the project repository and `CITATION.cff`.
+For provenance, licensing, and citation metadata, see
+[CITATION.cff](https://github.com/miraflor/CGE-core/blob/main/CITATION.cff)
+in the repository.
