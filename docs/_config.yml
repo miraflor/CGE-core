@@ -32,17 +32,13 @@ sphinx:
     autodoc_typehints: description
     napoleon_google_docstring: true
     napoleon_numpy_docstring: true
+    html_baseurl: "https://miraflor.github.io/CGE-core/"
     html_static_path:
       - _static
     html_css_files:
       - custom.css
     html_meta:
       description: "CGE-Core: a Python/Pyomo framework for computable general equilibrium modelling and reproducible policy simulation."
-      og:title: "CGE-Core"
-      og:type: "website"
-      og:url: "https://miraflor.github.io/CGE-core/"
-      og:image: "https://miraflor.github.io/CGE-core/_static/cge-core-social-preview.png"
-      twitter:card: "summary_large_image"
     mathjax3_config:
       tex:
         macros: {}

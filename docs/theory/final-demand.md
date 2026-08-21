@@ -6,48 +6,75 @@ The standard model contains three final-demand blocks.
 
 Households allocate disposable factor income across goods using calibrated Cobb-Douglas expenditure shares:
 
-\[
-X^p_i
+```{math}
+X_i^p
 =
-\alpha_i
-\frac{
-\sum_h p^f_h FF_h-S^p-T^d
-}{
-p^q_i
-}.
-\]
+\frac{\alpha_i}{p_i^q}
+\left(
+\sum_h p_h^f FF_h
+-
+S^p
+-
+T^d
+\right).
+```
 
 ## Government demand
 
 Government consumption depends on tax revenue net of government saving:
 
-\[
-X^g_i
+```{math}
+X_i^g
 =
-\mu_i
-\frac{
-T^d+\sum_iT^z_i+\sum_iT^m_i-S^g
-}{
-p^q_i
-}.
-\]
+\frac{\mu_i}{p_i^q}
+\left(
+T^d
++
+\sum_j T_j^z
++
+\sum_j T_j^m
+-
+S^g
+\right).
+```
 
 ## Investment demand
 
 Investment demand is allocated using fixed shares:
 
-\[
-X^v_i
+```{math}
+X_i^v
 =
-\lambda_i
-\frac{
-S^p+S^g+\epsilon S^f
-}{
-p^q_i
-}.
-\]
+\frac{\lambda_i}{p_i^q}
+\left(
+S^p
++
+S^g
++
+\varepsilon S^f
+\right).
+```
 
-Private and government saving are themselves defined as calibrated fractions of their respective income bases.
+Private and government saving are themselves defined as calibrated fractions of their respective income bases:
+
+```{math}
+S^p
+=
+ss^p \sum_h p_h^f FF_h,
+```
+
+```{math}
+S^g
+=
+ss^g
+\left(
+T^d
++
+\sum_j T_j^z
++
+\sum_j T_j^m
+\right).
+```
 
 These equations mean that a policy shock can affect final demand indirectly through income, taxes, saving and prices even when the shock is applied somewhere else in the model.
 
