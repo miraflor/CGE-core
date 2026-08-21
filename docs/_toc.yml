@@ -1,8 +1,32 @@
 format: jb-book
 root: intro
-chapters:
-- file: workflow
-- file: IFPRI
-- file: MODEL
-- file: OG_CORE_CROSSWALK
-- file: GAMS_STDCGE_VALIDATION
+
+parts:
+  - caption: Getting Started
+    chapters:
+      - file: getting-started/overview
+      - file: workflow
+
+  - caption: Models
+    chapters:
+      - file: models/overview
+      - file: MODEL
+      - file: IFPRI
+
+  - caption: Theory
+    chapters:
+      - file: theory/overview
+
+  - caption: Tutorials
+    chapters:
+      - file: tutorials/overview
+
+  - caption: Validation
+    chapters:
+      - file: validation/overview
+      - file: GAMS_STDCGE_VALIDATION
+
+  - caption: Developer Reference
+    chapters:
+      - file: developer/overview
+      - file: OG_CORE_CROSSWALK
