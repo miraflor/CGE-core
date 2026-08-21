@@ -1,0 +1,45 @@
+/* CGE-Core: restrained documentation polish layered over Jupyter Book. */
+
+.bd-main .bd-content .bd-article-container {
+    max-width: 980px;
+}
+
+.bd-article h1 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+}
+
+.bd-article h2 {
+    margin-top: 2.25rem;
+}
+
+.bd-article table {
+    font-size: 0.95rem;
+}
+
+.bd-article pre {
+    border-radius: 0.45rem;
+}
+
+.bd-sidebar-primary {
+    font-size: 0.95rem;
+}
+
+.bd-toc {
+    font-size: 0.9rem;
+}
+
+.admonition {
+    border-radius: 0.45rem;
+}
+
+code {
+    font-size: 0.92em;
+}
+
+/* Make the opening paragraph on the home page read as a software tagline. */
+.bd-article > p:first-of-type {
+    font-size: 1.08rem;
+    line-height: 1.65;
+}

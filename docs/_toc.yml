@@ -37,6 +37,15 @@ parts:
       - file: validation/ifpri
       - file: validation/camcge
 
+  - caption: API Reference
+    chapters:
+      - file: api/index
+      - file: api/engine
+      - file: api/samtools
+      - file: api/datasets
+      - file: api/model-definitions
+      - file: api/ifpri
+
   - caption: Developer Reference
     chapters:
       - file: developer/overview

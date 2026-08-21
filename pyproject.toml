@@ -52,6 +52,7 @@ dev = ["pytest>=7.0", "build>=1.0", "jupyter-book>=0.15,<2", "ruff>=0.8,<1"]
 
 [project.urls]
 Homepage = "https://github.com/miraflor/CGE-core"
+Documentation = "https://miraflor.github.io/CGE-core/"
 Repository = "https://github.com/miraflor/CGE-core"
 Changelog = "https://github.com/miraflor/CGE-core/blob/main/CHANGELOG.md"
 Issues = "https://github.com/miraflor/CGE-core/issues"

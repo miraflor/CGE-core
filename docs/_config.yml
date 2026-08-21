@@ -23,7 +23,17 @@ parse:
     - linkify
 
 sphinx:
+  extra_extensions:
+    - sphinx.ext.autodoc
+    - sphinx.ext.napoleon
   config:
+    autodoc_typehints: description
+    napoleon_google_docstring: true
+    napoleon_numpy_docstring: true
+    html_static_path:
+      - _static
+    html_css_files:
+      - custom.css
     mathjax3_config:
       tex:
         macros: {}
