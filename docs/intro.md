@@ -1,51 +1,45 @@
 # CGE-Core
 
-A Pyomo-based computable general equilibrium framework faithful to the
-textbook by Hosoe, Gasawa & Hashimoto (2010), with documentation in the
-style of [OG-Core](https://github.com/PSLmodels/OG-Core) (DeBacker &
-Evans).
+**A Python/Pyomo framework for computable general equilibrium modelling and reproducible policy simulation.**
 
-CGE-Core separates **model definition** (the algebraic structure, one
-Pyomo `AbstractModel` per model, every equation documented with its
-math and its GAMS Model Library equation name) from **model workflow**
-(calibration, reform, counterfactual solution, comparison — the
-`PyCGE` engine). Two reference models ship with the package:
+CGE-Core separates the **economic model** from the **simulation workflow**:
 
-| Model    | Hosoe ch. | Description                                          |
-| -------- | --------- | ---------------------------------------------------- |
-| `splcge` | 3–4       | Simple closed economy: 2 goods, 2 factors            |
-| `stdcge` | 5–6       | Open economy: Armington, CET, government, investment |
+**load data → calibrate → shock → solve → compare**
 
-Both are verified 1:1 ports of the GAMS Model Library files
-`splcge.gms` (SEQ=275) and `stdcge.gms` (SEQ=276), guarded by a
-regression suite that runs the real IPOPT solver in CI.
+It includes textbook CGE implementations and independent validation benchmarks built around Hosoe, the IFPRI Standard CGE model, and CAMCGE.
 
-CGE-Core also provides a separate clean-room implementation of the
-IFPRI Standard CGE test economy. It reads user-supplied IFPRI test data,
-reproduces the BASE benchmark and five policy simulations, and exposes
-pandas-based result extraction and comparison. The official IFPRI source
-package and `test.dat` are not distributed with CGE-Core.
+## Start here
 
-## Where to start
+| If you want to… | Go to |
+| --- | --- |
+| Install CGE-Core | {doc}`getting-started/installation` |
+| Run a model in a few minutes | {doc}`getting-started/quickstart` |
+| See a complete policy counterfactual | {doc}`getting-started/first-simulation` |
+| Understand the equations | {doc}`theory/overview` |
+| Compare the available models | {doc}`models/overview` |
+| Inspect validation evidence | {doc}`validation/overview` |
 
-- **{doc}`workflow`** — install, quick start, the engine API, and how
-  to load your own SAM.
-- **{doc}`IFPRI`** — set up the external IFPRI test data, solve BASE
-  and the five scenarios, extract results, and validate the replication.
-- **{doc}`MODEL`** — the standard model equation by equation: the
-  crosswalk to the GAMS source, the closure, degrees of freedom, and
-  calibration.
-- **{doc}`OG_CORE_CROSSWALK`** — if you know OG-Core, this maps its
-  concepts, files, and workflow onto CGE-Core.
+## What CGE-Core provides
 
-## Provenance
+- Pyomo-based CGE model definitions
+- calibration from benchmark data
+- baseline and counterfactual simulation
+- Social Accounting Matrix tooling
+- explicit model closure and Walras'-law handling
+- pandas-based comparison of simulation results
+- regression and replication benchmarks
 
-CGE-Core is a corrected and annotated fork of
-[PyCGE](https://github.com/juanfung/pycge) by Juan Fung and Charley
-Burtwistle (U.S. National Institute of Standards and Technology, 2017;
-public domain under 17 U.S.C. 105). The fork is maintained by James
-Matthew Miraflor, whose revisions were produced through an AI-assisted
-("vibecoded") workflow he directed and reviewed; **the underlying model
-port is not his original work**. Fork modifications are MIT-licensed.
-See the repository `README.md` for citation entries and `CITATION.cff`
-for machine-readable metadata.
+## Models and benchmarks
+
+| Component | Role |
+| --- | --- |
+| Simple CGE | Small closed-economy teaching model |
+| Standard CGE | Open-economy model with trade, government and investment |
+| IFPRI Standard CGE | Independently implemented benchmark and policy scenarios |
+| CAMCGE | Published-model replication benchmark |
+
+```{note}
+CGE-Core is an independent project. It is not affiliated with or endorsed by the Policy Simulation Library. The `*-Core` name follows the same general scientific-software naming convention.
+```
+
+For provenance, licensing and citation information, see the project repository and `CITATION.cff`.

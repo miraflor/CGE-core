@@ -4,29 +4,47 @@ root: intro
 parts:
   - caption: Getting Started
     chapters:
-      - file: getting-started/overview
-      - file: workflow
+      - file: getting-started/installation
+      - file: getting-started/quickstart
+      - file: getting-started/first-simulation
 
   - caption: Models
     chapters:
       - file: models/overview
-      - file: MODEL
-      - file: IFPRI
+      - file: models/simple
+      - file: models/standard
+      - file: models/ifpri
+      - file: models/camcge
 
   - caption: Theory
     chapters:
       - file: theory/overview
+      - file: theory/sam
+      - file: theory/production
+      - file: theory/final-demand
+      - file: theory/trade
+      - file: theory/closure
 
   - caption: Tutorials
     chapters:
-      - file: tutorials/overview
+      - file: tutorials/loading-sam
+      - file: tutorials/tariff-reform
 
   - caption: Validation
     chapters:
       - file: validation/overview
-      - file: GAMS_STDCGE_VALIDATION
+      - file: validation/hosoe-gams
+      - file: validation/ifpri
+      - file: validation/camcge
 
   - caption: Developer Reference
     chapters:
       - file: developer/overview
       - file: OG_CORE_CROSSWALK
+
+  - caption: Detailed Reference
+    chapters:
+      - file: workflow
+      - file: MODEL
+      - file: IFPRI
+      - file: GAMS_STDCGE_VALIDATION

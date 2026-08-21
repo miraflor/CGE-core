@@ -1,21 +1,12 @@
-# Models
+# Model Guide
 
-CGE-Core contains several model implementations and validation benchmarks.
+CGE-Core contains model implementations and validation benchmarks with different purposes.
 
-## Simple CGE
+| Model | Economy | Main use |
+| --- | --- | --- |
+| Simple CGE | Closed | Teaching and minimal regression tests |
+| Standard CGE | Open | General policy simulation |
+| IFPRI Standard CGE | Open, institutionally richer | Independent benchmark and scenario validation |
+| CAMCGE | Cameroon benchmark | Published-model replication |
 
-A small closed-economy model based on Hosoe, Gasawa and Hashimoto.
-
-## Standard CGE
-
-An open-economy model with Armington imports, CET exports, government,
-investment, and external trade.
-
-See {doc}`../MODEL`.
-
-## IFPRI Standard CGE
-
-CGE-Core also contains an independently implemented IFPRI Standard CGE
-test economy.
-
-See {doc}`../IFPRI`.
+The models are not interchangeable datasets placed into one universal equation system. Each represents a particular CGE specification and should be interpreted according to its own closure, accounts and equations.

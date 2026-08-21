@@ -1,14 +1,11 @@
 # Validation
 
-Validation is a core design principle of CGE-Core.
+CGE-Core uses multiple benchmark families rather than relying on a single example model.
 
-The project uses several independent benchmarks:
-
-| Benchmark | Purpose |
+| Benchmark | What it checks |
 | --- | --- |
-| Hosoe / GAMS | Equation and numerical regression checks |
-| IFPRI Standard CGE | Independent benchmark and policy simulations |
-| CAMCGE | Replication of a published CGE model |
+| Hosoe / GAMS | Equation correspondence and numerical regression |
+| IFPRI Standard CGE | Independent implementation, calibration and policy scenarios |
+| CAMCGE | Replication of a published CGE equilibrium and experiments |
 
-See {doc}`../GAMS_STDCGE_VALIDATION` for the current detailed GAMS
-validation documentation.
+These benchmarks test different things. Agreement with one model does not by itself establish agreement with another specification.
