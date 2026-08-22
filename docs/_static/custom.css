@@ -47,19 +47,20 @@ code {
     line-height: 1.65;
 }
 
-/* Mermaid: transparent canvas, responsive sizing, inherited foreground.
-   Using currentColor in the diagrams makes them follow light/dark mode. */
+/* Mermaid is used only for the two architecture diagrams. The page canvas
+   remains transparent. sphinxcontrib-mermaid 2.x handles light/dark theme
+   switching; grayscale keeps the visual treatment restrained. */
 .mermaid {
     background: transparent !important;
-    color: inherit;
     overflow-x: auto;
 }
 
 .mermaid svg {
     background: transparent !important;
-    color: inherit;
     display: block;
+    width: 100%;
     max-width: 100%;
     height: auto !important;
     margin: 1rem auto 1.5rem auto;
+    filter: grayscale(1);
 }

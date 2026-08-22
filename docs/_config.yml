@@ -40,3 +40,9 @@ sphinx:
     mathjax3_config:
       tex:
         macros: {}
+
+    # Mermaid 2.x detects the documentation theme and re-renders diagrams
+    # when the user switches between light and dark mode.
+    mermaid_light_theme: neutral
+    mermaid_dark_theme: dark
+    mermaid_version: "11.12.1"

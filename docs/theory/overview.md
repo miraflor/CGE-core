@@ -6,7 +6,6 @@ mutually dependent markets and institutions.
 ## Standard-model structure
 
 ```{mermaid}
-%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"transparent","secondaryColor":"transparent","tertiaryColor":"transparent","primaryTextColor":"currentColor","secondaryTextColor":"currentColor","tertiaryTextColor":"currentColor","primaryBorderColor":"currentColor","secondaryBorderColor":"currentColor","tertiaryBorderColor":"currentColor","lineColor":"currentColor","textColor":"currentColor","clusterBkg":"transparent","clusterBorder":"currentColor","edgeLabelBackground":"transparent"}}}%%
 flowchart LR
 
     SAM["Benchmark SAM"] --> CAL["Calibration"]
