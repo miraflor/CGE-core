@@ -81,8 +81,31 @@ for source in [DOCS / "MODEL.md", *sorted((DOCS / "theory").glob("*.md"))]:
             f"{source.relative_to(DOCS)} contains backslash math delimiters."
         )
 
-allowed_mermaid = {Path("architecture.md"), Path("theory/overview.md")}
-mermaid_found = set()
+allowed_mermaid = {
+    Path("architecture.md"): "diagrams/pycge-architecture.mmd",
+    Path("theory/overview.md"): "diagrams/standard-cge-theory.mmd",
+}
+
+for page, source_name in allowed_mermaid.items():
+    page_path = DOCS / page
+    source_path = DOCS / source_name
+
+    if not source_path.is_file():
+        errors.append(f"Missing Mermaid source file: {source_name}")
+        continue
+
+    page_text = page_path.read_text(encoding="utf-8")
+    directive = f"```{{mermaid}} {source_name}"
+    if directive not in page_text:
+        errors.append(
+            f"{page} must render its external Mermaid source {source_name}."
+        )
+
+    if "{download}`Download the .mmd source" not in page_text:
+        errors.append(f"{page} must provide a Mermaid source download.")
+
+    if f"```{{literalinclude}} /{source_name}" not in page_text:
+        errors.append(f"{page} must expose a copyable Mermaid source block.")
 
 for source in sorted(DOCS.rglob("*.md")):
     if "_build" in source.parts:
@@ -93,15 +116,9 @@ for source in sorted(DOCS.rglob("*.md")):
     if "{grid}" in text or "{grid-item-card}" in text:
         errors.append(f"{rel} contains Sphinx Design grid markup.")
 
-    if "{mermaid}" in text:
-        mermaid_found.add(rel)
-        if rel not in allowed_mermaid:
-            errors.append(
-                f"{rel} contains Mermaid outside approved diagram pages."
-            )
+    if "{mermaid}" in text and rel not in allowed_mermaid:
+        errors.append(f"{rel} contains Mermaid outside approved diagram pages.")
 
-    # Keep theme handling site-wide. Inline Mermaid init blocks are brittle
-    # and can prevent client-side rendering when Mermaid changes versions.
     if "%%{init:" in text:
         errors.append(
             f"{rel} contains an inline Mermaid init block; configure Mermaid "
@@ -120,25 +137,25 @@ sphinx_config = (
     else {}
 )
 
-if mermaid_found and "sphinxcontrib.mermaid" not in extra:
-    errors.append(
-        "Mermaid is present but sphinxcontrib.mermaid is not enabled."
-    )
+if "sphinxcontrib.mermaid" not in extra:
+    errors.append("sphinxcontrib.mermaid is not enabled.")
 
-if mermaid_found:
-    if sphinx_config.get("mermaid_light_theme") != "neutral":
-        errors.append("Set mermaid_light_theme to 'neutral'.")
-    if sphinx_config.get("mermaid_dark_theme") != "dark":
-        errors.append("Set mermaid_dark_theme to 'dark'.")
+if sphinx_config.get("mermaid_light_theme") != "neutral":
+    errors.append("Set mermaid_light_theme to 'neutral'.")
+if sphinx_config.get("mermaid_dark_theme") != "dark":
+    errors.append("Set mermaid_dark_theme to 'dark'.")
+if sphinx_config.get("mermaid_d3_zoom") is not True:
+    errors.append("Enable mermaid_d3_zoom for diagram zoom and pan.")
+if sphinx_config.get("mermaid_fullscreen") is not True:
+    errors.append("Enable mermaid_fullscreen for full-screen inspection.")
 
 if isinstance(config, dict) and config.get("logo"):
     errors.append("docs/_config.yml still configures a documentation logo.")
 
 pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-if mermaid_found and "sphinxcontrib-mermaid>=2.0.2,<3" not in pyproject:
+if "sphinxcontrib-mermaid>=2.0.2,<3" not in pyproject:
     errors.append(
-        "Documentation must use sphinxcontrib-mermaid>=2.0.2,<3 "
-        "for theme-aware rendering."
+        "Documentation must use sphinxcontrib-mermaid>=2.0.2,<3."
     )
 
 if errors:

@@ -47,12 +47,12 @@ code {
     line-height: 1.65;
 }
 
-/* Mermaid is used only for the two architecture diagrams. The page canvas
-   remains transparent. sphinxcontrib-mermaid 2.x handles light/dark theme
-   switching; grayscale keeps the visual treatment restrained. */
+/* Mermaid diagrams remain transparent and grayscale. sphinxcontrib-mermaid
+   handles light/dark rendering, D3 zoom/pan, and fullscreen viewing. */
 .mermaid {
     background: transparent !important;
-    overflow-x: auto;
+    overflow: hidden;
+    min-height: 360px;
 }
 
 .mermaid svg {
@@ -63,4 +63,11 @@ code {
     height: auto !important;
     margin: 1rem auto 1.5rem auto;
     filter: grayscale(1);
+}
+
+/* The standard-model diagram is denser than the software architecture.
+   Give it more initial viewing area before the reader zooms or goes full
+   screen. */
+#standard-cge-theory {
+    min-height: 560px;
 }

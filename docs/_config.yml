@@ -41,8 +41,16 @@ sphinx:
       tex:
         macros: {}
 
-    # Mermaid 2.x detects the documentation theme and re-renders diagrams
-    # when the user switches between light and dark mode.
+    # Mermaid 2.x follows the documentation theme and re-renders when the
+    # reader switches between light and dark mode.
     mermaid_light_theme: neutral
     mermaid_dark_theme: dark
     mermaid_version: "11.12.1"
+
+    # Make every Mermaid diagram inspectable rather than a static thumbnail.
+    # D3 zoom supports wheel/pinch zoom and drag-to-pan; fullscreen adds an
+    # explicit control in the upper-right corner of each diagram.
+    mermaid_d3_zoom: true
+    mermaid_fullscreen: true
+    mermaid_fullscreen_button: "⛶"
+    mermaid_fullscreen_button_opacity: 65
