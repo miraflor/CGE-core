@@ -81,30 +81,36 @@ for source in [DOCS / "MODEL.md", *sorted((DOCS / "theory").glob("*.md"))]:
             f"{source.relative_to(DOCS)} contains backslash math delimiters."
         )
 
-allowed_mermaid = {
+# The root-level Architecture page may use a relative source path, but the
+# nested Theory page must use a source-root absolute path. In Sphinx, relative
+# file references are resolved from the directory of the containing document.
+approved_mermaid = {
     Path("architecture.md"): "diagrams/pycge-architecture.mmd",
-    Path("theory/overview.md"): "diagrams/standard-cge-theory.mmd",
+    Path("theory/overview.md"): "/diagrams/standard-cge-theory.mmd",
 }
 
-for page, source_name in allowed_mermaid.items():
+for page, directive_source in approved_mermaid.items():
     page_path = DOCS / page
-    source_path = DOCS / source_name
+    source_path = DOCS / directive_source.lstrip("/")
 
     if not source_path.is_file():
-        errors.append(f"Missing Mermaid source file: {source_name}")
+        errors.append(
+            f"Missing Mermaid source file: {directive_source.lstrip('/')}"
+        )
         continue
 
     page_text = page_path.read_text(encoding="utf-8")
-    directive = f"```{{mermaid}} {source_name}"
+    directive = f"```{{mermaid}} {directive_source}"
     if directive not in page_text:
         errors.append(
-            f"{page} must render its external Mermaid source {source_name}."
+            f"{page} must render Mermaid from {directive_source}."
         )
 
-    if "{download}`Download the .mmd source" not in page_text:
+    source_root_path = "/" + directive_source.lstrip("/")
+    if f"{{download}}`Download the .mmd source <{source_root_path}>`" not in page_text:
         errors.append(f"{page} must provide a Mermaid source download.")
 
-    if f"```{{literalinclude}} /{source_name}" not in page_text:
+    if f"```{{literalinclude}} {source_root_path}" not in page_text:
         errors.append(f"{page} must expose a copyable Mermaid source block.")
 
 for source in sorted(DOCS.rglob("*.md")):
@@ -116,7 +122,7 @@ for source in sorted(DOCS.rglob("*.md")):
     if "{grid}" in text or "{grid-item-card}" in text:
         errors.append(f"{rel} contains Sphinx Design grid markup.")
 
-    if "{mermaid}" in text and rel not in allowed_mermaid:
+    if "{mermaid}" in text and rel not in approved_mermaid:
         errors.append(f"{rel} contains Mermaid outside approved diagram pages.")
 
     if "%%{init:" in text:
