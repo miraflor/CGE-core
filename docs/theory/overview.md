@@ -5,7 +5,7 @@ mutually dependent markets and institutions.
 
 ## Standard-model structure
 
-```{mermaid} diagrams/standard-cge-theory.mmd
+```{mermaid} /diagrams/standard-cge-theory.mmd
 :name: standard-cge-theory
 :alt: Standard CGE model structure showing production, institutions, trade, market clearing, balance of payments, closure, and general equilibrium.
 ```
