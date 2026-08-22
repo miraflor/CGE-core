@@ -1,59 +1,58 @@
 # Architecture
 
-CGE-Core separates **three layers** that are often mixed together in small CGE implementations:
+CGE-Core separates three things that are often mixed together in small CGE
+implementations:
 
-1. benchmark data and calibration;
-2. the economic equations; and
-3. the simulation workflow.
+1. **benchmark data and calibration**;
+2. **economic equations**; and
+3. **simulation workflow**.
 
-## System architecture
+## Core workflow
 
-```{mermaid}
-flowchart LR
-    SAM[SAM and benchmark data] --> DEF[Model definition]
-    DEF --> ENG[PyCGE workflow engine]
-    ENG --> SOLVER[IPOPT or cyipopt]
-    SOLVER --> BASE[Base equilibrium]
-
-    BASE --> SIM[Simulation copy]
-    SHOCK[Policy shock] --> SIM
-    SIM --> SOLVER2[IPOPT or cyipopt]
-    SOLVER2 --> CF[Counterfactual equilibrium]
-
-    BASE --> CMP[Comparison]
-    CF --> CMP
-
-    IFPRI[IFPRI subsystem] --> V[Independent validation]
-    CAM[CAMCGE replication] --> V
-    BASE --> V
+```text
+SAM / benchmark data
+        ↓
+Model definition
+        ↓
+PyCGE workflow engine
+        ↓
+Nonlinear solver
+        ↓
+Base equilibrium
+        ↓
+Simulation copy + policy shock
+        ↓
+Counterfactual equilibrium
+        ↓
+Base-versus-counterfactual comparison
 ```
 
-The Hosoe-style models use `PyCGE` as the workflow engine. The IFPRI subsystem is deliberately separate because it is an independently implemented model family with its own calibration, closure and scenario machinery. CAMCGE is kept at repository level as a replication benchmark.
+The Hosoe-style models use `PyCGE` as the workflow engine.
 
-## The standard model as economic blocks
+The IFPRI subsystem is deliberately separate because it is an independently
+implemented model family with its own calibration, closure, and scenario
+machinery.
 
-```{mermaid}
-flowchart TB
-    PROD[Production and factors] --> INC[Factor income]
-    INC --> HH[Household demand and saving]
-    TAX[Taxes] --> GOV[Government demand and saving]
-    HH --> DEM[Composite demand]
-    GOV --> DEM
-    INV[Investment demand] --> DEM
+CAMCGE is kept at repository level as a replication benchmark rather than as
+another installed core model.
 
-    PROD --> SUP[Domestic output]
-    TRADE[Armington imports and CET exports] --> DEM
-    SUP --> TRADE
+## The standard model in economic blocks
 
-    DEM --> MC[Market clearing]
-    TRADE --> BOP[Balance of payments]
-    MC --> EQ[General equilibrium]
-    BOP --> EQ
-```
+| Block | Main role |
+| --- | --- |
+| Production and factors | Firms combine factors and intermediate inputs |
+| Household | Factor income finances consumption, saving, and direct taxes |
+| Government | Tax revenue finances government demand and saving |
+| Investment | Domestic and foreign saving finance investment demand |
+| Armington trade | Imports and domestic goods form composite supply |
+| CET transformation | Domestic output is allocated between home and export markets |
+| Market clearing | Commodity and factor markets balance |
+| External balance | Export receipts and foreign saving finance imports |
+| Closure | A numeraire and independent equilibrium conditions complete the system |
 
-## Trace a concept from economics to code
+## Trace economics to implementation
 
-| Economic concept | Theory | Equation-level reference | Python/API |
+| Economic concept | Theory | Equation reference | Python/API |
 | --- | --- | --- | --- |
 | Production | {doc}`theory/production` | {doc}`MODEL` | {doc}`api/model-definitions` |
 | Final demand | {doc}`theory/final-demand` | {doc}`MODEL` | {doc}`api/model-definitions` |
@@ -62,4 +61,6 @@ flowchart TB
 | SAM loading | {doc}`theory/sam` | {doc}`workflow` | {doc}`api/samtools` |
 | Policy simulation | {doc}`getting-started/first-simulation` | {doc}`workflow` | {doc}`api/engine` |
 
-This crosswalk is intentional: the site should let a reader move from **economic meaning → equation → implementation** without having to infer where each piece lives.
+The intended reading path is:
+
+**economic meaning → equation → implementation**.

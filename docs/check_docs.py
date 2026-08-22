@@ -1,10 +1,5 @@
-"""Lightweight source-level checks for the CGE-Core Jupyter Book.
+"""Lightweight source-level checks for the CGE-Core Jupyter Book."""
 
-This does not replace Sphinx/Jupyter Book.  It catches easy-to-introduce
-documentation mistakes before the build is deployed: missing TOC files,
-unlisted Markdown pages, broken {doc} targets, and incompatible directive
-configuration.
-"""
 from __future__ import annotations
 
 import re
@@ -44,43 +39,30 @@ toc_data = yaml.safe_load(TOC.read_text(encoding="utf-8"))
 toc_files: set[str] = set()
 walk_toc(toc_data, toc_files)
 
-# 1. Every TOC target must exist.
+# Every TOC target must exist.
 for target in sorted(toc_files):
     path = DOCS / md_path(target)
     if not path.is_file():
-        errors.append(f"TOC target does not exist: {target} -> {path.relative_to(DOCS)}")
+        errors.append(
+            f"TOC target does not exist: {target} -> {path.relative_to(DOCS)}"
+        )
 
-# 2. Every documentation Markdown page should be in the TOC.
+# Every documentation Markdown page should be in the TOC.
 all_md = {
     str(p.relative_to(DOCS).with_suffix("")).replace("\\", "/")
     for p in DOCS.rglob("*.md")
     if "_build" not in p.parts
 }
-unlisted = sorted(all_md - toc_files)
-for target in unlisted:
+for target in sorted(all_md - toc_files):
     errors.append(f"Markdown page is not listed in _toc.yml: {target}.md")
 
-# 3. We use colon-fenced Sphinx Design cards; make sure parsing is enabled.
-config = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
-extensions = (
-    config.get("parse", {}).get("myst_enable_extensions", [])
-    if isinstance(config, dict)
-    else []
-)
-if "colon_fence" not in extensions:
-    errors.append(
-        "docs/intro.md uses ::::/::: directives but 'colon_fence' is not "
-        "enabled in parse.myst_enable_extensions."
-    )
-
-# 4. Check local {doc}`...` references.
+# Check local {doc}`...` references.
 doc_role = re.compile(r"\{doc\}`([^`]+)`")
 for source in sorted(DOCS.rglob("*.md")):
     if "_build" in source.parts:
         continue
     text = source.read_text(encoding="utf-8")
     for raw in doc_role.findall(text):
-        # Explicit-title form: {doc}`label <target>`
         target = raw
         if "<" in raw and raw.endswith(">"):
             target = raw.rsplit("<", 1)[1][:-1].strip()
@@ -88,12 +70,13 @@ for source in sorted(DOCS.rglob("*.md")):
         if "://" in target:
             continue
 
-        base = source.parent
-        candidate = (base / md_path(target)).resolve()
+        candidate = (source.parent / md_path(target)).resolve()
         try:
             candidate.relative_to(DOCS.resolve())
         except ValueError:
-            errors.append(f"{source.relative_to(DOCS)}: doc target escapes docs/: {raw}")
+            errors.append(
+                f"{source.relative_to(DOCS)}: doc target escapes docs/: {raw}"
+            )
             continue
 
         if not candidate.is_file():
@@ -102,7 +85,7 @@ for source in sorted(DOCS.rglob("*.md")):
                 f"(expected {candidate.relative_to(DOCS.resolve())})"
             )
 
-# 5. Guard against the delimiter mistake that previously broke theory math.
+# Guard against the delimiter mistake that previously broke theory math.
 for source in [
     DOCS / "MODEL.md",
     *sorted((DOCS / "theory").glob("*.md")),
@@ -111,8 +94,27 @@ for source in [
     if r"\[" in text or r"\]" in text or r"\(" in text or r"\)" in text:
         errors.append(
             f"{source.relative_to(DOCS)} contains backslash math delimiters; "
-            "use $...$ or a fenced {math} directive in this book."
+            "use $...$ or a fenced {math} directive."
         )
+
+# Keep the site deliberately simple: no Sphinx Design grids or Mermaid.
+for source in sorted(DOCS.rglob("*.md")):
+    if "_build" in source.parts:
+        continue
+    text = source.read_text(encoding="utf-8")
+    if "{grid}" in text or "{grid-item-card}" in text:
+        errors.append(
+            f"{source.relative_to(DOCS)} contains Sphinx Design grid markup."
+        )
+    if "{mermaid}" in text:
+        errors.append(
+            f"{source.relative_to(DOCS)} contains Mermaid markup."
+        )
+
+# The documentation should not configure a sidebar logo.
+config = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+if isinstance(config, dict) and config.get("logo"):
+    errors.append("docs/_config.yml still configures a documentation logo.")
 
 if errors:
     print("Documentation source checks FAILED:\n")

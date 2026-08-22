@@ -2,7 +2,6 @@
 title: CGE-Core
 author: James Matthew Miraflor (fork maintainer; original PyCGE by Fung & Burtwistle, NIST)
 copyright: "2026"
-logo: "_static/cge-core-logo.svg"
 
 execute:
   execute_notebooks: "off"
@@ -17,22 +16,15 @@ html:
   use_repository_button: true
 
 parse:
-  # IMPORTANT: defining this list overrides Jupyter Book's defaults.
-  # Keep the default extensions we use, plus amsmath for equation support.
   myst_enable_extensions:
     - amsmath
-    - colon_fence
     - dollarmath
     - linkify
-    - substitution
-    - tasklist
 
 sphinx:
   extra_extensions:
     - sphinx.ext.autodoc
     - sphinx.ext.napoleon
-    - sphinx_design
-    - sphinxcontrib.mermaid
   config:
     autodoc_typehints: description
     napoleon_google_docstring: true
