@@ -7,27 +7,76 @@ implementations:
 2. **economic equations**; and
 3. **simulation workflow**.
 
-## Core workflow
+## PyCGE software architecture
 
-```text
-SAM / benchmark data
-        ↓
-Model definition
-        ↓
-PyCGE workflow engine
-        ↓
-Nonlinear solver
-        ↓
-Base equilibrium
-        ↓
-Simulation copy + policy shock
-        ↓
-Counterfactual equilibrium
-        ↓
-Base-versus-counterfactual comparison
+```{mermaid}
+%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"transparent","secondaryColor":"transparent","tertiaryColor":"transparent","primaryTextColor":"currentColor","secondaryTextColor":"currentColor","tertiaryTextColor":"currentColor","primaryBorderColor":"currentColor","secondaryBorderColor":"currentColor","tertiaryBorderColor":"currentColor","lineColor":"currentColor","textColor":"currentColor","clusterBkg":"transparent","clusterBorder":"currentColor","edgeLabelBackground":"transparent"}}}%%
+flowchart TB
+
+    USER["User script / notebook"]
+
+    subgraph INPUT["Data layer"]
+        SAM["SAM / model CSV files"]
+        SAMTOOLS["samtools.build_dataset()"]
+        EXAMPLE["example_data()"]
+        DATA["Pyomo DataPortal"]
+    end
+
+    subgraph DEF["Economic model definition"]
+        SPL["SplModelDef"]
+        STD["StdModelDef"]
+        ABSTRACT["Pyomo AbstractModel<br/>sets · parameters · variables · equations"]
+    end
+
+    subgraph ENG["PyCGE workflow engine"]
+        LOAD["model_data()"]
+        INSTANCE["model_instance()"]
+        CLOSURE["Closure<br/>fix numeraire + drop redundant equation"]
+        CAL["model_calibrate()"]
+        CLONE["model_sim()"]
+        SHOCK["model_modify_sim()"]
+        SOLVE["model_solve()"]
+        COMPARE["model_compare() / model_postprocess()"]
+    end
+
+    subgraph RUN["Runtime state"]
+        BASE["BASE<br/>ConcreteModel"]
+        SIM["SIM<br/>deep copy of BASE"]
+        SOLVER["Nonlinear solver<br/>IPOPT / cyipopt"]
+        RESULTS["Results<br/>DataFrame / files"]
+    end
+
+    USER --> SAMTOOLS
+    USER --> EXAMPLE
+    USER --> SPL
+    USER --> STD
+    SAM --> SAMTOOLS
+    SAMTOOLS --> LOAD
+    EXAMPLE --> LOAD
+    LOAD --> DATA
+    SPL --> ABSTRACT
+    STD --> ABSTRACT
+    ABSTRACT --> INSTANCE
+    DATA --> INSTANCE
+    INSTANCE --> BASE
+    BASE --> CLOSURE
+    CLOSURE --> CAL
+    CAL --> SOLVER
+    SOLVER --> BASE
+    BASE --> CLONE
+    CLONE --> SIM
+    SHOCK --> SIM
+    SIM --> SOLVE
+    SOLVE --> SOLVER
+    SOLVER --> SIM
+    BASE --> COMPARE
+    SIM --> COMPARE
+    COMPARE --> RESULTS
 ```
 
-The Hosoe-style models use `PyCGE` as the workflow engine.
+The Hosoe-style models use `PyCGE` as the workflow engine. The economic
+algebra lives in the model-definition classes; the engine manages data
+loading, closure, calibration, simulation state, solution, and comparison.
 
 The IFPRI subsystem is deliberately separate because it is an independently
 implemented model family with its own calibration, closure, and scenario
