@@ -8,6 +8,9 @@
   }[ch]));
 
   const MODEL_ORDER = ['simple','standard','ifpri','camcge'];
+  const CGE_CORE_TARGET_VERSION = '0.5.0';
+  const CGE_CORE_REPOSITORY = 'https://github.com/miraflor/CGE-core';
+  const CONTROL_ROOM_URL = 'https://miraflor.github.io/CGE-core/control-room/';
 
   const MODELS = {
     simple: {
@@ -642,14 +645,14 @@
       el.addEventListener('change',()=>{
         const [group,index]=el.dataset.labelToggle.split(':');
         state.labels[state.model][group][Number(index)].active=el.checked;
-        saveLocal(); renderEconomy(); renderClosure(); renderScenario();
+        saveLocal(); renderEconomy(); renderDataSource(); renderClosure(); renderScenario();
       });
     });
     document.querySelectorAll('[data-label-remove]').forEach(el=>{
       el.addEventListener('click',()=>{
         const [group,index]=el.dataset.labelRemove.split(':');
         state.labels[state.model][group].splice(Number(index),1);
-        saveLocal(); renderEconomy(); renderClosure(); renderScenario();
+        saveLocal(); renderEconomy(); renderDataSource(); renderClosure(); renderScenario();
       });
     });
     document.querySelectorAll('[data-label-add]').forEach(el=>{
@@ -661,7 +664,7 @@
         if(!state.labels[state.model][group].some(x=>x.label===value)){
           state.labels[state.model][group].push({label:value,active:true});
         }
-        input.value=''; saveLocal(); renderEconomy(); renderClosure(); renderScenario();
+        input.value=''; saveLocal(); renderEconomy(); renderDataSource(); renderClosure(); renderScenario();
       });
     });
   }
@@ -672,6 +675,96 @@
     return Object.keys(m.labelGroups).every(k => activeLabels(k).length>0);
   }
 
+
+  function sameLabelSet(a,b){
+    if(a.length!==b.length) return false;
+    const left=[...a].sort(), right=[...b].sort();
+    return left.every((x,i)=>x===right[i]);
+  }
+
+  function dataLabelCompatibility(){
+    const m=model();
+    if(m.data.type!=='engine' || !m.editableLabels){
+      return {ok:true,status:'pass',title:'Data structure is model-defined',text:'This model does not expose editable browser labels for its benchmark data.'};
+    }
+
+    if(state.dataSource.mode==='custom'){
+      const hasPath=Boolean((state.dataSource.customPath||'').trim());
+      return {
+        ok:hasPath,
+        status:hasPath?'info':'warn',
+        title:hasPath?'Custom dataset selected':'Custom dataset path missing',
+        text:hasPath
+          ? 'The browser cannot inspect your local CSV directory. At runtime CGE-Core will validate its sets, SAM structure, and configured institution labels. Make sure the custom dataset uses the active labels shown here.'
+          : 'Enter a custom dataset directory before exporting the scenario.'
+      };
+    }
+
+    const mismatches=[];
+    Object.entries(m.labelGroups).forEach(([key,group])=>{
+      const active=activeLabels(key);
+      if(!sameLabelSet(active,group.defaults)){
+        mismatches.push(`${group.title}: active = [${active.join(', ')}], bundled = [${group.defaults.join(', ')}]`);
+      }
+    });
+
+    if(state.model==='standard'){
+      const defaults={hoh:'HOH',gov:'GOV',inv:'INV',ext:'EXT',idt:'IDT',trf:'TRF'};
+      const changed=Object.keys(defaults).filter(k=>(state.accounts?.[k]||defaults[k])!==defaults[k]);
+      if(changed.length){
+        mismatches.push(`Institution accounts changed: ${changed.map(k=>`${k}=${state.accounts[k]}`).join(', ')}; bundled stdcge uses HOH/GOV/INV/EXT/IDT/TRF.`);
+      }
+    }else if(state.model==='simple' && state.simpleAccount && state.simpleAccount!=='HOH'){
+      mismatches.push(`Household account changed to ${state.simpleAccount}; bundled splcge uses HOH.`);
+    }
+
+    if(mismatches.length){
+      return {
+        ok:false,
+        status:'error',
+        title:'Bundled data and active labels do not match',
+        text:`This configuration is guaranteed to fail before solving. ${mismatches.join(' ')} Reset the example labels/accounts or switch to a matching custom dataset.`
+      };
+    }
+
+    return {
+      ok:true,
+      status:'pass',
+      title:`Bundled ${m.data.example} labels match`,
+      text:`The active browser labels and institution names match the known bundled ${m.data.example} dataset.`
+    };
+  }
+
+  function shockTargetCompatibility(){
+    const m=model();
+    if(!m.controls) return {ok:true,status:'pass',title:'Scenario targets are repository-defined',text:'Named scenarios carry their own validated targets.'};
+    const stale=[];
+    state.stack.filter(x=>x.kind==='shock').forEach(item=>{
+      const c=m.controls.find(x=>x.id===item.control);
+      if(!c || c.target==='scalar') return;
+      const valid=targetValues(c.target);
+      if(!valid.includes(item.target)) stale.push(`${c.name}: ${item.target}`);
+    });
+    if(stale.length){
+      return {
+        ok:false,status:'error',title:'A queued shock targets an inactive label',
+        text:`Remove or edit: ${stale.join('; ')}. This can happen after labels are changed or reset.`
+      };
+    }
+    return {ok:true,status:'pass',title:'Queued shock targets are active',text:'Every indexed shock currently points to an active model label.'};
+  }
+
+  function dataCompatibilityHtml(){
+    const x=dataLabelCompatibility();
+    const klass=x.status==='error'?'error':x.status==='warn'?'warn':x.status==='info'?'info':'pass';
+    return `<div class="data-compat ${klass}"><strong>${esc(x.title)}</strong><p>${esc(x.text)}</p></div>`;
+  }
+
+  function refreshDataCompatibilityNotice(){
+    const current=document.querySelector('#dataSourcePanel .data-compat');
+    if(current) current.outerHTML=dataCompatibilityHtml();
+  }
+
   function resetLabels(){
     const m=model();
     if(!m.editableLabels) return;
@@ -679,7 +772,7 @@
     Object.entries(m.labelGroups).forEach(([key,g])=>{
       state.labels[state.model][key]=g.defaults.map(label=>({label,active:true}));
     });
-    saveLocal(); renderEconomy(); ensureClosureDefaults(); renderClosure(); renderScenario();
+    saveLocal(); renderEconomy(); renderDataSource(); ensureClosureDefaults(); renderClosure(); renderScenario();
   }
 
   function renderDataSource(){
@@ -695,6 +788,7 @@
             <strong>Custom dataset directory</strong><span>Use your SAM-derived CSV directory</span>
           </button>
         </div>
+        ${dataCompatibilityHtml()}
         <div class="form-grid">
           <div class="form-field ${state.dataSource.mode==='custom'?'':'hidden'}">
             <label for="customDataPath">Data directory</label>
@@ -710,7 +804,7 @@
       document.querySelectorAll('[data-data-mode]').forEach(btn=>btn.addEventListener('click',()=>{
         state.dataSource.mode=btn.dataset.dataMode;saveLocal();renderDataSource();generateAndRenderCode();
       }));
-      const path=$('customDataPath'); if(path) path.addEventListener('input',()=>{state.dataSource.customPath=path.value;saveLocal();generateAndRenderCode()});
+      const path=$('customDataPath'); if(path) path.addEventListener('input',()=>{state.dataSource.customPath=path.value;saveLocal();refreshDataCompatibilityNotice();generateAndRenderCode()});
       bindSolver();
       bindAccountMapping();
     }else if(m.data.type==='ifpri'){
@@ -774,10 +868,10 @@
   }
   function bindAccountMapping(){
     document.querySelectorAll('[data-account]').forEach(el=>el.addEventListener('input',()=>{
-      state.accounts[el.dataset.account]=el.value.trim();saveLocal();generateAndRenderCode();
+      state.accounts[el.dataset.account]=el.value.trim();saveLocal();refreshDataCompatibilityNotice();generateAndRenderCode();
     }));
     const s=document.querySelector('[data-simple-account]');
-    if(s) s.addEventListener('input',()=>{state.simpleAccount=s.value.trim();saveLocal();generateAndRenderCode()});
+    if(s) s.addEventListener('input',()=>{state.simpleAccount=s.value.trim();saveLocal();refreshDataCompatibilityNotice();generateAndRenderCode()});
   }
 
   function ensureClosureDefaults(){
@@ -807,12 +901,274 @@
     return v==='eqpf' ? (activeLabels('factors').includes('LAB')?'LAB':firstLabel('factors')) : firstLabel('goods');
   }
 
+
+  function closureContractPayload(){
+    const m=model();
+
+    if(state.model==='simple'){
+      const c=state.closure.simple||{};
+      return {
+        label:'Simple CGE · model-defined macro closure',
+        fixed:`Primary factor endowments FF[h] are exogenous (or fixed at the shocked SIM value). The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} anchors the nominal price scale.`,
+        adjusts:'Goods quantities, production, factor allocation, factor prices, and all non-numeraire prices adjust jointly until goods and factor markets clear.',
+        balance:`One declared redundant market equation, ${(c.walrasEq||'eqpf')}[${c.walrasIndex||''}], is deactivated under Walras’ law; the omitted market must still clear at the solution.`,
+        commitment:'Full-employment comparative static: aggregate factor supply is exogenous, so factor prices and sectoral allocation absorb factor-supply shocks.'
+      };
+    }
+
+    if(state.model==='standard'){
+      const c=state.closure.standard||{};
+      const eps = c.numeraireVar==='epsilon'
+        ? 'The exchange rate is being used as the nominal anchor; other domestic prices carry the relative-price adjustment.'
+        : 'The exchange rate epsilon remains endogenous and helps clear the external account.';
+      return {
+        label:'Standard CGE · model-defined macro closure',
+        fixed:`Foreign saving Sf is exogenous (or fixed at the shocked SIM value). Factor endowments FF[h] and world prices pWm/pWe are exogenous unless explicitly shocked. The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} fixes the nominal scale.`,
+        adjusts:`Government saving and private saving are endogenous. ${eps} Sector output, trade, factor demand, household demand, investment demand, and non-anchored prices adjust jointly.`,
+        balance:`One declared redundant market equation, ${(c.walrasEq||'eqpf')}[${c.walrasIndex||''}], is deactivated. The external account is solved with exogenous Sf; saving drives investment.`,
+        commitment:'A tariff or production-tax revenue loss is not automatically replaced by a compensating direct-tax increase. Under this model-defined closure, fiscal revenue changes can pass into government saving and economy-wide absorption.'
+      };
+    }
+
+    if(state.model==='camcge'){
+      return {
+        label:'CAMCGE · published replication closure',
+        fixed:'The replication fixes mps exactly as in the benchmark implementation.',
+        adjusts:'Published endogenous sector output, prices, trade, labor returns, investment, and fiscal variables adjust under the historical model structure.',
+        balance:'The caeq current-account equation is dropped as the redundant condition and the solved current-account gap is checked against zero.',
+        commitment:'This is a replication contract. Changing the closure would create a different model experiment and would no longer be a like-for-like reproduction of the published benchmark.'
+      };
+    }
+
+    return {
+      label:'IFPRI Standard · scenario-specific macro closure',
+      fixed:'BASE fixes CPI as numeraire together with the recorded foreign-saving, investment-scaling, government-demand-scaling, and factor-closure rules. Individual validated scenarios may deliberately switch part of that closure.',
+      adjusts:'The variable that absorbs fiscal or external imbalance depends on the selected scenario: government saving, direct-tax adjustment, CPI/DPI, exchange rate, or foreign saving can change roles.',
+      balance:'Each named scenario carries a tested closure template. TARCUT1 and TARCUT2 intentionally apply the same tariff reform under different fiscal adjustment mechanisms.',
+      commitment:'Closure is part of the policy experiment, not presentation metadata. Results from different closures should not be attributed to the shock alone.'
+    };
+  }
+
+  function ifpriScenarioContract(id){
+    const contracts={
+      TARCUT1:{
+        title:'TARCUT1 · tariff cut / flexible government saving',
+        text:'Tariffs are cut by 50%. Government saving GSAV is allowed to adjust; the revenue loss is not replaced by an endogenous direct-tax adjustment.'
+      },
+      TARCUT2:{
+        title:'TARCUT2 · tariff cut / fixed government saving',
+        text:'The same 50% tariff cut is imposed, but GSAV is held fixed and DTINS becomes endogenous to restore the fiscal balance. This is economically different from TARCUT1.'
+      },
+      FSAVINCR:{
+        title:'FSAVINCR · foreign saving +10%',
+        text:'Foreign saving is raised by 10%; the remaining validated BASE closure is retained. The external financing assumption is therefore itself part of the counterfactual.'
+      },
+      PWMINCR:{
+        title:'PWMINCR · world import prices +10%',
+        text:'World import prices rise by 10% under the validated BASE macro closure. Domestic prices, quantities, institutions, and trade absorb the shock.'
+      },
+      DEVAL:{
+        title:'DEVAL · 10% devaluation',
+        text:'EXR is fixed 10% above benchmark, DPI becomes the numeraire, and CPI plus FSAV are freed. This is a closure switch, not merely an exchange-rate parameter change.'
+      }
+    };
+    return contracts[id]||{title:id,text:'Validated IFPRI scenario with a repository-defined closure.'};
+  }
+
+  function preflightChecks(){
+    const m=model();
+    const checks=[];
+
+    if(m.closure.kind==='engine'){
+      const c=state.closure[state.model]||{};
+      const numReady=Boolean(c.numeraireVar && (c.numeraireVar==='epsilon' || c.numeraireIndex));
+      const walReady=Boolean(c.walrasEq && c.walrasIndex);
+
+      checks.push({
+        status:numReady?'pass':'warn',
+        title:numReady?'Price anchor specified':'Price anchor incomplete',
+        text:numReady
+          ? `Numeraire: ${c.numeraireVar}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex}]`}. This fixes only the nominal scale; it does not by itself define a different real macro closure.`
+          : 'Choose a valid numeraire and index.'
+      });
+      checks.push({
+        status:walReady?'pass':'warn',
+        title:walReady?'Walras redundancy specified':'Redundant equation incomplete',
+        text:walReady
+          ? `Drop: ${c.walrasEq}[${c.walrasIndex}]. CGE-Core accepts only model-declared redundant-market candidates.`
+          : 'Choose one declared redundant market equation and an active index.'
+      });
+      const closureCheck=closureAssessment();
+      checks.push({
+        status:closureCheck.status,
+        title:closureCheck.title,
+        text:closureCheck.text
+      });
+      checks.push({
+        status:(numReady&&walReady&&closureCheck.ready)?'pass':'warn',
+        title:(numReady&&walReady&&closureCheck.ready)?'Structural target: DOF = 0':'Structural DOF not ready',
+        text:(numReady&&walReady&&closureCheck.ready)
+          ? 'The browser can verify that the structural choices are complete and internally assessed. At runtime, model_drop_redundant() computes the actual Pyomo degrees of freedom and rolls the change back unless DOF is exactly 0.'
+          : 'The runtime DOF check cannot succeed until the structural choices are complete.'
+      });
+      checks.push({
+        status:hasRequiredLabels()?'pass':'error',
+        title:hasRequiredLabels()?'Active model labels available':'Model labels incomplete',
+        text:hasRequiredLabels()
+          ? 'The selected numeraire, dropped equation, and shock targets can resolve to active model indices.'
+          : 'At least one required goods/sector or factor label is missing.'
+      });
+      const dataCheck=dataLabelCompatibility();
+      checks.push({status:dataCheck.status,title:dataCheck.title,text:dataCheck.text});
+      const targetCheck=shockTargetCompatibility();
+      checks.push({status:targetCheck.status,title:targetCheck.title,text:targetCheck.text});
+      checks.push({
+        status:state.stack.length?'pass':'warn',
+        title:state.stack.length?'Counterfactual specified':'No counterfactual yet',
+        text:state.stack.length
+          ? `${state.stack.length} shock${state.stack.length>1?'s':''} will be solved jointly under this closure contract.`
+          : 'Add at least one shock before treating the generated script as a policy experiment.'
+      });
+    }else if(state.model==='ifpri'){
+      const ids=state.stack.filter(x=>x.kind==='scenario').map(x=>x.id);
+      checks.push({
+        status:ids.length?'pass':'warn',
+        title:ids.length?'Validated closure template selected':'No scenario closure selected',
+        text:ids.length
+          ? `${ids.length} validated scenario${ids.length>1?'s':''} queued. Each carries its own tested macro closure.`
+          : 'Queue a validated IFPRI scenario to make the counterfactual closure explicit.'
+      });
+      checks.push({
+        status:'info',
+        title:'DOF is not recomputed in the browser',
+        text:'The IFPRI subsystem uses its repository-defined validated equation and closure machinery. The browser reports the closure contract; the actual nonlinear model and solver diagnostics are evaluated only when the generated runner executes.'
+      });
+    }else{
+      checks.push({
+        status:'pass',
+        title:'Published structural closure selected',
+        text:'CAMCGE uses the benchmark closure: mps fixed and caeq dropped.'
+      });
+      checks.push({
+        status:'pass',
+        title:'Runtime DOF assertion included',
+        text:'build_base() returns the structural counts and the generated runner asserts dof_before = -1 and dof_after = 0 before experiments are executed.'
+      });
+      checks.push({
+        status:state.stack.length?'pass':'warn',
+        title:state.stack.length?'Published experiment queued':'No experiment queued',
+        text:state.stack.length
+          ? `${state.stack.length} published experiment${state.stack.length>1?'s':''} selected.`
+          : 'Queue at least one CAMCGE experiment.'
+      });
+    }
+
+    checks.push({
+      status:'info',
+      title:'Numerical convergence is a separate question',
+      text:'A structurally square model can still be numerically infeasible or difficult to solve. The Control Room therefore does not claim “solvable” before IPOPT/cyipopt actually runs.'
+    });
+    return checks;
+  }
+
+  function renderPreflight(){
+    const panel=$('preflightPanel'); if(!panel) return;
+    const contract=closureContractPayload();
+    const checks=preflightChecks();
+    const errors=checks.filter(x=>x.status==='error').length;
+    const warnings=checks.filter(x=>x.status==='warn').length;
+    const badge=errors
+      ? `<span class="preflight-badge error">${errors} blocking issue${errors>1?'s':''}</span>`
+      : warnings
+        ? `<span class="preflight-badge warn">${warnings} item${warnings>1?'s':''} to review</span>`
+        : `<span class="preflight-badge pass">Structurally ready</span>`;
+
+    const ifpriIds=state.model==='ifpri'
+      ? state.stack.filter(x=>x.kind==='scenario').map(x=>x.id)
+      : [];
+    const scenarioContracts=state.model==='ifpri'
+      ? `<div class="contract-title-row"><div><div class="mini-label">Queued scenario closures</div><h3>${ifpriIds.length?'What each run commits you to':'Queue a scenario to expose its closure'}</h3></div></div>
+         <div class="scenario-contracts">${
+           (ifpriIds.length?ifpriIds:['BASE']).map(id=>{
+             if(id==='BASE') return `<div class="scenario-contract"><div class="scenario-contract-head"><strong>BASE closure</strong><span class="fact">reference</span></div><p>CPI is the benchmark numeraire; the validated BASE macro closure is retained until a scenario explicitly changes it.</p></div>`;
+             const x=ifpriScenarioContract(id);
+             return `<div class="scenario-contract"><div class="scenario-contract-head"><strong>${esc(x.title)}</strong><span class="fact">closure-specific</span></div><p>${esc(x.text)}</p></div>`;
+           }).join('')
+         }</div>`
+      : '';
+
+    panel.innerHTML=`
+      <div class="preflight-head">
+        <div>
+          <div class="mini-label">Closure contract + structural preflight</div>
+          <h3>Before you generate a confident answer, state who is allowed to adjust</h3>
+          <p>The Control Room can check structural completeness here. The actual Pyomo model still performs the authoritative DOF check at runtime.</p>
+        </div>
+        ${badge}
+      </div>
+
+      <div class="contract-title-row">
+        <div><div class="mini-label">Economic closure</div><h3>${esc(contract.label)}</h3></div>
+      </div>
+      <div class="contract-grid">
+        <div class="contract-card"><strong>Fixed / exogenous</strong><p>${esc(contract.fixed)}</p></div>
+        <div class="contract-card"><strong>Allowed to adjust</strong><p>${esc(contract.adjusts)}</p></div>
+        <div class="contract-card"><strong>Balance rule</strong><p>${esc(contract.balance)}</p></div>
+        <div class="contract-card commitment"><strong>What this commits you to</strong><p>${esc(contract.commitment)}</p></div>
+      </div>
+
+      ${scenarioContracts}
+
+      <div class="contract-title-row">
+        <div><div class="mini-label">Structural checks</div><h3>Preflight</h3></div>
+      </div>
+      <div class="preflight-checks">
+        ${checks.map(x=>`<div class="preflight-check ${x.status}">
+          <div class="preflight-icon">${x.status==='pass'?'✓':x.status==='error'?'×':x.status==='warn'?'!':'i'}</div>
+          <div><strong>${esc(x.title)}</strong><p>${esc(x.text)}</p></div>
+        </div>`).join('')}
+      </div>
+
+      <div class="preflight-note"><strong>Important:</strong> “DOF = 0” means structurally square, not guaranteed numerical convergence. IPOPT/cyipopt still has to find a feasible optimum.</div>
+    `;
+  }
+
+  function closureCommentLines(){
+    const c=closureContractPayload();
+    return [
+      '# --- Closure contract ------------------------------------------------------',
+      `# ${c.label}`,
+      `# Fixed / exogenous: ${c.fixed}`,
+      `# Allowed to adjust: ${c.adjusts}`,
+      `# Balance rule: ${c.balance}`,
+      `# Economic commitment: ${c.commitment}`,
+      '# --------------------------------------------------------------------------'
+    ].join('\n');
+  }
+
+  function ifpriScenarioCommentLines(ids){
+    const lines=[
+      '# --- Scenario-specific closure record -------------------------------------',
+      '# IFPRI closure is part of the experiment, not merely display metadata.'
+    ];
+    if(!ids.length){
+      lines.push('# No scenario is queued yet.');
+    }else{
+      ids.forEach(id=>{
+        const x=ifpriScenarioContract(id);
+        lines.push(`# ${x.title}: ${x.text}`);
+      });
+    }
+    lines.push('# --------------------------------------------------------------------------');
+    return lines.join('\n');
+  }
+
   function renderClosure(){
     const m=model();
     if(m.closure.kind==='engine'){
       ensureClosureDefaults();
       const c=state.closure[state.model];
-      $('closureIntro').textContent='A CGE counterfactual is not defined by a shock alone. First pin down the price numeraire and remove one Walras-law redundant market equation.';
+      $('closureIntro').textContent='The macro closure is model-defined. These selectors set the structural price normalization and Walras-law redundancy; the contract below states what is actually fixed and what adjusts economically.';
       $('closurePanel').innerHTML=`
         <div class="closure-map">
           <div class="closure-box">
@@ -835,14 +1191,16 @@
             </div>
           </div>
         </div>
-        <div class="closure-summary">Target: a square BASE system with degrees of freedom = 0 before calibration.</div>
+        <div class="closure-summary">Structural target: a square BASE system with degrees of freedom = 0 before calibration.</div>
+        <div class="closure-contract-note"><strong>These dropdowns are not the whole macro closure.</strong> They choose the nominal price anchor and the redundant equation. Fiscal, external, saving-investment, and factor-market adjustment rules are defined by the model and summarized in the closure contract below.</div>
         <div class="closure-explainer">
           <div><strong>What the numeraire does</strong><p>A CGE model determines relative prices, not an absolute price level. Fixing one price simply chooses the unit in which all other prices are quoted. A sensible change of numeraire should not change real quantities or welfare.</p></div>
           <div><strong>Why one equation is dropped</strong><p>Walras’ law makes one market-clearing condition redundant once the rest of the system and the budget identities hold. Dropping it does not mean that market is ignored; CGE-Core checks the resulting system has zero degrees of freedom, and the omitted market should clear at the solution.</p></div>
         </div>`;
       bindClosureInputs();
-      $('closureStatus').textContent=closureReady()?'Closure ready':'Choose active labels';
-      $('closureStatus').className='status-pill '+(closureReady()?'ok':'warn');
+      const assessment=closureAssessment();
+      $('closureStatus').textContent=assessment.status==='pass'?'Closure ready':assessment.status==='error'?'Fix structural pair':assessment.status==='warn'?'Review structural pair':'Non-default pair';
+      $('closureStatus').className='status-pill '+(assessment.status==='pass'?'ok':assessment.status==='error'?'error':'warn');
     }else if(m.closure.kind==='ifpri'){
       $('closureIntro').textContent='IFPRI scenarios carry their macro closure with them. The closure changes when the economic experiment requires it.';
       $('closurePanel').innerHTML=`
@@ -900,11 +1258,70 @@
     el.innerHTML=items.map(x=>`<option value="${esc(x)}" ${x===current?'selected':''}>${esc(x)}</option>`).join('');
   }
 
+  function closureAssessment(){
+    const m=model();
+    if(m.closure.kind!=='engine'){
+      return {ready:true,status:'pass',title:'Closure is repository-defined',text:'This model uses a named or published closure template.'};
+    }
+    const c=state.closure[state.model];
+    if(!c) return {ready:false,status:'error',title:'Closure missing',text:'Choose the structural price anchor and redundant equation.'};
+
+    const numVarValid=m.closure.numeraireOptions.includes(c.numeraireVar);
+    const walEqValid=m.closure.walrasOptions.includes(c.walrasEq);
+    const numIndexValid=c.numeraireVar==='epsilon'
+      ? true
+      : (c.numeraireVar==='pf' ? activeLabels('factors') : activeLabels('goods')).includes(c.numeraireIndex);
+    const walIndexValid=(c.walrasEq==='eqpf' ? activeLabels('factors') : activeLabels('goods')).includes(c.walrasIndex);
+    if(!numVarValid || !walEqValid || !numIndexValid || !walIndexValid){
+      return {
+        ready:false,status:'error',title:'Structural pair is incomplete or stale',
+        text:'The selected numeraire or redundant-equation index is no longer an active model label. Re-select the structural pair.'
+      };
+    }
+
+    let expectedEq, expectedIndex;
+    if(state.model==='simple'){
+      expectedEq=c.numeraireVar==='pf'?'eqpf':'eqpx';
+      expectedIndex=c.numeraireIndex;
+    }else{
+      if(c.numeraireVar==='pf'){
+        expectedEq='eqpf'; expectedIndex=c.numeraireIndex;
+      }else if(c.numeraireVar==='epsilon'){
+        expectedEq=m.closure.defaultWalras; expectedIndex=defaultIndexForWalras(expectedEq);
+      }else{
+        expectedEq='eqpqd'; expectedIndex=c.numeraireIndex;
+      }
+    }
+
+    const aligned=c.walrasEq===expectedEq && c.walrasIndex===expectedIndex;
+    const defaultNumIndex=defaultIndexForNumeraire(m.closure.defaultNumeraire);
+    const defaultWalIndex=defaultIndexForWalras(m.closure.defaultWalras);
+    const documentedDefault=c.numeraireVar===m.closure.defaultNumeraire &&
+      c.numeraireIndex===defaultNumIndex && c.walrasEq===m.closure.defaultWalras &&
+      c.walrasIndex===defaultWalIndex;
+
+    if(!aligned){
+      return {
+        ready:true,status:'warn',title:'Noncanonical numeraire / Walras pairing',
+        text:`You fixed ${c.numeraireVar}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex}]`} but selected ${c.walrasEq}[${c.walrasIndex}] as the redundant market. CGE-Core permits any declared redundant market and will verify DOF transactionally at runtime, so this is not labelled invalid; however the Control Room recommends the aligned pair ${expectedEq}[${expectedIndex}] because it is easier to interpret and diagnose.`
+      };
+    }
+
+    if(!documentedDefault){
+      return {
+        ready:true,status:'info',title:'Coherent non-default normalization',
+        text:`The structural pair is internally aligned. The documented benchmark default is ${m.closure.defaultNumeraire}[${defaultNumIndex}] with ${m.closure.defaultWalras}[${defaultWalIndex}]. Runtime DOF and solver checks remain authoritative for this non-default choice.`
+      };
+    }
+
+    return {
+      ready:true,status:'pass',title:'Documented structural pair selected',
+      text:`${c.numeraireVar}[${c.numeraireIndex}] is fixed and ${c.walrasEq}[${c.walrasIndex}] is the redundant market equation used by the benchmark workflow.`
+    };
+  }
+
   function closureReady(){
-    const m=model(); if(m.closure.kind!=='engine') return true;
-    const c=state.closure[state.model]; if(!c) return false;
-    if(c.numeraireVar==='epsilon') return Boolean(c.walrasEq && c.walrasIndex);
-    return Boolean(c.numeraireVar && c.numeraireIndex && c.walrasEq && c.walrasIndex);
+    return closureAssessment().ready;
   }
 
   function renderScenario(){
@@ -956,6 +1373,7 @@
     const targetSelect=c.target==='scalar'?'':`
       <div class="form-field"><label>Target ${targetLabel(c.target)}</label>
       <select id="editTarget" class="select">${targets.map(x=>`<option ${preset?.target===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>`;
+    $('controlEditor').dataset.controlId=c.id;
     $('controlEditor').innerHTML=`
       <div class="editor-head"><div><div class="mini-label">Configure shock</div><h3>${esc(c.name)} · ${esc(c.symbol)}</h3></div>
       <button id="closeEditor" type="button" class="button small ghost">Close</button></div>
@@ -1046,8 +1464,8 @@
   }
 
   function selectedControlFromEditor(){
-    const title=$('controlEditor')?.querySelector('h3')?.textContent||'';
-    return (model().controls||[]).find(c=>title.startsWith(c.name+' ·')) || null;
+    const id=$('controlEditor')?.dataset.controlId||'';
+    return (model().controls||[]).find(c=>c.id===id) || null;
   }
 
   function applyQuick(q){
@@ -1128,7 +1546,79 @@
     $('outputsGrid').innerHTML=model().outputs.map(x=>`<div class="output-card"><strong>${esc(x[0])}</strong><p>${esc(x[1])}</p></div>`).join('');
   }
 
+  function dataSourceDescription(){
+    const m=model();
+    if(m.data.type==='engine'){
+      return state.dataSource.mode==='example'
+        ? `bundled example_data('${m.data.example}')`
+        : `custom dataset directory: ${state.dataSource.customPath||'UNSPECIFIED'}`;
+    }
+    if(m.data.type==='ifpri') return state.dataSource.ifpriPath.trim()?`external IFPRI source: ${state.dataSource.ifpriPath.trim()}`:'external IFPRI source: UNSPECIFIED';
+    return 'repository cam/data benchmark';
+  }
+
+  function provenancePayload(){
+    const m=model(), c=state.closure[state.model]||{};
+    let structural='repository-defined';
+    if(m.closure.kind==='engine'){
+      structural=`numeraire ${c.numeraireVar||m.closure.defaultNumeraire}${(c.numeraireVar||m.closure.defaultNumeraire)==='epsilon'?'':`[${c.numeraireIndex||defaultIndexForNumeraire(c.numeraireVar||m.closure.defaultNumeraire)}]`}; drop ${c.walrasEq||m.closure.defaultWalras}[${c.walrasIndex||defaultIndexForWalras(c.walrasEq||m.closure.defaultWalras)}]`;
+    }else if(state.model==='ifpri'){
+      const ids=state.stack.filter(x=>x.kind==='scenario').map(x=>x.id);
+      structural=`validated IFPRI scenario closure(s): ${ids.length?ids.join(', '):'none queued'}`;
+    }else if(state.model==='camcge'){
+      structural='published CAMCGE closure: mps fixed; caeq dropped';
+    }
+    return {
+      generator:'CGE-Core Control Room',
+      generated_at_utc:new Date().toISOString(),
+      target_cge_core_version:CGE_CORE_TARGET_VERSION,
+      repository:CGE_CORE_REPOSITORY,
+      control_room:CONTROL_ROOM_URL,
+      model_family:m.title,
+      data_source:dataSourceDescription(),
+      structural_closure:structural,
+      macro_closure:closureContractPayload().label
+    };
+  }
+
+  function provenanceHeader(){
+    const p=provenancePayload();
+    return [
+      '# =============================================================================',
+      '# Generated by: CGE-Core Control Room',
+      `# Generated (UTC): ${p.generated_at_utc}`,
+      `# Target CGE-Core version: ${p.target_cge_core_version}`,
+      `# Repository: ${p.repository}`,
+      `# Model family: ${p.model_family}`,
+      `# Data source: ${p.data_source}`,
+      `# Structural closure: ${p.structural_closure}`,
+      `# Macro closure contract: ${p.macro_closure}`,
+      '# Re-run only after reviewing these assumptions against the installed version.',
+      '# ============================================================================='
+    ].join('\n');
+  }
+
+  function hardGenerationBlockers(){
+    const blockers=[];
+    if(model().controls){
+      if(!hasRequiredLabels()) blockers.push('Required model labels are incomplete.');
+      const dataCheck=dataLabelCompatibility();
+      if(!dataCheck.ok) blockers.push(dataCheck.text);
+      const targetCheck=shockTargetCompatibility();
+      if(!targetCheck.ok) blockers.push(targetCheck.text);
+      const closureCheck=closureAssessment();
+      if(!closureCheck.ready) blockers.push(closureCheck.text);
+    }
+    return blockers;
+  }
+
+  function blockedCode(blockers){
+    return `${provenanceHeader()}\n\n# CONFIGURATION BLOCKED — this is intentionally not an executable scenario.\n${blockers.map((x,i)=>`# ${i+1}. ${x}`).join('\n')}\n# Fix the blocking issue(s) in the Control Room; runnable code will then be generated.`;
+  }
+
   function generateCode(){
+    const blockers=hardGenerationBlockers();
+    if(blockers.length) return blockedCode(blockers);
     if(state.model==='simple'||state.model==='standard') return engineCode();
     if(state.model==='ifpri') return ifpriCode();
     return camCode();
@@ -1217,7 +1707,11 @@ print(results.to_string(index=False))
 print("\\nObjective comparison:", results.attrs.get("objective", {}))
 `;
 
-    return `${imports.join('\n')}
+    return `${provenanceHeader()}
+
+${imports.join('\n')}
+
+${closureCommentLines()}
 
 ${solverCode()}
 ${dataLine}
@@ -1227,6 +1721,17 @@ cge = PyCGE(${ctor})
 cge.model_data(DATA_DIR)
 cge.model_instance(${py(c.numeraireVar||m.closure.defaultNumeraire)}, ${numIndex})
 cge.model_drop_redundant(${py(c.walrasEq||m.closure.defaultWalras)}, ${walIndex})
+
+# Authoritative runtime structural preflight.
+# model_drop_redundant() already rolls back and raises WorkflowError unless
+# the resulting Pyomo system is square; this explicit assertion makes the
+# result visible to a first-time user before the nonlinear solve begins.
+dof = cge.degrees_of_freedom(cge.base)
+assert dof == 0, f"Structural preflight failed: degrees of freedom = {dof}"
+print("Structural preflight OK: degrees of freedom = 0")
+print("Numeraire:", cge.numeraire)
+print("Dropped redundant equation:", ${py(c.walrasEq||m.closure.defaultWalras)}, ${walIndex})
+
 cge.model_calibrate(solver)
 
 # --- Create SIM and apply the counterfactual ------------------------------
@@ -1242,8 +1747,13 @@ ${results}`;
       ? `os.environ["IFPRI_SOURCE_DIR"] = ${py(state.dataSource.ifpriPath.trim())}`
       : `# os.environ["IFPRI_SOURCE_DIR"] = "C:\\\\path\\\\to\\\\ifpri-test-folder"`;
     const solver=state.dataSource.solver==='auto'?'None':py(state.dataSource.solver);
-    return `import os
+    return `${provenanceHeader()}
+
+import os
 from pathlib import Path
+
+${closureCommentLines()}
+${ifpriScenarioCommentLines(ids)}
 
 from cge_core.ifpri import (
     load_ifpri_test_data,
@@ -1268,6 +1778,7 @@ base_report = solve_ifpri_base(base_model, solver=${solver})
 
 # Selected validated scenarios
 scenario_names = ${pyList(ids)}
+print("IFPRI scenario closures:", scenario_names)
 results = build_and_solve_ifpri_scenarios(
     dataset,
     scenarios=scenario_names,
@@ -1297,8 +1808,12 @@ print(changes.to_string(index=False))
       return `metrics["experiment_${n}"] = experiment_${n}(cge, base, solver)`;
     });
     if(!calls.length) calls.push('# Add at least one published experiment in the Control Room.');
-    return `import json
+    return `${provenanceHeader()}
+
+import json
 from pathlib import Path
+
+${closureCommentLines()}
 
 from cam.replicate_base import build_base
 from cam.replicate_experiments import (
@@ -1312,6 +1827,8 @@ solver = ${py(solver)}
 
 cge, dof_before, dof_after = build_base(solver)
 assert dof_before == -1 and dof_after == 0
+print(f"Structural preflight OK: CAMCGE DOF {dof_before} -> {dof_after}")
+print("Closure: mps fixed; caeq dropped")
 base = snapshot(cge.base)
 
 metrics = {}
@@ -1336,6 +1853,7 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
   }
 
   function generateAndRenderCode(){
+    renderPreflight();
     const code=generateCode();
     $('codePreview').querySelector('code').textContent=code;
     renderReadiness(code);
@@ -1344,15 +1862,22 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
 
   function renderReadiness(){
     const m=model();
-    let ready=true, msg='Ready to export';
-    if(m.controls){
-      if(!hasRequiredLabels()){ready=false;msg='Fix active labels'}
-      else if(!closureReady()){ready=false;msg='Fix closure'}
-      else if(!state.stack.length){ready=false;msg='Add a shock'}
-    }else if(!state.stack.length){ready=false;msg='Queue a run'}
+    const blockers=hardGenerationBlockers();
+    let ready=blockers.length===0, msg=ready?'Ready to export':'Configuration blocked';
+    if(ready && m.controls && !state.stack.length){ready=false;msg='Add a shock'}
+    else if(ready && !m.controls && !state.stack.length){ready=false;msg='Queue a run'}
+
+    const closureCheck=closureAssessment();
     $('readyStatus').textContent=msg;
-    $('readyStatus').className='status-pill '+(ready?'ok':'warn');
-    $('scriptCaption').textContent=ready?'Executable scenario scaffold':'Script scaffold — finish the highlighted steps above';
+    $('readyStatus').className='status-pill '+(blockers.length?'error':ready?'ok':'warn');
+    $('scriptCaption').textContent=blockers.length
+      ? 'Runnable export blocked — fix the preflight error(s) above'
+      : ready
+        ? (closureCheck.status==='warn'?'Executable scenario — noncanonical closure pairing flagged':'Closure-recorded scenario with runtime DOF preflight')
+        : 'Script scaffold — finish the highlighted steps above';
+
+    $('copyCodeBtn').disabled=!ready;
+    $('downloadPyBtn').disabled=!ready;
   }
 
   function renderRunInstructions(){
@@ -1378,9 +1903,14 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
 
   function exportJson(){
     return JSON.stringify({
+      provenance:provenancePayload(),
       model:state.model,
       dataSource:state.dataSource,
+      dataCompatibility:dataLabelCompatibility(),
       closure:state.closure[state.model]||null,
+      closureContract:closureContractPayload(),
+      closureAssessment:closureAssessment(),
+      preflight:preflightChecks(),
       labels:state.labels[state.model]||null,
       scenarioStack:state.stack
     },null,2);
@@ -1400,6 +1930,19 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
       download(name,$('codePreview').textContent,'text/x-python');
     });
     $('downloadJsonBtn').addEventListener('click',()=>download('cge_scenario.json',exportJson(),'application/json'));
+  }
+
+  function inheritedDocsTheme(){
+    try{
+      if(!document.referrer) return '';
+      const ref=new URL(document.referrer);
+      const openedFromSameSite=ref.origin===window.location.origin && !ref.pathname.includes('/control-room/');
+      if(!openedFromSameSite) return '';
+      const mode=localStorage.getItem('mode');
+      if(mode==='auto') return 'system';
+      if(mode==='light'||mode==='dark') return mode;
+    }catch(e){}
+    return '';
   }
 
   function applyTheme(theme){
@@ -1423,7 +1966,8 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
 
   function init(){
     loadLocal();
-    let theme='light';try{theme=localStorage.getItem('cge-control-room-theme')||'light'}catch(e){}
+    let theme='light';
+    try{theme=inheritedDocsTheme()||localStorage.getItem('cge-control-room-theme')||'light'}catch(e){}
     applyTheme(theme);
     bindStatic();
     ensureClosureDefaults();

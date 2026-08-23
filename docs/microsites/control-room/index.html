@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Interactive CGE-Core control room for configuring models, closures, shocks, and executable scenario scripts.">
   <title>CGE-Core Control Room</title>
+  <script>
+    (() => {
+      try {
+        let theme = localStorage.getItem('cge-control-room-theme') || 'light';
+        if (document.referrer) {
+          const ref = new URL(document.referrer);
+          if (ref.origin === location.origin && !ref.pathname.includes('/control-room/')) {
+            const mode = localStorage.getItem('mode');
+            if (mode === 'auto') theme = 'system';
+            else if (mode === 'light' || mode === 'dark') theme = mode;
+          }
+        }
+        if (!['light', 'dark', 'system'].includes(theme)) theme = 'light';
+        document.documentElement.dataset.theme = theme;
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -35,7 +52,7 @@
       <a href="#modelStep"><span>1</span>Model</a>
       <a href="#walkthroughStep"><span>2</span>Read the model</a>
       <a href="#economyStep"><span>3</span>Economy & data</a>
-      <a href="#closureStep"><span>4</span>Closure</a>
+      <a href="#closureStep"><span>4</span>Closure + preflight</a>
       <a href="#scenarioStep"><span>5</span>Scenario</a>
       <a href="#scriptStep"><span>6</span>Run script</a>
     </nav>
@@ -138,12 +155,13 @@
       <div class="section-heading">
         <div>
           <div class="step-label">Step 4</div>
-          <h2>Choose the closure</h2>
+          <h2>Define the closure contract</h2>
           <p id="closureIntro"></p>
         </div>
         <div id="closureStatus" class="status-pill"></div>
       </div>
       <div id="closurePanel" class="card panel"></div>
+      <div id="preflightPanel" class="card panel preflight-panel" aria-live="polite"></div>
     </section>
 
     <section id="scenarioStep" class="section">
@@ -184,7 +202,7 @@
         <div>
           <div class="step-label">Step 6</div>
           <h2>Generated run script</h2>
-          <p>The stack now becomes concrete CGE-Core code you can save and run from the repository.</p>
+          <p>The stack now becomes concrete CGE-Core code, including an explicit closure record and runtime structural preflight.</p>
         </div>
         <div id="readyStatus" class="status-pill"></div>
       </div>

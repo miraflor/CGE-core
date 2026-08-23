@@ -366,3 +366,80 @@ pre{
 @media(max-width:650px){
   .notation-grid,.variable-grid{grid-template-columns:1fr}
 }
+
+
+/* Closure contract + structural preflight */
+.preflight-panel{margin-top:14px}
+.preflight-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.preflight-head p{color:var(--muted);max-width:780px;font-size:.86rem}
+.preflight-badge{
+  flex:0 0 auto;padding:6px 10px;border-radius:999px;font-size:.76rem;font-weight:900;
+  border:1px solid transparent
+}
+.preflight-badge.pass{color:var(--green);background:var(--green-soft)}
+.preflight-badge.warn{color:var(--gold);background:var(--gold-soft)}
+.preflight-badge.info{color:var(--blue);background:var(--blue-soft)}
+.contract-title-row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:16px}
+.contract-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:10px}
+.contract-card{border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--panel-soft)}
+.contract-card strong{display:block;font-size:.82rem;margin-bottom:4px}
+.contract-card p{font-size:.78rem;line-height:1.48;color:var(--muted);margin:0}
+.contract-card.commitment{background:var(--blue-soft)}
+.contract-card.commitment p{color:var(--text)}
+.preflight-checks{display:grid;gap:7px;margin-top:14px}
+.preflight-check{
+  display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:start;
+  padding:9px 10px;border:1px solid var(--line);border-radius:11px
+}
+.preflight-icon{
+  width:25px;height:25px;border-radius:50%;display:grid;place-items:center;
+  font-size:.76rem;font-weight:950
+}
+.preflight-check.pass .preflight-icon{color:var(--green);background:var(--green-soft)}
+.preflight-check.warn .preflight-icon{color:var(--gold);background:var(--gold-soft)}
+.preflight-check.info .preflight-icon{color:var(--blue);background:var(--blue-soft)}
+.preflight-check strong{display:block;font-size:.82rem}
+.preflight-check p{margin:2px 0 0;color:var(--muted);font-size:.77rem;line-height:1.45}
+.preflight-note{
+  margin-top:12px;padding:10px 11px;border-left:3px solid var(--gold);
+  border-radius:8px;background:var(--gold-soft);font-size:.8rem;line-height:1.5
+}
+.closure-contract-note{
+  margin-top:12px;padding:10px 11px;border:1px solid var(--line);
+  border-radius:11px;background:var(--panel-soft);font-size:.8rem;line-height:1.5
+}
+.closure-contract-note strong{color:var(--text)}
+.scenario-contracts{display:grid;gap:8px;margin-top:10px}
+.scenario-contract{
+  border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--panel-soft)
+}
+.scenario-contract-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.scenario-contract-head strong{font-size:.84rem}
+.scenario-contract p{margin:5px 0 0;color:var(--muted);font-size:.78rem;line-height:1.48}
+.runtime-proof{
+  margin-top:10px;padding:10px 11px;border-radius:11px;background:var(--green-soft);
+  color:var(--green);font-size:.8rem;font-weight:800
+}
+@media(max-width:980px){
+  .contract-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .preflight-head,.contract-title-row{flex-direction:column;align-items:flex-start}
+  .contract-grid{grid-template-columns:1fr}
+}
+
+
+/* Hard preflight failures and data compatibility */
+.status-pill.error{color:var(--rose);background:var(--rose-soft);border-color:transparent}
+.preflight-badge.error{color:var(--rose);background:var(--rose-soft)}
+.preflight-check.error{border-color:color-mix(in srgb,var(--rose) 35%,var(--line))}
+.preflight-check.error .preflight-icon{color:var(--rose);background:var(--rose-soft)}
+.data-compat{margin-top:10px;padding:10px 11px;border:1px solid var(--line);border-radius:11px}
+.data-compat strong{display:block;font-size:.82rem}
+.data-compat p{margin:3px 0 0;font-size:.77rem;line-height:1.48;color:var(--muted)}
+.data-compat.pass{background:var(--green-soft);border-color:transparent}
+.data-compat.info{background:var(--blue-soft);border-color:transparent}
+.data-compat.warn{background:var(--gold-soft);border-color:transparent}
+.data-compat.error{background:var(--rose-soft);border-color:color-mix(in srgb,var(--rose) 35%,transparent)}
+.data-compat.error strong{color:var(--rose)}
+.button:disabled{opacity:.45;cursor:not-allowed;transform:none!important;border-color:var(--line)!important}
