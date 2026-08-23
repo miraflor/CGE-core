@@ -15,6 +15,14 @@ Cameroon model. Named to align with the Policy Simulation Library convention
 > endorsed by the [Policy Simulation Library](https://pslmodels.org/); it
 > merely follows the `*-Core` naming pattern.
 
+## Interactive Control Room
+
+**[Launch the CGE-Core Control Room →](https://miraflor.github.io/CGE-core/control-room/)**
+
+Explore CGE-Core visually: compare the model families, inspect closures and
+policy shocks, and generate runnable scenario code directly in the browser.
+No installation is required.
+
 ---
 
 ## Provenance and license
@@ -310,7 +318,6 @@ that a fully relabelled SAM calibrates to the identical equilibrium.
 - Only model-declared closure anchors can be fixed through `model_instance`; the Hosoe models declare price numeraires, while CAMCGE declares its published fixed savings-rate closure. Shock values must be finite numeric scalars, failed edits/undo operations roll back completely, and the selected closure anchor cannot be accidentally unfixed.
 - Changing the SAM or benchmark-only `*0` inputs in-place is blocked on BASE and SIM; factor endowments remain valid SIM shocks.
 - Multidimensional variables are exported as valid long-form CSV. Dill files are for trusted inputs only.
-
 
 ---
 
