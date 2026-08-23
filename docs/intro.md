@@ -8,6 +8,7 @@ CGE-Core separates the **economic model** from the **simulation workflow** and m
 
 ## Start here
 
+- <a href="control-room/" target="_blank" rel="noopener"><strong>Interactive Control Room ↗</strong></a> — explore the models, configure closures and shocks, and generate runnable CGE-Core scenario code.
 - **{doc}`getting-started/quickstart`** — run the standard model and a policy counterfactual.
 - **{doc}`architecture`** — see how the data, equations, solver, and simulation workflow fit together.
 - **{doc}`theory/overview`** — understand the economic structure and equations.

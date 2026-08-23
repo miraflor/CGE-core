@@ -33,6 +33,8 @@ sphinx:
     html_baseurl: "https://miraflor.github.io/CGE-core/"
     html_static_path:
       - _static
+    html_extra_path:
+      - microsites
     html_css_files:
       - custom.css
     html_meta:
