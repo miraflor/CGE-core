@@ -30,6 +30,7 @@ parts:
   - caption: Tutorials
     chapters:
       - file: tutorials/overview
+      - file: tutorials/colab-notebooks
       - file: tutorials/loading-sam
       - file: tutorials/tariff-reform
 
