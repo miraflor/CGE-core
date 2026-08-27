@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Simple CGE Example (Hosoe Ch. 3-4) -- closed economy base calibration.
+Simple CGE Example (Hosoe Ch. 3-4) -- closed economy benchmark solve.
 
-Demonstrates the minimal CGE-Core workflow:
-    load -> instance -> drop redundant eqn -> calibrate -> inspect
+Demonstrates the canonical CGE-Core v0.6 workflow:
+    configure -> solve benchmark -> inspect values
 
 Requires a local NLP solver ('ipopt' executable or 'cyipopt'); the
 example detects whichever is available.
@@ -13,13 +13,12 @@ Run with:
 """
 import logging
 
-from pyomo.environ import value
-
-from cge_core import PyCGE, example_data
+from cge_core import CGE, example_data
 from cge_core.examples._solver import detect_solver
-from cge_core.examples.splcge_model_def import SplModelDef
+from cge_core.models import SplCGE
 
-DATA_DIR = example_data('splcge')
+DATA_DIR = example_data("splcge")
+GOODS = ("BRD", "MLK")
 
 
 def main(solver=None):
@@ -27,26 +26,21 @@ def main(solver=None):
     solver = solver or detect_solver()
     print("Using solver: %s" % solver)
 
-    cge = PyCGE(SplModelDef())
-    cge.model_data(DATA_DIR)
+    model = CGE(model=SplCGE(), data=DATA_DIR)
+    benchmark = model.solve_benchmark(
+        numeraire=("pf", "LAB"),
+        redundant=("eqpf", "LAB"),
+        solver=solver,
+    )
 
-    # Fix the numeraire.
-    cge.model_instance('pf', 'LAB')
-
-    # Drop one redundant market-clearing equation (Walras' law) -> DOF = 0.
-    # See PyCGE.model_drop_redundant for the full explanation.
-    cge.model_drop_redundant('eqpf', 'LAB')
-
-    cge.model_calibrate(solver)
-
-    print("\n=== BASE EQUILIBRIUM ===")
-    for i in cge.base.i:
-        print("  Z[%s]  = %7.4f" % (i, value(cge.base.Z[i])))
-    for i in cge.base.i:
-        print("  X[%s]  = %7.4f" % (i, value(cge.base.X[i])))
-    print("  Utility = %7.4f" % value(cge.base.obj))
-    return cge
+    print("\n=== BENCHMARK EQUILIBRIUM ===")
+    for good in GOODS:
+        print("  Z[%s]  = %7.4f" % (good, benchmark.value("Z", good)))
+    for good in GOODS:
+        print("  X[%s]  = %7.4f" % (good, benchmark.value("X", good)))
+    print("  Utility = %7.4f" % benchmark.objective)
+    return benchmark
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
