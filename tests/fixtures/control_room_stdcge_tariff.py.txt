@@ -1,0 +1,15 @@
+# Frozen v0.5-style Control Room generated-code fixture.
+# Purpose: preserve one deterministic outward executable surface while the
+# v0.6 facade is developed in parallel.  This fixture is intentionally legacy
+# code and should not be migrated until the outward-surface phase.
+from cge_core import PyCGE, example_data
+from cge_core.examples.stdcge_model_def import StdModelDef
+
+cge = PyCGE(StdModelDef())
+cge.model_data(example_data("stdcge"))
+cge.model_instance("pf", "LAB")
+cge.model_drop_redundant("eqpf", "LAB")
+cge.model_calibrate()
+cge.model_sim()
+cge.model_modify_sim("taum", "BRD", 0)
+cge.model_solve()

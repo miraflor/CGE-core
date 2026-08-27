@@ -1,0 +1,31 @@
+{
+  "schema": "cge-core-validation-baseline-v1",
+  "frozen_commit": "d4dfa7e881339c2101af17caf617dedeb23a7fd8",
+  "policy": {
+    "behavior_preserving_refactor": true,
+    "do_not_loosen_scientific_tolerances_to_pass_refactor": true,
+    "separate_nonlinear_solve_parity_rtol": 1e-9,
+    "separate_nonlinear_solve_parity_atol": 1e-9
+  },
+  "families": {
+    "hosoe_splcge": {
+      "canonical_tests": ["tests/test_splcge.py"]
+    },
+    "hosoe_stdcge": {
+      "canonical_tests": ["tests/test_stdcge.py"],
+      "base_level_abs_tolerance": 0.0001,
+      "walras_abs_tolerance": 1e-6
+    },
+    "ifpri_public_synthetic": {
+      "canonical_tests": ["tests/ifpri/test_public_synthetic.py"],
+      "base_residual_abs_tolerance": 1e-7,
+      "scenario_residual_abs_tolerance": 1e-6
+    },
+    "camcge_replication": {
+      "canonical_tests": ["tests/cam/test_replication.py", "cam/replicate_base.py"],
+      "published_level_abs_tolerance": 0.005,
+      "objective_abs_tolerance": 0.001,
+      "dropped_current_account_abs_tolerance": 1e-8
+    }
+  }
+}
