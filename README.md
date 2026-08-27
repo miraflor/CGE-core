@@ -64,30 +64,45 @@ tutorials, validation, and the Python API.
 
 ## What CGE-Core does
 
-CGE-Core separates **economic model definition** from **simulation workflow**.
+CGE-Core separates the **economic model definition**, the solved **benchmark
+equilibrium**, and mutable **counterfactual scenarios**.
 
 ```text
-ModelDef ──▶ PyCGE ──▶ model_data()
-                          │
-                    model_instance()        ← fix numeraire / closure anchor
-                          │
-                  model_drop_redundant()    ← Walras' law
-                          │
-                    model_calibrate()       ← solve benchmark
-                          │
-                      model_sim()           ← clone base
-                          │
-                   model_modify_sim()       ← apply shock
-                          │
-                     model_solve()          ← solve counterfactual
-                          │
-                    model_compare()         ← report changes
+SplCGE / StdCGE + data
+          │
+          ▼
+         CGE
+          │  solve_benchmark(...)
+          ▼
+     Equilibrium
+          │  scenario(...)
+          ▼
+       Scenario
+          │  set(...)
+          │  solve()
+          ▼
+        Result
+          │  value(...)
+          └  compare(...)
 ```
 
-A CGE policy experiment is therefore not a partial-equilibrium price change or
-a manually imposed output response. A shock changes an exogenous policy,
-endowment, or external assumption; the model then solves for a new internally
-consistent equilibrium.
+`CGE` is a stateless blueprint. Each benchmark solve owns its own calibrated
+backend, and every `Scenario` owns isolated mutable state. A solved `Result` is
+an immutable numerical snapshot, so later scenario changes cannot rewrite an
+earlier result.
+
+The v0.6 façade currently covers the engine-backed Hosoe models (`SplCGE` and
+`StdCGE`). The validated IFPRI subsystem keeps its dedicated API, and CAMCGE
+remains a repository-level replication benchmark.
+
+A CGE policy experiment is not a partial-equilibrium price change or a manually
+imposed output response. A shock changes an exogenous policy, endowment, or
+external assumption; the model then solves for a new internally consistent
+equilibrium.
+
+Under the façade, CGE-Core continues to reuse the validated `PyCGE` engine.
+Advanced users may still access that workflow directly, but new user-facing
+code should prefer the `CGE` interface below.
 
 ---
 
@@ -125,33 +140,42 @@ The bundled Hosoe examples auto-detect an available supported local solver.
 ## Quick start
 
 ```python
-from cge_core import PyCGE, example_data
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core import CGE, example_data
+from cge_core.models import StdCGE
 
-cge = PyCGE(StdModelDef())
-cge.model_data(example_data("stdcge"))
+model = CGE(
+    model=StdCGE(),
+    data=example_data("stdcge"),
+)
 
-# Closure
-cge.model_instance("pf", "LAB")
-cge.model_drop_redundant("eqpf", "LAB")
+benchmark = model.solve_benchmark(
+    numeraire=("pf", "LAB"),
+    redundant=("eqpf", "LAB"),
+)
 
-# Benchmark
-cge.model_calibrate()
+scenario = benchmark.scenario("tariff abolition")
+scenario.set("taum", "BRD", 0)
+scenario.set("taum", "MLK", 0)
 
-# Counterfactual
-cge.model_sim()
-cge.model_modify_sim("taum", "BRD", 0)
-cge.model_modify_sim("taum", "MLK", 0)
-cge.model_solve()
+result = scenario.solve()
 
-# Results
-frame = cge.model_compare()
-print(frame.attrs["objective"])
-print(frame)
+print(result.value("Z", "BRD"))
+print(result.objective)
+print(result.compare(benchmark))
 ```
 
-Differences reported by `model_compare()` are **simulation minus base**.
-Percentage changes are `(simulation - base) / base × 100`.
+`result.compare(benchmark)` reports **scenario minus benchmark**.
+Percentage changes are `(scenario - benchmark) / benchmark × 100`.
+
+### Legacy and advanced workflow API
+
+`PyCGE` remains importable and behavior-compatible for advanced users,
+low-level model inspection, and existing code during the v0.6 migration.
+It is no longer the canonical interface for new user-facing examples.
+
+```python
+from cge_core import PyCGE
+```
 
 ---
 
@@ -162,14 +186,19 @@ equilibrium conditions as free endogenous variables. **Walras' law** makes one
 market-clearing condition redundant: if every other market clears and all
 budget constraints hold, the final market clears automatically.
 
-CGE-Core makes this explicit with:
+For the Hosoe façade, the closure is stated explicitly when the benchmark is
+solved:
 
 ```python
-cge.model_drop_redundant("eqpf", "LAB")
+benchmark = model.solve_benchmark(
+    numeraire=("pf", "LAB"),
+    redundant=("eqpf", "LAB"),
+)
 ```
 
-The engine accepts only model-declared redundant market-clearing candidates and
-checks that the resulting system has zero degrees of freedom.
+The underlying validated engine accepts only model-declared redundant
+market-clearing candidates and checks that the resulting system has zero
+degrees of freedom.
 
 ---
 
@@ -179,8 +208,8 @@ checks that the resulting system has zero degrees of freedom.
 parameter files consumed by the Hosoe standard model.
 
 ```python
-from cge_core import PyCGE, samtools
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core import CGE, samtools
+from cge_core.models import StdCGE
 
 accounts = dict(
     hoh="HH",
@@ -198,8 +227,15 @@ samtools.build_dataset(
     institutions=accounts.values(),
 )
 
-cge = PyCGE(StdModelDef(accounts=accounts))
-cge.model_data("my_data_dir")
+model = CGE(
+    model=StdCGE(accounts=accounts),
+    data="my_data_dir",
+)
+
+benchmark = model.solve_benchmark(
+    numeraire=("pf", "LAB"),
+    redundant=("eqpf", "LAB"),
+)
 ```
 
 A balanced SAM is necessary but not sufficient: it must also have the
@@ -272,10 +308,10 @@ CGE-Core includes explicit checks for:
 - declared closure anchors;
 - declared redundant market-clearing equations;
 - zero degrees of freedom after closure;
-- reversible scenario shocks;
+- isolated scenario state and repeated scenario re-solving;
 - solver optimality/termination;
-- preservation of the calibrated baseline;
-- structured long-form result export.
+- preservation of the solved benchmark;
+- immutable numerical result snapshots and comparison tables.
 
 The test suite covers the Hosoe models, the engine, SAM tools, IFPRI calibration
 and scenarios, CAMCGE data/structure/replication, and solver-dependent

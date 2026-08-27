@@ -2,71 +2,65 @@
 """
 Standard CGE Example (Hosoe Ch. 6) -- tariff and tax abolition experiments.
 
-Runs the full CGE-Core workflow end to end:
-    load -> instance -> drop redundant eqn -> calibrate -> sim -> shock
+Demonstrates the canonical CGE-Core v0.6 lifecycle:
+    configure -> solve benchmark -> create isolated scenarios -> set shocks
     -> solve -> compare
 
 Requires a local NLP solver ('ipopt' executable or 'cyipopt'); the example
 detects whichever is available.
 
-The redundant market-clearing equation (Walras' law) MUST be dropped before
-solving with IPOPT; see PyCGE.model_drop_redundant for the full explanation.
-
 Run with:
     python -m cge_core.examples.stdcge
 """
 import logging
+from math import prod
 
-from pyomo.environ import prod, value
-
-from cge_core import PyCGE, example_data
+from cge_core import CGE, example_data
 from cge_core.examples._solver import detect_solver
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core.models import StdCGE
 
-DATA_DIR = example_data('stdcge')
-
-
-def build_calibrated(solver):
-    """Return a freshly calibrated base CGE object."""
-    cge = PyCGE(StdModelDef())
-    cge.model_data(DATA_DIR)
-
-    # Fix the numeraire (matches Hosoe stdcge.gms: pf.fx("LAB") = 1)
-    cge.model_instance('pf', 'LAB')
-
-    # Drop one redundant market-clearing equation (Walras' law) so the
-    # square system has DOF = 0 and IPOPT can solve it. The labor market
-    # is a natural choice since labor is the numeraire factor.
-    cge.model_drop_redundant('eqpf', 'LAB')
-
-    cge.model_calibrate(solver)
-    return cge
+DATA_DIR = example_data("stdcge")
+GOODS = ("BRD", "MLK")
 
 
-def run_experiment(solver, title, param, shocks):
-    """Calibrate, apply a shock to `param` for each good, solve, compare."""
+def build_benchmark(solver):
+    """Return the solved Hosoe standard-model benchmark equilibrium."""
+    model = CGE(model=StdCGE(), data=DATA_DIR)
+    return model.solve_benchmark(
+        numeraire=("pf", "LAB"),
+        redundant=("eqpf", "LAB"),
+        solver=solver,
+    )
+
+
+def zero_shock_scenario(benchmark, name, parameter):
+    """Create a scenario that sets ``parameter`` to zero for both goods."""
+    scenario = benchmark.scenario(name)
+    for good in GOODS:
+        scenario.set(parameter, good, 0)
+    return scenario
+
+
+def print_comparison(title, result, benchmark):
+    """Print the standard long-form comparison table for one scenario."""
     print("\n=== %s ===" % title)
-    cge = build_calibrated(solver)
-    cge.model_sim()                      # clone calibrated base -> sim
-    for good in shocks:
-        cge.model_modify_sim(param, good, 0)
-    cge.model_solve(solver)
-    cge.model_postprocess('compare', 'print')
-    return cge
+    print(result.compare(benchmark).to_string(index=False))
 
 
-def equivalent_variation(cge):
-    """Hicksian EV: expenditure to reach the new utility at base prices.
+def equivalent_variation(benchmark, result):
+    """Hicksian EV for the bundled Cobb-Douglas Hosoe standard model.
 
     With Cobb-Douglas utility U = prod(Xp_i^alpha_i) and a unit price
-    index at the base equilibrium, the expenditure function is linear in
-    utility, so EV reduces to the difference in the utility aggregate
-    evaluated through the base-price expenditure function.
+    index at the benchmark equilibrium, the expenditure function is linear
+    in utility. EV therefore reduces to the change in the expenditure
+    required to attain the solved scenario utility at benchmark prices.
     """
-    denom = prod((value(cge.base.alpha[i])) ** value(cge.base.alpha[i])
-                 for i in cge.base.i)
-    ep0 = value(cge.base.obj) / denom
-    ep1 = value(cge.sim.obj) / denom
+    denom = prod(
+        benchmark.value("alpha", good) ** benchmark.value("alpha", good)
+        for good in GOODS
+    )
+    ep0 = benchmark.objective / denom
+    ep1 = result.objective / denom
     return ep1 - ep0
 
 
@@ -75,16 +69,39 @@ def main(solver=None):
     solver = solver or detect_solver()
     print("Using solver: %s" % solver)
 
-    cge1 = run_experiment(solver, "EXPERIMENT 1: ABOLISH IMPORT TARIFFS",
-                          'taum', ['BRD', 'MLK'])
-    cge2 = run_experiment(solver, "EXPERIMENT 2: ABOLISH PRODUCTION TAXES",
-                          'tauz', ['BRD', 'MLK'])
+    benchmark = build_benchmark(solver)
+
+    # These Scenario objects coexist independently and share no mutable sim state.
+    tariff = zero_shock_scenario(
+        benchmark, "abolish import tariffs", "taum"
+    )
+    production_tax = zero_shock_scenario(
+        benchmark, "abolish production taxes", "tauz"
+    )
+
+    tariff_result = tariff.solve(solver=solver)
+    production_tax_result = production_tax.solve(solver=solver)
+
+    print_comparison(
+        "EXPERIMENT 1: ABOLISH IMPORT TARIFFS", tariff_result, benchmark
+    )
+    print_comparison(
+        "EXPERIMENT 2: ABOLISH PRODUCTION TAXES",
+        production_tax_result,
+        benchmark,
+    )
 
     print("\n=== WELFARE (Hicksian Equivalent Variation) ===")
-    print("Abolish tariffs:          EV = %+.4f" % equivalent_variation(cge1))
-    print("Abolish production taxes: EV = %+.4f" % equivalent_variation(cge2))
-    return cge1, cge2
+    print(
+        "Abolish tariffs:          EV = %+.4f"
+        % equivalent_variation(benchmark, tariff_result)
+    )
+    print(
+        "Abolish production taxes: EV = %+.4f"
+        % equivalent_variation(benchmark, production_tax_result)
+    )
+    return benchmark, tariff_result, production_tax_result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
