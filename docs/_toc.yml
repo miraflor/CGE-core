@@ -54,6 +54,7 @@ parts:
     chapters:
       - file: developer/overview
       - file: OG_CORE_CROSSWALK
+      - file: GAMS_CROSSWALK
 
   - caption: Detailed Reference
     chapters:
