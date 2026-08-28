@@ -2,50 +2,66 @@
 
 This is the smallest complete policy experiment in CGE-Core.
 
-## 1. Calibrate the base
+## 1. Solve the benchmark
 
 ```python
-from cge_core import PyCGE, example_data
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core import CGE, example_data
+from cge_core.models import StdCGE
 
-cge = PyCGE(StdModelDef())
-cge.model_data(example_data("stdcge"))
-cge.model_instance("pf", "LAB")
-cge.model_drop_redundant("eqpf", "LAB")
-cge.model_calibrate()
+model = CGE(
+    model=StdCGE(),
+    data=example_data("stdcge"),
+)
+
+benchmark = model.solve_benchmark(
+    numeraire=("pf", "LAB"),
+    redundant=("eqpf", "LAB"),
+)
 ```
 
-## 2. Create the simulation
+The benchmark is the SAM-replicating static reference equilibrium.
+
+## 2. Create a scenario
 
 ```python
-cge.model_sim()
+scenario = benchmark.scenario("remove bread tariff")
 ```
+
+A scenario starts from an independent copy of the solved benchmark, so changes
+to it do not mutate the benchmark.
 
 ## 3. Remove the bread tariff
 
 ```python
-cge.model_modify_sim("taum", "BRD", 0)
+scenario.set("taum", "BRD", 0.0)
 ```
 
 ## 4. Solve
 
 ```python
-cge.model_solve()
+result = scenario.solve()
 ```
 
-## 5. Compare with the base
+## 5. Compare with the benchmark
 
 ```python
-frame = cge.model_compare()
+frame = result.compare(benchmark)
 print(frame)
 ```
 
-The tariff shock changes one parameter, but the counterfactual solution changes every endogenous variable required to restore general equilibrium.
+The tariff shock changes one parameter, but the counterfactual solution changes
+every endogenous variable required to restore general equilibrium.
 
-To remove both benchmark import tariffs:
+To remove both benchmark import tariffs, branch a fresh scenario from the same
+benchmark:
 
 ```python
-cge.model_modify_sim("taum", "BRD", 0)
-cge.model_modify_sim("taum", "MLK", 0)
-cge.model_solve()
+both = benchmark.scenario("remove both tariffs")
+both.set("taum", "BRD", 0.0)
+both.set("taum", "MLK", 0.0)
+both_result = both.solve()
+
+print(both_result.compare(benchmark))
 ```
+
+The two scenarios are independent and can remain live at the same time.

@@ -10,7 +10,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE", "LICENSE_NIST.txt"]
-authors = [
+maintainers = [
     { name = "James Matthew Miraflor", email = "jbmiraflor@up.edu.ph" },
 ]
 keywords = [

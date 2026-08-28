@@ -1,6 +1,6 @@
 # Jupyter Book configuration for the CGE-Core documentation.
 title: CGE-Core
-author: James Matthew Miraflor (fork maintainer; original PyCGE by Fung & Burtwistle, NIST)
+author: "James Matthew Miraflor — Project Lead and Maintainer"
 copyright: "2026"
 
 execute:

@@ -28,13 +28,18 @@ This route requires the IPOPT system library and a working PyNumero ASL build.
 ## Check the installation
 
 ```python
-from cge_core import PyCGE, example_data
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core import CGE, example_data
+from cge_core.models import StdCGE
 
-print(example_data("stdcge"))
+model = CGE(
+    model=StdCGE(),
+    data=example_data("stdcge"),
+)
+print(type(model).__name__)
 ```
 
-If that imports successfully, continue to {doc}`quickstart`.
+If that imports and constructs the model blueprint successfully, continue to
+{doc}`quickstart`.
 
 ```{important}
 A solver is required at runtime. Installing the Python package alone is not enough to solve a CGE model.
