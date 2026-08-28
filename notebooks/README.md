@@ -52,7 +52,7 @@ The setup cell no longer hard-resets a cached checkout to `origin/main`.
 
 - Outside Colab, if the notebook is run from a CGE-Core git checkout, it uses the **current checkout** directly.
 - In Colab, the notebooks default to `main`.
-- To validate another branch or tag in Colab/automation, set the environment variable `CGE_CORE_REF` before running the setup cell, for example `CGE_CORE_REF=v0.6-phase4b-notebooks`.
+- To validate another branch or tag in Colab/automation, set the environment variable `CGE_CORE_REF` before running the setup cell, for example `CGE_CORE_REF=v0.6.0`.
 
 This prevents a development notebook from silently testing old `main` while its source came from another branch.
 
@@ -61,7 +61,7 @@ This prevents a development notebook from silently testing old `main` while its 
 - Notebooks 01–04 use the v0.6 `CGE` / `Equilibrium` / `Scenario` / `Result` public workflow.
 - The IFPRI notebook intentionally keeps CGE-Core's validated dedicated IFPRI API in v0.6.
 - The CAMCGE notebook intentionally keeps the repository-level `cam/` replication workflow.
-- Notebook 07 intentionally uses `PyCGE` and raw Pyomo objects because it teaches engine internals; `PyCGE` remains a supported legacy/advanced API.
+- Notebook 07 intentionally uses `PyCGE` and raw Pyomo objects because it teaches engine internals; `PyCGE` remains a supported advanced/lower-level API.
 - Solver notebooks use an existing IPOPT executable when available; otherwise they install the open-source IPOPT solver from the AMPL COIN module.
 - These notebooks are tutorials. For exact equations, validation claims, provenance, and APIs, use the [CGE-Core documentation](https://miraflor.github.io/CGE-core/).
 

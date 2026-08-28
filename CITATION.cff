@@ -12,7 +12,7 @@ authors:
     given-names: James Matthew
     email: jbmiraflor@up.edu.ph
     affiliation: "Scientific Computing Laboratory, Department of Computer Science, University of the Philippines Diliman"
-version: 0.5.0
+version: 0.6.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
 keywords:
@@ -30,8 +30,8 @@ abstract: >-
   testing, documentation, IFPRI implementation, CAMCGE replication benchmark,
   and release workflow. He is cited as project lead and maintainer of this
   revised software project, not as author of the underlying models or
-  inherited code. The
-  official IFPRI source package and test data remain external. Hosoe is checked
+  inherited code. The official IFPRI source package and test data remain
+  external. Hosoe is checked
   against GAMS Model Library references, IFPRI against full-precision external
   reference runs, and CAMCGE against its published base equilibrium and three
   policy experiments.

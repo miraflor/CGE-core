@@ -1,5 +1,88 @@
 # Changelog
 
+## v0.6.0 (2026) — Public scientific API and isolated scenario workflow
+
+CGE-Core v0.6.0 adds a stable, scientific-Python interface for the Hosoe
+Simple and Standard CGE models while preserving the validated lower-level
+`PyCGE` engine and all existing benchmark equations.
+
+### Public API
+
+- Add the canonical `CGE -> Equilibrium -> Scenario -> Result` workflow.
+- Add public model imports `SplCGE` and `StdCGE` from `cge_core.models`.
+- Make `CGE` a stateless model/data blueprint: every benchmark solve owns a
+  fresh backend.
+- Make each `Scenario` own independent mutable state so multiple
+  counterfactuals can coexist without sharing the engine's single simulation
+  slot.
+- Return immutable numerical `Result` snapshots so later scenario edits and
+  re-solves cannot rewrite earlier results.
+- Stabilize `value()`, `objective`, and `Result.compare()` as the primary
+  downstream read/comparison surface.
+- Preserve comparison semantics as scenario minus reference, with percentage
+  changes relative to the reference and `NaN` when the reference value is zero.
+
+### Migration from the lower-level workflow
+
+For ordinary Hosoe-model policy experiments, the recommended mapping is:
+
+| Earlier lower-level workflow | v0.6 public workflow |
+| --- | --- |
+| `PyCGE(StdModelDef())` | `CGE(model=StdCGE(), data=...)` |
+| `model_instance(...)` + `model_drop_redundant(...)` + `model_calibrate(...)` | `solve_benchmark(numeraire=..., redundant=...)` |
+| `model_sim()` | `benchmark.scenario(name)` |
+| `model_modify_sim(...)` | `scenario.set(...)` |
+| `model_solve(...)` | `scenario.solve()` |
+| `model_compare(...)` | `result.compare(benchmark)` |
+
+`PyCGE` remains supported as the advanced/lower-level API for existing code,
+implementation inspection, and direct engine work. v0.6.0 does not remove or
+deprecate it.
+
+### Outward-facing migration
+
+- Migrate the README, bundled Hosoe examples, teaching notebooks, documentation
+  site, and Control Room code generator to the public API.
+- Keep the validated IFPRI subsystem on its dedicated API.
+- Keep CAMCGE as a repository-level replication benchmark.
+- Make Colab notebook setup branch/tag-aware instead of silently resetting to
+  `origin/main`.
+- Add the GAMS workflow crosswalk and explicit public extension contract.
+
+### Downstream stability contract
+
+The protected v0.6 lifecycle is:
+
+`CGE -> solve_benchmark() -> Equilibrium -> scenario() -> Scenario.set() -> Scenario.solve() -> Result`
+
+The contract also protects public `value()` reads, repeated `set()` / `solve()`
+cycles, benchmark isolation, immutable earlier results, `Result.compare()`, and
+public imports from `cge_core` and `cge_core.models`.
+
+Private `_engine` / `_snapshot` state, raw Pyomo traversal, persistence,
+plugin registration, a universal closure abstraction, dynamic transition
+logic, and IFPRI/CAMCGE adaptation to the Hosoe facade are deliberately outside
+the minimal v0.6 contract.
+
+### Cleanup and provenance
+
+- Replace stale outward-facing BASE/SIM and implementation-class terminology
+  with benchmark/scenario and scientific model terminology where appropriate.
+- Retain historical RFCs, provenance records, lower-level engine documentation,
+  compatibility tests, and the Under-the-Hood notebook.
+- Credit James Matthew Miraflor as **Project Lead and Maintainer**, distinguishing
+  that role from authorship of inherited PyCGE code and the underlying model
+  specifications.
+- Preserve explicit attribution to PyCGE/NIST and the relevant Hosoe, IFPRI,
+  and CAMCGE sources.
+
+### Numerical and architectural scope
+
+This release does **not** change the validated economic equations or intentionally
+change benchmark/scenario numerical behavior. The v0.6 facade is additive over
+the validated engine. IFPRI and CAMCGE retain their previously validated
+specialized implementations and regression targets.
+
 ## v0.5.0 (2026) — CAMCGE benchmark and adversarial-review hardening
 
 This release incorporates the published CAMCGE Cameroon replication benchmark

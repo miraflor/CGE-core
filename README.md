@@ -167,10 +167,10 @@ print(result.compare(benchmark))
 `result.compare(benchmark)` reports **scenario minus benchmark**.
 Percentage changes are `(scenario - benchmark) / benchmark × 100`.
 
-### Legacy and advanced workflow API
+### Advanced / lower-level workflow API
 
 `PyCGE` remains importable and behavior-compatible for advanced users,
-low-level model inspection, and existing code during the v0.6 migration.
+low-level model inspection, and existing code in the v0.6 line.
 It is no longer the canonical interface for new user-facing examples.
 
 ```python
@@ -362,7 +362,7 @@ sources.
   author  = {James Matthew Miraflor},
   title   = {{CGE-Core}: a Pyomo-based computable general equilibrium framework},
   year    = {2026},
-  version = {0.5.0},
+  version = {0.6.0},
   note    = {Project lead and maintainer},
   url     = {https://github.com/miraflor/CGE-core}
 }

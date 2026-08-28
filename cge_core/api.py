@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Public domain API for CGE-Core v0.6.
+"""Public scientific API for CGE-Core v0.6.
 
 This module is new CGE-Core work.  It provides a small scientific-Python
 facade over the validated lower-level :class:`cge_core.engine.PyCGE` workflow
