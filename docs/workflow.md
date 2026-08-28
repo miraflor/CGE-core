@@ -1,4 +1,27 @@
-# Installation and workflow
+# Advanced PyCGE engine workflow
+
+```{note}
+For ordinary Hosoe-model use in CGE-Core v0.6, start with the public
+{doc}`api/public` API. This page documents the lower-level `PyCGE` state
+machine retained for advanced inspection, validation, debugging, and existing
+code.
+```
+
+## Public-to-engine crosswalk
+
+The façade is additive: it drives the validated engine rather than replacing
+it.
+
+| Public workflow | Lower-level engine work |
+| --- | --- |
+| `CGE(model, data)` | stores the model definition and data location |
+| `solve_benchmark(...)` | create `PyCGE` → load data → instantiate → fix numeraire → drop redundant equation → calibrate |
+| `Equilibrium.scenario(name)` | deep-copy calibrated engine → `model_sim()` |
+| `Scenario.set(...)` | validated `model_modify_sim(...)` mutation |
+| `Scenario.solve()` | degree-of-freedom precheck → `model_solve()` → immutable snapshot |
+| `Result.compare(reference)` | snapshot comparison; no mutable Pyomo traversal required |
+
+The rest of this page documents those lower-level operations directly.
 
 ## Installation
 
@@ -26,33 +49,33 @@ pip install -e ".[solver]"
 The `cyipopt` route additionally requires the IPOPT system library and a
 working PyNumero ASL build.
 
-## Quick start
+## Direct PyCGE quick start
 
 ```python
 import logging
 from cge_core import PyCGE, example_data
 from cge_core.examples.stdcge_model_def import StdModelDef
 
-logging.basicConfig(level=logging.INFO)      # see the engine's progress
+logging.basicConfig(level=logging.INFO)
 
 cge = PyCGE(StdModelDef())
 cge.model_data(example_data('stdcge'))
 
-cge.model_instance('pf', 'LAB')              # fix numeraire: pf_LAB = 1
-cge.model_drop_redundant('eqpf', 'LAB')      # Walras' law -> square system
-cge.model_calibrate()                        # solve baseline (reproduces SAM)
+cge.model_instance('pf', 'LAB')
+cge.model_drop_redundant('eqpf', 'LAB')
+cge.model_calibrate()
 
-cge.model_sim()                              # clone baseline -> sim
-cge.model_modify_sim('taum', 'BRD', 0)       # reform: abolish bread tariff
-cge.model_solve()                            # solve counterfactual
+cge.model_sim()
+cge.model_modify_sim('taum', 'BRD', 0)
+cge.model_solve()
 
-frame = cge.model_compare()                  # pandas DataFrame, sim vs base
-frame.attrs['objective']                     # utility: base, sim, difference
+frame = cge.model_compare()
+frame.attrs['objective']
 ```
 
 ## The engine's contract
 
-The workflow is a state machine:
+The lower-level workflow is a state machine:
 
 ```text
 model_data -> model_instance -> model_drop_redundant
@@ -71,12 +94,12 @@ method to call first:
 | `SolveError` | Solver did not reach an acceptable optimum |
 
 Progress messages go through the standard `logging` module on the
-`cge_core` logger; nothing is printed except displays you explicitly request
-(`model_compare('print')`, `model_postprocess(..., 'print')`).
+`cge_core` logger; nothing is printed except displays you explicitly request.
 
-All comparison differences are **simulation minus base**, including the
-objective, and percentages are percentage changes. Passing a directory path
-to `model_compare` writes `compared.csv` there.
+Legacy `model_compare()` differences are **simulation minus base**, including
+the objective, and percentages are percentage changes. In the v0.6 façade,
+`Result.compare(reference)` generalizes the direction explicitly to
+**result minus reference**.
 
 ## Why one equation must be dropped
 
@@ -92,17 +115,21 @@ deactivates one admissible market-clearing condition and checks that the change
 leaves exactly zero degrees of freedom. The test suite then verifies that the
 dropped market still clears at the solution.
 
+In the public Hosoe façade, these two explicit closure choices are supplied as
+`numeraire=(...)` and `redundant=(...)` to `solve_benchmark()`. They are not a
+universal closure object for all CGE model families.
+
 See {doc}`MODEL` for the full accounting.
 
 ## Loading your own SAM
 
 `cge_core.samtools` turns a single SAM CSV into a data directory, and the
-`accounts=` mapping on the model definitions relabels the institutional
+`accounts=` mapping on the standard model definition relabels the institutional
 accounts read by the equations:
 
 ```python
-from cge_core import PyCGE, samtools
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core import CGE, samtools
+from cge_core.models import StdCGE
 
 accounts = dict(
     hoh='HH',
@@ -120,8 +147,10 @@ samtools.build_dataset(
     institutions=accounts.values(),
 )
 
-cge = PyCGE(StdModelDef(accounts=accounts))
-cge.model_data('my_data_dir')
+model = CGE(
+    model=StdCGE(accounts=accounts),
+    data='my_data_dir',
+)
 ```
 
 The goods set is derived from the SAM itself: every account that is neither a
@@ -135,12 +164,16 @@ without editing model code, provided benchmark flows used in ratios,
 Cobb-Douglas calibration, and CES/CET calibration satisfy the reference
 model's nonzero and positivity assumptions.
 
-## Reform shocks and undo
+## Direct engine shocks and undo
 
 `model_modify_sim(name, index, value)` changes a mutable parameter or fixes a
 variable. The original value and fixed status are recorded, so an undo request
 can restore the first value even after repeated edits.
 
 The SAM and benchmark-only `*0` parameters are protected on BASE and SIM.
-Factor endowments are protected on the baseline but remain valid simulation
+Factor endowments are protected on the benchmark but remain valid simulation
 shocks. To change benchmark data, edit the input data and recalibrate.
+
+For ordinary v0.6 scenarios, prefer `Scenario.set()` and immutable `Result`
+snapshots. The direct undo stack remains a lower-level engine feature rather
+than part of the façade contract.
