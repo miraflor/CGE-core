@@ -124,7 +124,7 @@
         ['Intermediate use','X[i,j]: how the shock propagates through the input-output network as sectors buy inputs from one another.'],
         ['Factor demand','F[h,i] by factor × sector'],
         ['Household demand','Xp[i]: consumption response after prices, factor income, taxes and saving adjust.'],
-        ['Government demand','Xg[i]: model-consistent public purchases by good; not currently a free-form runtime spending knob in StdModelDef.'],
+        ['Government demand','Xg[i]: model-consistent public purchases by good; not currently a free-form runtime spending knob in the Standard CGE model.'],
         ['Investment demand','Xv[i]: how total saving is translated into demand for investment goods.'],
         ['Trade','E[i] exports and M[i] imports: external adjustment after relative prices, tariffs and the exchange rate move.'],
         ['Composite supply','Q[i] Armington composite; D[i] domestic sales'],
@@ -260,7 +260,7 @@
           ['X[i,j]','Intermediate input','Amount of good i used as an input by sector j.','This is the model’s input-output propagation channel.'],
           ['Z[i]','Gross sector output','Total output produced by sector i.','It combines value added and required intermediate inputs.'],
           ['Xp[i]','Household consumption','Household purchases of composite good i.','Final private consumption.'],
-          ['Xg[i]','Government consumption','Government purchases of composite good i.','A benchmark/endogenous model quantity, not currently a free-form spending shock in StdModelDef.'],
+          ['Xg[i]','Government consumption','Government purchases of composite good i.','A benchmark/endogenous model quantity, not currently a free-form spending shock in the Standard CGE model.'],
           ['Xv[i]','Investment demand','Purchases of good i for investment.','Total saving is translated into demand for investment goods using calibrated shares.']
         ]],
         ['Trade quantities',[
@@ -287,7 +287,7 @@
         ['Taxes and tax revenue',[
           ['tauz[i]','Production-tax rate','Ad valorem tax rate on sector i’s gross output.','This is the policy rate you can shock.'],
           ['taum[i]','Import-tariff rate','Ad valorem tariff rate on imports of good i.','This is the policy rate you can shock.'],
-          ['taud','Direct-tax rate','Flat direct tax rate on household factor income.','Calibrated from the SAM and not exposed as a mutable scenario policy control in current StdModelDef.'],
+          ['taud','Direct-tax rate','Flat direct tax rate on household factor income.','Calibrated from the SAM and not exposed as a mutable scenario policy control in the current Standard CGE model.'],
           ['Tz[i]','Production-tax revenue','Revenue raised from tauz[i].','Endogenous fiscal result after output changes.'],
           ['Tm[i]','Tariff revenue','Revenue raised from taum[i].','Endogenous fiscal result after imports change.'],
           ['Td','Direct-tax revenue','Revenue from the calibrated direct tax.','Changes endogenously with household factor income.']
@@ -295,8 +295,8 @@
         ['World conditions and technology',[
           ['pWe[i]','World export price','Exogenous foreign-currency export price, normalized to 1 in the benchmark.','Small-country assumption: the country takes this price as given.'],
           ['pWm[i]','World import price','Exogenous foreign-currency import price, normalized to 1 in the benchmark.','A natural place to impose an external commodity-price shock.'],
-          ['sigma[i]','Armington elasticity','Ease of substitution between imports and domestic goods.','Currently fixed at 2 in StdModelDef.'],
-          ['psi[i]','CET elasticity','Ease of transforming output between exports and domestic sales.','Currently fixed at 2 in StdModelDef.'],
+          ['sigma[i]','Armington elasticity','Ease of substitution between imports and domestic goods.','Currently fixed at 2 in the Standard CGE model.'],
+          ['psi[i]','CET elasticity','Ease of transforming output between exports and domestic sales.','Currently fixed at 2 in the Standard CGE model.'],
           ['ax[i,j]','Intermediate input coefficient','Units of input good i required per unit of output in sector j.','Calibrated Leontief input-output coefficient.'],
           ['ay[i]','Value-added coefficient','Units of value added required per unit of gross output in sector i.','Calibrated production requirement.']
         ]]

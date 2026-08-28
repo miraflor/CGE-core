@@ -1,11 +1,11 @@
 # Reading CGE-Core if you know OG-Core
 
-CGE-Core follows the documentation conventions of
-[OG-Core](https://github.com/PSLmodels/OG-Core) (DeBacker & Evans) — NumPy
-docstrings with `.. math::` blocks, calibrated-parameter transparency, and a
-strict separation of *model algebra* from *solution workflow* — but the two
-frameworks solve structurally different problems. This note maps one onto the
-other so an OG-Core reader can orient in minutes.
+CGE-Core follows several documentation conventions familiar from
+[OG-Core](https://github.com/PSLmodels/OG-Core) (DeBacker & Evans), including
+calibrated-parameter transparency and a strict separation of *model algebra*
+from *solution workflow*. The two frameworks nevertheless solve structurally
+different problems. This note maps one onto the other so an OG-Core reader can
+orient quickly.
 
 ## What kind of model this is
 
@@ -19,59 +19,80 @@ other so an OG-Core reader can orient in minutes.
 | Solution | Steady state (`SS.py`) + transition path (`TPI.py`) via fixed-point iteration | One square nonlinear system solved simultaneously by IPOPT |
 | Data anchor | Calibrated `Specifications` object | A balanced social accounting matrix (SAM) |
 
-The deeper difference: OG-Core computes equilibrium by *iterating* on
-aggregates until household/firm behavior is consistent with prices; CGE-Core
-hands the entire first-order-condition system to an NLP solver at once. That
-is why Walras' law appears here as a concrete degrees-of-freedom problem (one
-market-clearing equation must be deactivated before IPOPT will solve — see
-`docs/MODEL.md`), whereas in OG-Core it is absorbed by the outer-loop
-construction.
+The deeper difference is computational. OG-Core computes equilibrium by
+iterating on aggregates until household and firm behavior is consistent with
+prices. CGE-Core hands a square simultaneous equilibrium system to a nonlinear
+solver. Walras' law therefore appears concretely in the Hosoe models as a
+closure requirement: one redundant market-clearing equation is removed and
+one price is chosen as numeraire.
 
-## File-by-file mapping
+## Public workflow mapping
 
-| OG-Core role | OG-Core file(s) | CGE-Core file |
+| OG-Core role | OG-Core interface | CGE-Core public interface |
 | --- | --- | --- |
-| Model algebra: firms, households, taxes, aggregates | `firms.py`, `household.py`, `tax.py`, `aggregates.py` | `cge_core/examples/stdcge_model_def.py` (all agents in one simultaneous Pyomo system), `splcge_model_def.py` (pedagogical closed economy) |
-| Parameters / calibration | `parameters.py` (`Specifications`), `default_parameters.json` | The `Param` declarations inside the model definitions: benchmark `*0` magnitudes read off the SAM, then share/scale parameters recovered so the base year is reproduced exactly (see "Calibration" in `docs/MODEL.md`) |
-| Solving | `SS.py`, `TPI.py`, `execute.py` | `cge_core/engine.py` (`PyCGE.model_calibrate` = solve baseline; `PyCGE.model_solve` = solve counterfactual) |
-| Reform specification | Reform dictionaries passed to `Specifications.update_specifications` | `PyCGE.model_modify_sim(name, index, value)` — e.g. set a tariff rate `taum` to 0 |
-| Output / comparison | `output_tables.py`, `output_plots.py` | `PyCGE.model_compare`, `PyCGE.model_postprocess` (CSV exports, structured records) |
-| Utilities | `utils.py` | `cge_core/datasets.py`, `cge_core/examples/_solver.py` |
-| Country calibration packages | OG-USA, OG-PHL, ... | Swap the bundled two-good SAM for a country SAM with the same account structure |
+| Model specification | `Specifications` plus model modules | `StdCGE` / `SplCGE` model definition passed to `CGE` |
+| Benchmark solution | `SS.run_SS(p)` | `CGE.solve_benchmark(...)` |
+| Reform specification | `Specifications.update_specifications(...)` | `benchmark.scenario(...)` then `Scenario.set(...)` |
+| Counterfactual solution | `SS.run_SS(...)` or transition machinery | `Scenario.solve()` |
+| Read outputs | dictionaries / output utilities | `Equilibrium.value(...)`, `Result.value(...)`, `Result.objective` |
+| Compare reform with reference | output tables / plots | `Result.compare(benchmark)` |
+| Data helpers | `utils.py` and calibration inputs | `cge_core.datasets`, `cge_core.samtools` |
 
 ## Workflow correspondence
 
 OG-Core:
 
 ```python
-p = Specifications()                    # parameters
-p.update_specifications(reform)         # reform
-ss_output = SS.run_SS(p)                # solve
+p = Specifications()
+p.update_specifications(reform)
+ss_output = SS.run_SS(p)
 ```
 
 CGE-Core:
 
 ```python
-cge = PyCGE(StdModelDef())              # algebra
-cge.model_data(data_dir)                # SAM in, validated
-cge.model_instance('pf', 'LAB')         # numeraire: pf_LAB = 1
-cge.model_drop_redundant('eqpf', 'LAB') # Walras' law -> square system
-cge.model_calibrate(solver)             # baseline (reproduces the SAM)
-cge.model_sim()                         # clone baseline
-cge.model_modify_sim('taum', 'BRD', 0)  # reform: abolish a tariff
-cge.model_solve(solver)                 # counterfactual
-cge.model_compare('print')              # baseline vs. reform
+from cge_core import CGE
+from cge_core.models import StdCGE
+
+model = CGE(model=StdCGE(), data=data_dir)
+
+benchmark = model.solve_benchmark(
+    numeraire=("pf", "LAB"),
+    redundant=("eqpf", "LAB"),
+    solver=solver,
+)
+
+scenario = benchmark.scenario("tariff abolition")
+scenario.set("taum", "BRD", 0.0)
+
+result = scenario.solve(solver=solver)
+comparison = result.compare(benchmark)
 ```
 
-Two conventions worth flagging because they have no OG-Core analogue:
+Two conventions are worth flagging because they have no direct OG-Core
+analogue:
 
-1. **Numeraire.** All prices are relative; `model_instance('pf', 'LAB')`
-   fixes the wage as numeraire, matching Hosoe's `pf.fx("LAB") = 1`.
-2. **The dropped equation.** `model_drop_redundant` deactivates exactly one
-   market-clearing condition. The test suite asserts the dropped market
-   still clears at the solution (Walras' law), which is the model's
-   internal-consistency check — loosely analogous to OG-Core's
-   resource-constraint checks on `SS` output.
+1. **Numeraire.** All prices are relative. In the standard Hosoe example,
+   `numeraire=("pf", "LAB")` fixes the labor-factor price as the price anchor.
+2. **Redundant market equation.** Walras' law makes one market-clearing
+   equation redundant. `redundant=("eqpf", "LAB")` tells the Hosoe workflow
+   which equation to deactivate so the solved system is square.
+
+The test suite also checks the dropped market after solution as an
+internal-consistency test, loosely analogous to resource-constraint checks on
+OG-Core output.
+
+## Lower-level implementation
+
+The public lifecycle above is implemented by the supported lower-level
+`PyCGE`/Pyomo engine. Advanced users can still work directly with
+`cge_core.engine.PyCGE`, including its explicit benchmark/simulation state
+machine. That engine API is documented separately and is not the recommended
+interface for ordinary Hosoe-model policy experiments.
+
+This distinction is important: the public facade is the stable scientific
+workflow, while the lower-level engine remains available for implementation
+inspection, model development, and compatibility.
 
 ## Docstring conventions
 
@@ -91,5 +112,5 @@ def eqF_rule(model, h, i):
 ```
 
 The equation label (`eqF`) is the name used in the GAMS Model Library source
-(`stdcge.gms`, SEQ=276), so every line can be diffed against the published
+(`stdcge.gms`, SEQ=276), so equations can be checked against the published
 reference implementation; `docs/MODEL.md` collects the full equation table.

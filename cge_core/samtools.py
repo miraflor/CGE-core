@@ -20,20 +20,19 @@ reference model's nonzero/positivity assumptions.
 
 Example::
 
-    from cge_core import PyCGE, samtools
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core import CGE, samtools
+    from cge_core.models import StdCGE
 
     accounts = dict(hoh='HH', gov='GOVT', inv='SAV-INV',
                     ext='ROW', idt='ITAX', trf='TARIFF')
     samtools.build_dataset('ph_sam.csv', 'ph_data_dir',
                            factors=['CAP', 'LAB'],
                            institutions=accounts.values())
-    cge = PyCGE(StdModelDef(accounts=accounts))
-    cge.model_data('ph_data_dir')
+    model = CGE(model=StdCGE(accounts=accounts), data='ph_data_dir')
 
-Provenance: new in CGE-Core v0.3.0; written by James Matthew Miraflor
-(2026) via an AI-assisted ("vibecoded") workflow directed and reviewed by
-him. Not part of the original NIST PyCGE.
+Provenance: new in CGE-Core v0.3.0; developed through an AI-assisted
+workflow directed and reviewed by James Matthew Miraflor (2026), project
+lead and maintainer. Not part of the original NIST PyCGE.
 """
 from __future__ import annotations
 
@@ -166,7 +165,7 @@ def build_dataset(sam_path: PathLike,
         factors (sequence of str): factor account labels.
         institutions (iterable of str): institutional account labels;
             for the standard model, pass the six values of the
-            ``accounts`` mapping given to ``StdModelDef`` (household,
+            ``accounts`` mapping given to ``StdCGE`` (household,
             government, investment, external, indirect tax, tariff).
 
     Returns:

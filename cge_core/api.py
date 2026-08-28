@@ -2,22 +2,22 @@
 """Public domain API for CGE-Core v0.6.
 
 This module is new CGE-Core work.  It provides a small scientific-Python
-facade over the validated legacy :class:`cge_core.engine.PyCGE` workflow
-without changing the economic equations or the legacy engine contract.
+facade over the validated lower-level :class:`cge_core.engine.PyCGE` workflow
+without changing the economic equations or the lower-level engine contract.
 
 The public lifecycle is::
 
     CGE -> solve_benchmark -> Equilibrium -> Scenario -> Result
 
 ``CGE`` is a configuration blueprint.  Every benchmark solve owns a fresh
-legacy engine.  Every Scenario owns a deep-copied engine, so simultaneously
-live counterfactuals cannot share the legacy engine's single ``sim`` slot.
+lower-level engine.  Every Scenario owns a deep-copied engine, so simultaneously
+live counterfactuals cannot share the lower-level engine's single ``sim`` slot.
 ``Result`` stores plain numerical snapshots so earlier results never change
 when a Scenario is subsequently modified and solved again.
 
-Provenance: new CGE-Core v0.6 facade written for the CGE-Core reengineering
-work (2026), via an AI-assisted workflow directed and reviewed by the project
-maintainer.  The underlying PyCGE engine and Hosoe model ports retain their
+Provenance: new CGE-Core v0.6 facade developed for the CGE-Core
+reengineering work (2026) through an AI-assisted workflow directed and
+reviewed by James Matthew Miraflor, project lead and maintainer.  The underlying PyCGE engine and Hosoe model ports retain their
 own provenance; this module does not claim authorship of them.
 """
 from __future__ import annotations
@@ -64,7 +64,7 @@ def _number(item: Any) -> Optional[float]:
 
 
 def _component_item(instance, name: str, index: Any):
-    """Resolve one Var/Param item with the legacy engine's scalar convention."""
+    """Resolve one Var/Param item with the lower-level engine's scalar convention."""
     component = instance.component(name)
     if component is None:
         raise ComponentError(f"'{name}' does not exist in this scenario.")
@@ -172,7 +172,7 @@ class CGE:
     """Configured static-CGE blueprint.
 
     ``CGE`` owns no solved model state.  Each :meth:`solve_benchmark` call
-    creates a fresh legacy backend that is thereafter owned by the returned
+    creates a fresh lower-level backend that is thereafter owned by the returned
     :class:`Equilibrium`.
 
     Args:
@@ -224,7 +224,7 @@ class Equilibrium:
     """Solved, protected benchmark equilibrium.
 
     ``frozen=True`` protects the public wrapper from rebinding.  The private
-    legacy engine remains mutable by design so it can be deep-copied when a
+    lower-level engine remains mutable by design so it can be deep-copied when a
     Scenario is created; public reads always come from the immutable snapshot.
     """
 
@@ -315,7 +315,7 @@ class Scenario:
                 f"{component}[{index}] is already endogenous in this scenario."
             )
 
-        # The legacy engine's fix=False path also accepts a value.  Passing
+        # The lower-level engine's fix=False path also accepts a value.  Passing
         # the current value preserves it exactly as the solver starting point.
         current = _number(item)
         self._engine.model_modify_sim(

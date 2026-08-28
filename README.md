@@ -337,17 +337,17 @@ handling, input validation, reporting utilities, SAM tooling, clean-room IFPRI
 subsystem, CAMCGE replication benchmark, documentation, and test suite — are
 released under the MIT License.
 
-### Authorship
+### Project leadership and maintenance
 
-**James Matthew Miraflor**  
-Scientific Computing Laboratory  
-Department of Computer Science  
-University of the Philippines Diliman  
+**James Matthew Miraflor — Project Lead and Maintainer**<br>
+Scientific Computing Laboratory<br>
+Department of Computer Science<br>
+University of the Philippines Diliman<br>
 <jbmiraflor@up.edu.ph>
 
-This fork is maintained by James Matthew Miraflor, who directed and reviewed an
-AI-assisted revision, testing, and documentation workflow. Authorship of
-CGE-Core as a revised software project does not imply authorship of the
+CGE-Core is led and maintained by James Matthew Miraflor, who directs and
+reviews its AI-assisted development, validation, integration, documentation,
+and release workflow. This project role does not imply authorship of the
 underlying PyCGE code, Hosoe models, IFPRI specification, or CAMCGE model.
 
 ---
@@ -363,6 +363,7 @@ sources.
   title   = {{CGE-Core}: a Pyomo-based computable general equilibrium framework},
   year    = {2026},
   version = {0.5.0},
+  note    = {Project lead and maintainer},
   url     = {https://github.com/miraflor/CGE-core}
 }
 ```

@@ -28,8 +28,9 @@ abstract: >-
   model ports are not James Matthew Miraflor's original work. He directed and
   reviewed an AI-assisted process covering the fork's corrections, engine API,
   testing, documentation, IFPRI implementation, CAMCGE replication benchmark,
-  and release workflow. He is cited as author and maintainer of this revised
-  software project, not of the underlying models or inherited code. The
+  and release workflow. He is cited as project lead and maintainer of this
+  revised software project, not as author of the underlying models or
+  inherited code. The
   official IFPRI source package and test data remain external. Hosoe is checked
   against GAMS Model Library references, IFPRI against full-precision external
   reference runs, and CAMCGE against its published base equilibrium and three
