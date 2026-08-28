@@ -44,11 +44,12 @@ parts:
   - caption: API Reference
     chapters:
       - file: api/index
-      - file: api/engine
+      - file: api/public
+      - file: api/model-definitions
       - file: api/samtools
       - file: api/datasets
-      - file: api/model-definitions
       - file: api/ifpri
+      - file: api/engine
 
   - caption: Developer Reference
     chapters:
