@@ -8,7 +8,7 @@
   }[ch]));
 
   const MODEL_ORDER = ['simple','standard','ifpri','camcge'];
-  const CGE_CORE_TARGET_VERSION = '0.5.0';
+  const CGE_CORE_TARGET_VERSION = '0.6.0';
   const CGE_CORE_REPOSITORY = 'https://github.com/miraflor/CGE-core';
   const CONTROL_ROOM_URL = 'https://miraflor.github.io/CGE-core/control-room/';
 
@@ -49,7 +49,7 @@
         ['Goods prices','px[i], pz[i]: relative consumer/producer price signals that coordinate the new equilibrium.'],
         ['Factor prices','pf[h]: wages/returns to modeled primary factors; central for incidence.'],
         ['Welfare','Utility objective: a compact measure of whether the representative household is better or worse off.'],
-        ['Comparison','SIM − BASE and percent change']
+        ['Comparison','Scenario − benchmark and percent change']
       ]
     },
 
@@ -133,7 +133,7 @@
         ['Tax revenue','Td, Tz[i], Tm[i]: direct, production-tax and tariff revenue; useful for identifying fiscal feedback from the reform.'],
         ['Saving','Private and government saving are endogenous; Sf is the exogenous foreign-saving term under this closure.'],
         ['Welfare','Utility plus optional equivalent variation (EV), giving a money-metric welfare interpretation at base prices.'],
-        ['Comparison','BASE, SIM, difference, % change']
+        ['Comparison','Benchmark, scenario, difference, % change']
       ]
     },
 
@@ -249,7 +249,7 @@
         ['i','good / sector','The same set indexes producing sectors and goods in this Hosoe model. BRD and MLK are the bundled example labels, not fixed limits.'],
         ['j','using sector','In X[i,j], i is the input good being supplied and j is the sector using it.'],
         ['h','primary factor','Labor, capital, or another factor supplied to production.'],
-        ['0','benchmark suffix','Z0, Xp0, M0, etc. are benchmark quantities used for calibration. CGE-Core protects these from in-place SIM edits.'],
+        ['0','benchmark suffix','Z0, Xp0, M0, etc. are benchmark quantities used for calibration. CGE-Core protects these from in-place scenario edits.'],
         ['p...','price prefix','pf, py, pz, pq, pe, pm and pd are endogenous prices. pWe and pWm are exogenous world prices.'],
         ['tau...','tax-rate prefix','tauz is the production-tax rate; taum is the import-tariff rate; taud is the calibrated direct-tax rate.']
       ],
@@ -287,7 +287,7 @@
         ['Taxes and tax revenue',[
           ['tauz[i]','Production-tax rate','Ad valorem tax rate on sector i’s gross output.','This is the policy rate you can shock.'],
           ['taum[i]','Import-tariff rate','Ad valorem tariff rate on imports of good i.','This is the policy rate you can shock.'],
-          ['taud','Direct-tax rate','Flat direct tax rate on household factor income.','Calibrated from the SAM and not exposed as a mutable SIM policy control in current StdModelDef.'],
+          ['taud','Direct-tax rate','Flat direct tax rate on household factor income.','Calibrated from the SAM and not exposed as a mutable scenario policy control in current StdModelDef.'],
           ['Tz[i]','Production-tax revenue','Revenue raised from tauz[i].','Endogenous fiscal result after output changes.'],
           ['Tm[i]','Tariff revenue','Revenue raised from taum[i].','Endogenous fiscal result after imports change.'],
           ['Td','Direct-tax revenue','Revenue from the calibrated direct tax.','Changes endogenously with household factor income.']
@@ -909,7 +909,7 @@
       const c=state.closure.simple||{};
       return {
         label:'Simple CGE · model-defined macro closure',
-        fixed:`Primary factor endowments FF[h] are exogenous (or fixed at the shocked SIM value). The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} anchors the nominal price scale.`,
+        fixed:`Primary factor endowments FF[h] are exogenous (or fixed at the shocked scenario value). The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} anchors the nominal price scale.`,
         adjusts:'Goods quantities, production, factor allocation, factor prices, and all non-numeraire prices adjust jointly until goods and factor markets clear.',
         balance:`One declared redundant market equation, ${(c.walrasEq||'eqpf')}[${c.walrasIndex||''}], is deactivated under Walras’ law; the omitted market must still clear at the solution.`,
         commitment:'Full-employment comparative static: aggregate factor supply is exogenous, so factor prices and sectoral allocation absorb factor-supply shocks.'
@@ -923,7 +923,7 @@
         : 'The exchange rate epsilon remains endogenous and helps clear the external account.';
       return {
         label:'Standard CGE · model-defined macro closure',
-        fixed:`Foreign saving Sf is exogenous (or fixed at the shocked SIM value). Factor endowments FF[h] and world prices pWm/pWe are exogenous unless explicitly shocked. The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} fixes the nominal scale.`,
+        fixed:`Foreign saving Sf is exogenous (or fixed at the shocked scenario value). Factor endowments FF[h] and world prices pWm/pWe are exogenous unless explicitly shocked. The selected numeraire ${c.numeraireVar||'pf'}${c.numeraireVar==='epsilon'?'':`[${c.numeraireIndex||''}]`} fixes the nominal scale.`,
         adjusts:`Government saving and private saving are endogenous. ${eps} Sector output, trade, factor demand, household demand, investment demand, and non-anchored prices adjust jointly.`,
         balance:`One declared redundant market equation, ${(c.walrasEq||'eqpf')}[${c.walrasIndex||''}], is deactivated. The external account is solved with exogenous Sf; saving drives investment.`,
         commitment:'A tariff or production-tax revenue loss is not automatically replaced by a compensating direct-tax increase. Under this model-defined closure, fiscal revenue changes can pass into government saving and economy-wide absorption.'
@@ -1191,7 +1191,7 @@
             </div>
           </div>
         </div>
-        <div class="closure-summary">Structural target: a square BASE system with degrees of freedom = 0 before calibration.</div>
+        <div class="closure-summary">Structural target: a square benchmark system with degrees of freedom = 0 before the nonlinear solve.</div>
         <div class="closure-contract-note"><strong>These dropdowns are not the whole macro closure.</strong> They choose the nominal price anchor and the redundant equation. Fiscal, external, saving-investment, and factor-market adjustment rules are defined by the model and summarized in the closure contract below.</div>
         <div class="closure-explainer">
           <div><strong>What the numeraire does</strong><p>A CGE model determines relative prices, not an absolute price level. Fixing one price simply chooses the unit in which all other prices are quoted. A sensible change of numeraire should not change real quantities or welfare.</p></div>
@@ -1382,9 +1382,9 @@
         ${targetSelect}
         <div class="form-field"><label>Operation</label>
           <select id="editOperation" class="select">
-            <option value="pct">Change by % of BASE</option>
+            <option value="pct">Change by % of benchmark</option>
             <option value="set">Set exact model value</option>
-            <option value="multiply">Multiply BASE by</option>
+            <option value="multiply">Multiply benchmark by</option>
             ${c.allowZero?'<option value="zero">Set to zero</option>':''}
           </select>
         </div>
@@ -1399,7 +1399,7 @@
           <div class="lens-box"><strong>What this shock means</strong><p>${esc(c.meaning||c.description)}</p></div>
           <div class="lens-box"><strong>What to watch in the results</strong><p>${esc(c.watch||'Follow the directly affected price or quantity first, then sector output, factor markets, household demand, trade and welfare.')}</p></div>
           <div class="lens-box"><strong>Important caution</strong><p>${esc(c.caution||'This is a comparative-static counterfactual: it asks for a new equilibrium, not the time path of adjustment.')}</p></div>
-          <div class="lens-box"><strong>General-equilibrium logic</strong><p>The selected value is exogenous in SIM. Prices and quantities that remain endogenous move together until all model markets and accounting identities are satisfied under the chosen closure.</p></div>
+          <div class="lens-box"><strong>General-equilibrium logic</strong><p>The selected value is exogenous in the scenario. Prices and quantities that remain endogenous move together until all model markets and accounting identities are satisfied under the chosen closure.</p></div>
         </div>
       </div>
       <button id="addConfiguredShock" type="button" class="button primary" style="margin-top:12px">${editIndex===null?'Add shock':'Update shock'}</button>`;
@@ -1452,9 +1452,9 @@
     if($('amountLabel')) $('amountLabel').textContent=labels[op]||'';
     const c=selectedControlFromEditor();
     let help='';
-    if(op==='pct') help='This is a relative change from the calibrated BASE value. Example: a 50% cut to a tax rate of 0.10 produces 0.05.';
+    if(op==='pct') help='This is a relative change from the solved benchmark value. Example: a 50% cut to a tax rate of 0.10 produces 0.05.';
     if(op==='multiply') help='Enter a factor such as 1.10 for a 10% increase or 0.50 for a 50% reduction.';
-    if(op==='zero') help='The selected exogenous parameter will be set to exactly zero in SIM.';
+    if(op==='zero') help='The selected exogenous parameter will be set to exactly zero in the scenario.';
     if(op==='set'){
       if(c && c.unit==='rate') help='Enter the exact decimal rate used by the model: 0.12 means 12%, 0.05 means 5%.';
       else if(c && c.unit==='price') help='Enter the exact model price level. In the Hosoe Standard benchmark, world prices are normalized to 1.';
@@ -1492,8 +1492,8 @@
     const m=model();
     const isEngine=Boolean(m.controls);
     if(!state.stack.length){
-      $('scenarioStack').innerHTML=`<div class="empty-stack">${isEngine?'Add a shock to start building the SIM.':'Click a scenario card to queue a run.'}</div>`;
-      $('stackSummary').textContent=isEngine?'The generated script will set all selected exogenous values, then solve one joint SIM equilibrium.':'The generated runner will execute the selected scenarios.';
+      $('scenarioStack').innerHTML=`<div class="empty-stack">${isEngine?'Add a shock to start building the scenario.':'Click a scenario card to queue a run.'}</div>`;
+      $('stackSummary').textContent=isEngine?'The generated script will set all selected exogenous values, then solve one joint scenario equilibrium.':'The generated runner will execute the selected scenarios.';
       return;
     }
     $('scenarioStack').innerHTML=state.stack.map((item,i)=>{
@@ -1521,7 +1521,7 @@
         const c=model().controls.find(x=>x.id===item.control);
         return c ? shockSummary(c,item) : '';
       }).filter(Boolean);
-      $('stackSummary').innerHTML=`<div>${state.stack.length} shock${state.stack.length>1?'s':''} will be combined into one SIM and solved simultaneously. Their display order does not change the equilibrium.</div>
+      $('stackSummary').innerHTML=`<div>${state.stack.length} shock${state.stack.length>1?'s':''} will be combined into one scenario and solved simultaneously. Their display order does not change the equilibrium.</div>
         <div class="policy-question"><strong>Policy question:</strong> What new equilibrium results if ${esc(phrases.join('; '))}, while the calibrated benchmark structure and selected closure are otherwise maintained?</div>`;
     }else{
       $('stackSummary').innerHTML=`<div>${state.stack.length} selected run${state.stack.length>1?'s':''}.</div>
@@ -1537,8 +1537,8 @@
   function shockSummary(c,item){
     const target=item.target?`${c.symbol.replace(/\[.*?\]/,'')}[${item.target}]` : c.symbol;
     if(item.operation==='zero') return `${target} → 0`;
-    if(item.operation==='pct') return `${target}: ${item.amount>=0?'+':''}${item.amount}% from BASE`;
-    if(item.operation==='multiply') return `${target}: BASE × ${item.amount}`;
+    if(item.operation==='pct') return `${target}: ${item.amount>=0?'+':''}${item.amount}% from benchmark`;
+    if(item.operation==='multiply') return `${target}: benchmark × ${item.amount}`;
     return `${target} → ${item.amount}`;
   }
 
@@ -1632,18 +1632,17 @@
   function engineCode(){
     const isStd=state.model==='standard';
     const m=model(), c=state.closure[state.model]||{};
-    const defClass=isStd?'StdModelDef':'SplModelDef';
-    const defImport=isStd?'stdcge_model_def':'splcge_model_def';
-    let ctor=`${defClass}()`;
+    const modelClass=isStd?'StdCGE':'SplCGE';
+    let ctor=`${modelClass}()`;
     if(isStd && state.accounts){
       const defaults={hoh:'HOH',gov:'GOV',inv:'INV',ext:'EXT',idt:'IDT',trf:'TRF'};
       const changed=Object.keys(defaults).filter(k=>(state.accounts[k]||defaults[k])!==defaults[k]);
       if(changed.length){
-        ctor=`${defClass}(accounts=${pyObject(Object.fromEntries(Object.keys(defaults).map(k=>[k,state.accounts[k]||defaults[k]])))})`;
+        ctor=`${modelClass}(accounts=${pyObject(Object.fromEntries(Object.keys(defaults).map(k=>[k,state.accounts[k]||defaults[k]])))})`;
       }
     }
     if(!isStd && state.simpleAccount && state.simpleAccount!=='HOH'){
-      ctor=`${defClass}(accounts={'hoh': ${py(state.simpleAccount)}})`;
+      ctor=`${modelClass}(accounts={'hoh': ${py(state.simpleAccount)}})`;
     }
 
     const dataLine=state.dataSource.mode==='custom'
@@ -1652,9 +1651,8 @@
 
     const imports=[
       'from pathlib import Path',
-      'from pyomo.environ import value',
-      'from cge_core import PyCGE, example_data',
-      `from cge_core.examples.${defImport} import ${defClass}`,
+      'from cge_core import CGE, example_data',
+      `from cge_core.models import ${modelClass}`,
       'from cge_core.examples._solver import detect_solver'
     ];
     if(isStd) imports.push('from cge_core.examples.stdcge import equivalent_variation');
@@ -1665,21 +1663,23 @@
     state.stack.filter(x=>x.kind==='shock').forEach((item,i)=>{
       const ctrl=m.controls.find(x=>x.id===item.control); if(!ctrl)return;
       const idx=ctrl.target==='scalar'?'None':py(item.target);
-      const ref=ctrl.target==='scalar'?`cge.base.${ctrl.component}`:`cge.base.${ctrl.component}[${py(item.target)}]`;
+      const ref=ctrl.target==='scalar'
+        ? `benchmark.value(${py(ctrl.component)})`
+        : `benchmark.value(${py(ctrl.component)}, ${py(item.target)})`;
       shockLines.push(`# ${i+1}. ${ctrl.name}${item.target?` — ${item.target}`:''}`);
       if(ctrl.meaning) shockLines.push(`# Economic meaning: ${ctrl.meaning}`);
       if(item.operation==='zero'){
-        shockLines.push(`cge.model_modify_sim(${py(ctrl.component)}, ${idx}, 0.0)`);
+        shockLines.push(`scenario.set(${py(ctrl.component)}, ${idx}, 0.0)`);
       }else if(item.operation==='set'){
-        shockLines.push(`cge.model_modify_sim(${py(ctrl.component)}, ${idx}, ${num(item.amount)})`);
+        shockLines.push(`scenario.set(${py(ctrl.component)}, ${idx}, ${num(item.amount)})`);
       }else{
-        shockLines.push(`base_${i+1} = value(${ref})`);
+        shockLines.push(`base_${i+1} = ${ref}`);
         if(item.operation==='pct'){
           shockLines.push(`new_${i+1} = base_${i+1} * (1.0 + ${num(item.amount)} / 100.0)`);
         }else{
           shockLines.push(`new_${i+1} = base_${i+1} * ${num(item.amount)}`);
         }
-        shockLines.push(`cge.model_modify_sim(${py(ctrl.component)}, ${idx}, new_${i+1})`);
+        shockLines.push(`scenario.set(${py(ctrl.component)}, ${idx}, new_${i+1})`);
       }
       shockLines.push('');
     });
@@ -1687,18 +1687,18 @@
 
     const results=isStd?`
 # --- Results ---------------------------------------------------------------
-results = cge.model_compare()
+results = result.compare(benchmark)
 output_dir = Path("cge-results")
 output_dir.mkdir(exist_ok=True)
 results.to_csv(output_dir / "scenario_changes.csv", index=False)
 
 print(results.to_string(index=False))
 print("\\nObjective comparison:", results.attrs.get("objective", {}))
-print("Equivalent variation:", equivalent_variation(cge))
+print("Equivalent variation:", equivalent_variation(benchmark, result))
 `:
 `
 # --- Results ---------------------------------------------------------------
-results = cge.model_compare()
+results = result.compare(benchmark)
 output_dir = Path("cge-results")
 output_dir.mkdir(exist_ok=True)
 results.to_csv(output_dir / "scenario_changes.csv", index=False)
@@ -1716,31 +1716,26 @@ ${closureCommentLines()}
 ${solverCode()}
 ${dataLine}
 
-# --- Build and calibrate BASE ---------------------------------------------
-cge = PyCGE(${ctor})
-cge.model_data(DATA_DIR)
-cge.model_instance(${py(c.numeraireVar||m.closure.defaultNumeraire)}, ${numIndex})
-cge.model_drop_redundant(${py(c.walrasEq||m.closure.defaultWalras)}, ${walIndex})
+# --- Configure and solve the benchmark -------------------------------------
+model = CGE(model=${ctor}, data=DATA_DIR)
+numeraire = (${py(c.numeraireVar||m.closure.defaultNumeraire)}, ${numIndex})
+redundant = (${py(c.walrasEq||m.closure.defaultWalras)}, ${walIndex})
 
-# Authoritative runtime structural preflight.
-# model_drop_redundant() already rolls back and raises WorkflowError unless
-# the resulting Pyomo system is square; this explicit assertion makes the
-# result visible to a first-time user before the nonlinear solve begins.
-dof = cge.degrees_of_freedom(cge.base)
-assert dof == 0, f"Structural preflight failed: degrees of freedom = {dof}"
-print("Structural preflight OK: degrees of freedom = 0")
-print("Numeraire:", cge.numeraire)
-print("Dropped redundant equation:", ${py(c.walrasEq||m.closure.defaultWalras)}, ${walIndex})
+print("Numeraire:", numeraire)
+print("Dropped redundant equation:", redundant)
+benchmark = model.solve_benchmark(
+    numeraire=numeraire,
+    redundant=redundant,
+    solver=solver,
+)
+print("Benchmark solved; CGE-Core accepted the structural closure.")
 
-cge.model_calibrate(solver)
-
-# --- Create SIM and apply the counterfactual ------------------------------
-cge.model_sim()
+# --- Create one isolated scenario and apply the counterfactual -------------
+scenario = benchmark.scenario("control-room scenario")
 ${shockLines.join('\n')}
-cge.model_solve(solver)
+result = scenario.solve(solver=solver)
 ${results}`;
   }
-
   function ifpriCode(){
     const ids=state.stack.filter(x=>x.kind==='scenario').map(x=>x.id);
     const pathLine=state.dataSource.ifpriPath.trim()
@@ -1873,7 +1868,7 @@ print("\\nSaved:", output_dir / "selected_experiments.json")
     $('scriptCaption').textContent=blockers.length
       ? 'Runnable export blocked — fix the preflight error(s) above'
       : ready
-        ? (closureCheck.status==='warn'?'Executable scenario — noncanonical closure pairing flagged':'Closure-recorded scenario with runtime DOF preflight')
+        ? (closureCheck.status==='warn'?'Executable scenario — noncanonical closure pairing flagged':'Closure-recorded scenario with public API structural validation')
         : 'Script scaffold — finish the highlighted steps above';
 
     $('copyCodeBtn').disabled=!ready;
