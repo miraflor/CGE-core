@@ -16,7 +16,7 @@ from cge_core.engine import (
 try:
     __version__ = _version("cge-core")
 except PackageNotFoundError:
-    __version__ = "0.3.0.dev0"
+    __version__ = "0.6.0"
 
 __all__ = [
     "CGE",
