@@ -54,6 +54,7 @@ parts:
   - caption: Developer Reference
     chapters:
       - file: developer/overview
+      - file: developer/extension-contract
       - file: OG_CORE_CROSSWALK
       - file: GAMS_CROSSWALK
 
