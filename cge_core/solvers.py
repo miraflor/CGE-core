@@ -1,14 +1,13 @@
-"""Central solver policy for the v0.7 public modelling system.
+"""Central solver policy for CGE-Core v0.7.
 
-Ordinary users call ``.solve()``. Solver discovery and first-use setup are
-infrastructure below the practitioner API. Advanced users may still request a
-specific backend explicitly with ``.solve(solver="ipopt")``.
+Ordinary users call ``.solve()``. Solver discovery and first-use setup remain
+below the practitioner API. Advanced users may still request a backend
+explicitly with ``.solve(solver="ipopt")``.
 """
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import importlib.util
-import os
 from pathlib import Path
 import platform
 from typing import Optional
@@ -51,56 +50,46 @@ def _probe(name: str) -> bool:
         return False
 
 
-def _activate_ampl_ipopt() -> bool:
-    """Expose an installed AMPL COIN Ipopt module to Pyomo.
-
-    Pyomo caches executable lookups. A normal ``SolverFactory("ipopt")`` probe
-    performed before AMPL's COIN module is installed therefore caches "ipopt
-    not found". Merely adding the module directory to PATH after installation
-    is not sufficient in that same Python process.
-
-    Register the exact executable path with Pyomo's Executable registry. This
-    both invalidates the stale negative lookup and avoids platform-specific
-    PATH parsing problems.
-    """
+def _ampl_ipopt_path() -> Optional[Path]:
     try:
         from amplpy import modules
 
         executable = Path(modules.find("ipopt")).resolve()
     except Exception:
+        return None
+    return executable if executable.is_file() else None
+
+
+def _activate_ampl_ipopt() -> bool:
+    """Register AMPL's Ipopt driver through Pyomo's NL solver interface.
+
+    AMPL solver modules are NL/ASL solver drivers.  Pyomo's documented route
+    for these binaries is ``SolverFactory("ipoptnl", executable=..., solve_io="nl")``.
+    Registering the module binary as a normal ``ipopt`` executable is not
+    sufficient and is the bug that broke fresh Colab runtimes.
+    """
+    executable = _ampl_ipopt_path()
+    if executable is None:
         return False
 
-    if not executable.is_file():
-        return False
-
-    # Keep the module directory on PATH as well: the solver executable may need
-    # sibling binaries/libraries, especially on Windows.
-    parent = str(executable.parent)
-    current = os.environ.get("PATH", "")
-    pieces = current.split(os.pathsep) if current else []
-    if parent not in pieces:
-        os.environ["PATH"] = parent + (os.pathsep + current if current else "")
-
-    # Critical v0.7.0 fix: Pyomo's executable registry caches failed lookups.
-    # An explicit path override persists across rehashes and is the supported
-    # way to tell Pyomo where a newly installed executable lives.
     try:
-        Executable("ipopt").set_path(str(executable))
+        # Pyomo's `ipoptnl` plugin looks up the executable through the
+        # Executable registry when instantiated without an explicit path.
+        Executable("ipoptnl").set_path(str(executable))
     except Exception:
         return False
 
-    return _probe("ipopt")
+    return _probe("ipoptnl")
 
 
 def _install_default_solver() -> str:
-    """Prepare CGE-Core's default open-source NLP backend on first use."""
+    """Install and register the default open-source NLP backend on first use."""
     try:
         from amplpy import modules
     except Exception as exc:
         raise SolverResolutionError(
             "CGE-Core could not prepare its default NLP solver because the "
-            "solver-support dependency is missing. Reinstall CGE-Core, or use "
-            "an existing supported solver explicitly."
+            "solver-support dependency is missing."
         ) from exc
 
     try:
@@ -113,90 +102,71 @@ def _install_default_solver() -> str:
             modules.install("coin")
     except Exception as exc:
         raise SolverResolutionError(
-            "CGE-Core could not prepare its default open-source NLP solver "
-            "automatically. Check network access, or use an existing supported "
-            "solver explicitly with .solve(solver=...)."
+            "CGE-Core could not install its default open-source NLP solver. "
+            "Check network access or choose an already installed solver."
         ) from exc
 
     if _activate_ampl_ipopt():
-        return "ipopt"
+        return "ipoptnl"
 
     raise SolverResolutionError(
-        "CGE-Core installed the default COIN solver bundle, but its IPOPT "
-        "executable could not be registered with Pyomo. Advanced users can "
-        "inspect the environment with `cge doctor` or supply a supported "
-        "solver explicitly."
+        "CGE-Core installed the COIN solver bundle, but Pyomo could not use "
+        "its Ipopt NL driver."
     )
 
 
 def resolve_solver(preferred: Optional[str] = None) -> str:
-    """Return a usable solver.
+    """Return a solver name usable by Pyomo.
 
-    With no explicit preference, CGE-Core first uses an existing supported
-    backend and, if necessary, prepares its default Ipopt backend automatically.
-    If an advanced user explicitly requests a solver, CGE-Core does not silently
-    substitute a different backend.
+    Priority without an explicit preference:
+      1. a normal system ``ipopt``;
+      2. a working ``cyipopt``;
+      3. AMPL's COIN Ipopt through Pyomo's ``ipoptnl`` interface.
+
+    ``preferred="ipopt"`` means "use Ipopt"; if a system executable is absent,
+    the AMPL NL driver is an acceptable implementation of that same solver.
     """
-    candidates = (preferred,) if preferred else ("ipopt", "cyipopt")
-    for candidate in candidates:
-        if candidate and _probe(candidate):
-            return candidate
+    if preferred:
+        if _probe(preferred):
+            return preferred
+        if preferred == "ipopt":
+            if _activate_ampl_ipopt():
+                return "ipoptnl"
+            try:
+                return _install_default_solver()
+            except SolverResolutionError:
+                pass
+        raise SolverResolutionError(
+            f"The requested solver {preferred!r} is not usable in this environment."
+        )
 
-    # An AMPL solver module may already be installed but not yet registered
-    # with Pyomo in this Python process.
-    if preferred in (None, "ipopt") and _activate_ampl_ipopt():
+    if _probe("ipopt"):
         return "ipopt"
-
-    # First-use setup belongs below the ordinary .solve() interface.
-    if preferred is None:
-        return _install_default_solver()
-
-    raise SolverResolutionError(
-        f"The requested solver {preferred!r} is not usable in this environment. "
-        "Install/configure that backend or omit solver= to use CGE-Core's "
-        "automatic default."
-    )
+    if _probe("cyipopt"):
+        return "cyipopt"
+    if _activate_ampl_ipopt():
+        return "ipoptnl"
+    return _install_default_solver()
 
 
 def install_solver() -> str:
-    """Compatibility helper for explicit environment setup.
-
-    Ordinary users should not need this function: ``.solve()`` performs default
-    solver setup automatically when required.
-    """
+    """Compatibility helper; ordinary users should simply call ``.solve()``."""
     return resolve_solver()
 
 
 def solver_info(preferred: Optional[str] = None) -> SolverInfo:
-    _activate_ampl_ipopt()
-    ipopt = _probe("ipopt")
-    cyipopt = _probe("cyipopt")
-
     selected = None
-    if preferred:
-        selected = preferred if _probe(preferred) else None
-    elif ipopt:
-        selected = "ipopt"
-    elif cyipopt:
-        selected = "cyipopt"
-
-    if selected:
+    detail = ""
+    try:
+        selected = resolve_solver(preferred)
         detail = "usable"
-    elif preferred and (ipopt or cyipopt):
-        alternatives = ", ".join(
-            name for name, ok in (("ipopt", ipopt), ("cyipopt", cyipopt)) if ok
-        )
-        detail = (
-            f"requested solver {preferred!r} is unavailable; "
-            f"usable alternative(s): {alternatives}"
-        )
-    else:
-        detail = "no supported local NLP solver detected"
+    except SolverResolutionError as exc:
+        detail = str(exc)
 
     return SolverInfo(
         selected=selected,
-        ipopt=ipopt,
-        cyipopt=cyipopt,
+        ipopt=_probe("ipopt") or _probe("ipoptnl"),
+        cyipopt=_probe("cyipopt"),
         python=platform.python_version(),
         platform=platform.platform(),
         detail=detail,

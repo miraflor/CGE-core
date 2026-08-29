@@ -1,0 +1,88 @@
+name: notebook execution
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cge_core/**"
+      - "cam/**"
+      - "notebooks/**"
+      - "pyproject.toml"
+      - ".github/workflows/notebooks.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "cge_core/**"
+      - "cam/**"
+      - "notebooks/**"
+      - "pyproject.toml"
+      - ".github/workflows/notebooks.yml"
+  workflow_dispatch:
+
+jobs:
+  notebooks:
+    name: all notebooks (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.13 matches the current Google Colab runtime; 3.11 remains the
+        # project's established real-IPOPT validation lane.
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install checked-out CGE-Core and notebook runner
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+          python -m pip install nbclient nbformat ipykernel
+
+      - name: Execute every canonical notebook
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import copy
+          import nbformat
+          from nbclient import NotebookClient
+
+          names = [
+              "01_first_cge.ipynb",
+              "02_policy_experiments.ipynb",
+              "03_your_own_sam.ipynb",
+              "04_camcge.ipynb",
+              "05_ifpri.ipynb",
+              "06_build_a_model.ipynb",
+              "90_internals.ipynb",
+          ]
+
+          for name in names:
+              path = Path("notebooks") / name
+              nb = nbformat.read(path, as_version=4)
+              run = copy.deepcopy(nb)
+
+              # CI already installed the checked-out package.  Replace only
+              # the notebook's distribution-install cell so execution tests
+              # the exact source in this commit rather than an older tag.
+              for cell in run.cells:
+                  if cell.cell_type == "code" and "%pip install" in cell.source:
+                      cell.source = "print('CGE-Core already installed from checked-out source')"
+                      break
+
+              print(f"EXECUTING {name}")
+              client = NotebookClient(
+                  run,
+                  timeout=600,
+                  kernel_name="python3",
+                  allow_errors=False,
+              )
+              client.execute(cwd=str(Path.cwd()))
+              print(f"PASS {name}")
+
+          print("ALL SEVEN CANONICAL NOTEBOOKS PASSED")
+          PY
