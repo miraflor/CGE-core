@@ -1,66 +1,31 @@
 format: jb-book
-root: intro
-
+root: index
 parts:
-  - caption: Getting Started
+  - caption: Practitioner guides
     chapters:
-      - file: getting-started/overview
-      - file: architecture
-      - file: getting-started/installation
-      - file: getting-started/quickstart
-      - file: getting-started/first-simulation
-
-  - caption: Models
+      - file: install
+      - file: first_cge
+      - file: policy_experiments
+      - file: own_sam
+      - file: bundled_models
+      - file: authoring_python
+      - file: cge_md
+      - file: validation
+      - file: advanced
+  - caption: Notebooks
     chapters:
-      - file: models/overview
-      - file: models/simple
-      - file: models/standard
-      - file: models/ifpri
-      - file: models/camcge
-
-  - caption: Theory
+      - file: notebooks/01_first_cge
+      - file: notebooks/02_policy_experiments
+      - file: notebooks/03_your_own_sam
+      - file: notebooks/04_camcge
+      - file: notebooks/05_ifpri
+      - file: notebooks/06_build_a_model
+      - file: notebooks/90_internals
+  - caption: Reference
     chapters:
-      - file: theory/overview
-      - file: theory/sam
-      - file: theory/production
-      - file: theory/final-demand
-      - file: theory/trade
-      - file: theory/closure
-
-  - caption: Tutorials
-    chapters:
-      - file: tutorials/overview
-      - file: tutorials/colab-notebooks
-      - file: tutorials/loading-sam
-      - file: tutorials/tariff-reform
-
-  - caption: Validation
-    chapters:
-      - file: validation/overview
-      - file: validation/hosoe-gams
-      - file: validation/ifpri
-      - file: validation/camcge
-
-  - caption: API Reference
-    chapters:
-      - file: api/index
-      - file: api/public
-      - file: api/model-definitions
-      - file: api/samtools
-      - file: api/datasets
-      - file: api/ifpri
-      - file: api/engine
-
-  - caption: Developer Reference
-    chapters:
-      - file: developer/overview
-      - file: developer/extension-contract
-      - file: OG_CORE_CROSSWALK
-      - file: GAMS_CROSSWALK
-
-  - caption: Detailed Reference
-    chapters:
-      - file: workflow
       - file: MODEL
       - file: IFPRI
       - file: GAMS_STDCGE_VALIDATION
+      - file: GAMS_CROSSWALK
+      - file: OG_CORE_CROSSWALK
+      - file: architecture

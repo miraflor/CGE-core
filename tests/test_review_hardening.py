@@ -1,8 +1,7 @@
-"""Regression tests added after the independent adversarial review."""
-
+"""Regression tests retained after the independent adversarial review."""
 import pytest
 
-import cge_core.engine as engine
+import cge_core.solvers as solver_resolution
 import tests._util as test_util
 from cge_core.engine import DataValidationError, PyCGE, SolveError
 from cge_core.examples.stdcge_model_def import StdModelDef
@@ -26,15 +25,20 @@ def test_cyipopt_probe_rejects_missing_scipy(monkeypatch):
         def available(self, exception_flag=False):
             return True
 
-    monkeypatch.setattr(engine, "SolverFactory", lambda name: ReportedAvailable())
-    real_find_spec = engine.importlib.util.find_spec
+    monkeypatch.setattr(
+        "pyomo.environ.SolverFactory", lambda name: ReportedAvailable()
+    )
+    real_find_spec = solver_resolution.importlib.util.find_spec
 
     def find_spec_without_scipy(name):
         if name == "scipy":
             return None
         return real_find_spec(name)
 
-    monkeypatch.setattr(engine.importlib.util, "find_spec", find_spec_without_scipy)
+    monkeypatch.setattr(
+        solver_resolution.importlib.util, "find_spec", find_spec_without_scipy
+    )
+    assert solver_resolution._probe("cyipopt") is False
     with pytest.raises(SolveError, match="cyipopt"):
         PyCGE._available_solver("cyipopt")
 
