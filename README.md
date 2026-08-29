@@ -160,15 +160,19 @@ The experimental `.cge.md` format keeps prose inert and executes only fenced `cg
 
 ## Notebook course
 
-The canonical v0.7.0 sequence is:
+Start anywhere, or follow the sequence from first equilibrium to advanced internals.
 
-1. [`01_first_cge.ipynb`](notebooks/01_first_cge.ipynb) — solve and read an economy
-2. [`02_policy_experiments.ipynb`](notebooks/02_policy_experiments.ipynb) — benchmark → shock → counterfactual → comparison
-3. [`03_your_own_sam.ipynb`](notebooks/03_your_own_sam.ipynb) — inspect and load a SAM
-4. [`04_camcge.ipynb`](notebooks/04_camcge.ipynb) — published replication model
-5. [`05_ifpri.ipynb`](notebooks/05_ifpri.ipynb) — synthetic public path and clean-room boundary
-6. [`06_build_a_model.ipynb`](notebooks/06_build_a_model.ipynb) — functional Python and `.cge.md`
-7. [`90_internals.ipynb`](notebooks/90_internals.ipynb) — Pyomo and `PyCGE` for advanced users
+| | Notebook | What you will do | Run online |
+|---:|---|---|---|
+| **01** | [`Your first CGE`](notebooks/01_first_cge.ipynb) | Solve the benchmark and read prices, production, trade, and closure | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)** |
+| **02** | [`Policy experiments`](notebooks/02_policy_experiments.ipynb) | Benchmark → shock → counterfactual → comparison | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/02_policy_experiments.ipynb)** |
+| **03** | [`Bring your own SAM`](notebooks/03_your_own_sam.ipynb) | Inspect a SAM, check balance, and load an economy | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/03_your_own_sam.ipynb)** |
+| **04** | [`CAMCGE`](notebooks/04_camcge.ipynb) | Run the published Cameroon replication model | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/04_camcge.ipynb)** |
+| **05** | [`IFPRI Standard CGE`](notebooks/05_ifpri.ipynb) | Use the synthetic public path and understand the clean-room boundary | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/05_ifpri.ipynb)** |
+| **06** | [`Build a model`](notebooks/06_build_a_model.ipynb) | Explore functional Python authoring and experimental `.cge.md` | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/06_build_a_model.ipynb)** |
+| **90** | [`Internals`](notebooks/90_internals.ipynb) | Inspect Pyomo and PyCGE after learning the practitioner API | **[Open in Colab ↗](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/90_internals.ipynb)** |
+
+**[View the full notebook course →](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)**
 
 Legacy notebook filenames from earlier releases are retained only as tiny redirect notebooks so old links do not break. They contain no Git/PATH/bootstrap machinery and are not part of the v0.7.0 learning path.
 
