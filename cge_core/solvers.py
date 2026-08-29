@@ -1,7 +1,7 @@
 """Central solver policy for the v0.7 public modelling system.
 
-Ordinary users call ``.solve()``.  Solver discovery and first-use setup are
-infrastructure below the practitioner API.  Advanced users may still request a
+Ordinary users call ``.solve()``. Solver discovery and first-use setup are
+infrastructure below the practitioner API. Advanced users may still request a
 specific backend explicitly with ``.solve(solver="ipopt")``.
 """
 from __future__ import annotations
@@ -12,6 +12,8 @@ import os
 from pathlib import Path
 import platform
 from typing import Optional
+
+from pyomo.common import Executable
 
 
 class SolverResolutionError(RuntimeError):
@@ -50,21 +52,43 @@ def _probe(name: str) -> bool:
 
 
 def _activate_ampl_ipopt() -> bool:
-    """Expose an already-installed AMPL COIN Ipopt module to Pyomo."""
+    """Expose an installed AMPL COIN Ipopt module to Pyomo.
+
+    Pyomo caches executable lookups. A normal ``SolverFactory("ipopt")`` probe
+    performed before AMPL's COIN module is installed therefore caches "ipopt
+    not found". Merely adding the module directory to PATH after installation
+    is not sufficient in that same Python process.
+
+    Register the exact executable path with Pyomo's Executable registry. This
+    both invalidates the stale negative lookup and avoids platform-specific
+    PATH parsing problems.
+    """
     try:
         from amplpy import modules
 
         executable = Path(modules.find("ipopt")).resolve()
     except Exception:
         return False
+
     if not executable.is_file():
         return False
 
+    # Keep the module directory on PATH as well: the solver executable may need
+    # sibling binaries/libraries, especially on Windows.
     parent = str(executable.parent)
     current = os.environ.get("PATH", "")
     pieces = current.split(os.pathsep) if current else []
     if parent not in pieces:
         os.environ["PATH"] = parent + (os.pathsep + current if current else "")
+
+    # Critical v0.7.0 fix: Pyomo's executable registry caches failed lookups.
+    # An explicit path override persists across rehashes and is the supported
+    # way to tell Pyomo where a newly installed executable lives.
+    try:
+        Executable("ipopt").set_path(str(executable))
+    except Exception:
+        return False
+
     return _probe("ipopt")
 
 
@@ -80,7 +104,13 @@ def _install_default_solver() -> str:
         ) from exc
 
     try:
-        modules.install("coin")
+        installed = set(modules.installed())
+    except Exception:
+        installed = set()
+
+    try:
+        if "coin" not in installed:
+            modules.install("coin")
     except Exception as exc:
         raise SolverResolutionError(
             "CGE-Core could not prepare its default open-source NLP solver "
@@ -92,9 +122,10 @@ def _install_default_solver() -> str:
         return "ipopt"
 
     raise SolverResolutionError(
-        "CGE-Core prepared the default COIN solver bundle, but IPOPT was not "
-        "usable by Pyomo. Advanced users can inspect the environment with "
-        "`cge doctor` or supply a supported solver explicitly."
+        "CGE-Core installed the default COIN solver bundle, but its IPOPT "
+        "executable could not be registered with Pyomo. Advanced users can "
+        "inspect the environment with `cge doctor` or supply a supported "
+        "solver explicitly."
     )
 
 
@@ -104,14 +135,15 @@ def resolve_solver(preferred: Optional[str] = None) -> str:
     With no explicit preference, CGE-Core first uses an existing supported
     backend and, if necessary, prepares its default Ipopt backend automatically.
     If an advanced user explicitly requests a solver, CGE-Core does not silently
-    substitute or install a different backend.
+    substitute a different backend.
     """
     candidates = (preferred,) if preferred else ("ipopt", "cyipopt")
     for candidate in candidates:
         if candidate and _probe(candidate):
             return candidate
 
-    # An AMPL solver module may already be installed but not yet exposed on PATH.
+    # An AMPL solver module may already be installed but not yet registered
+    # with Pyomo in this Python process.
     if preferred in (None, "ipopt") and _activate_ampl_ipopt():
         return "ipopt"
 
