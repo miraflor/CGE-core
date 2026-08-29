@@ -1,18 +1,17 @@
-# CGE Theory
+# Economic theory
 
-A computable general equilibrium model describes an economy as a system of
-mutually dependent markets and institutions.
+The software is useful only because each model encodes a coherent system of economic
+accounts, behavioral equations, identities, market-clearing conditions, and closure rules.
 
-## Standard-model structure
+For the Hosoe Standard CGE, the major blocks fit together as follows.
 
-```{mermaid} /diagrams/standard-cge-theory.mmd
-:name: standard-cge-theory
-:alt: Standard CGE model structure showing production, institutions, trade, market clearing, balance of payments, closure, and general equilibrium.
+```{mermaid} ../diagrams/standard-cge-theory.mmd
+:name: standard-cge-economic-structure
+:alt: Economic structure of the Standard CGE model linking production, factor markets, households, government, investment, domestic markets, imports, exports, and the rest of the world.
 ```
 
-This diagram is intentionally detailed. Use the mouse wheel or a trackpad
-pinch gesture to **zoom**, drag to **pan**, or select **⛶** to open it in full
-screen.
+Use the mouse wheel or a trackpad pinch gesture to **zoom**, drag to **pan**, or select
+**⛶** to inspect the diagram in full screen.
 
 ````{dropdown} Mermaid source
 {download}`Download the .mmd source </diagrams/standard-cge-theory.mmd>`
@@ -22,15 +21,13 @@ screen.
 ```
 ````
 
-CGE-Core's standard model can be understood in five blocks:
+A useful reading sequence is:
 
-1. **benchmark accounting** — the Social Accounting Matrix;
-2. **production** — firms combine factors and intermediate inputs;
-3. **final demand** — households, government, and investment demand goods;
-4. **trade** — domestic and foreign goods are imperfect substitutes and
-   output can be allocated between domestic and export markets; and
-5. **closure** — prices and quantities adjust until all independent
-   equilibrium conditions hold.
+1. {doc}`sam` — what the benchmark accounting table means;
+2. {doc}`production` — how sectors transform inputs into output;
+3. {doc}`final-demand` — household, government, and investment demand;
+4. {doc}`trade` — Armington import substitution and CET export transformation;
+5. {doc}`closure` — what is exogenous, what adjusts, and why one equilibrium condition is redundant.
 
-The following pages explain these blocks using the equations implemented in
-CGE-Core.
+The diagrams are explanatory views of the equations; the authoritative model definitions
+and validation evidence remain the implementation and reference tests.

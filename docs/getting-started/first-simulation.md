@@ -1,96 +1,51 @@
-# Your First Policy Simulation
+# Your first policy simulation
 
-A static CGE policy experiment compares two internally consistent equilibria:
+A CGE counterfactual asks:
 
-1. the **benchmark equilibrium**, calibrated to reproduce benchmark data; and
-2. a **counterfactual equilibrium**, solved after changing an exogenous
-   parameter or endowment.
+> If the exogenous policy or environment changed, what internally consistent equilibrium
+> would satisfy the model afterward?
 
-CGE-Core calls the SAM-replicating static reference state the **benchmark**.
-This avoids overloading *baseline*, which is often used for a time path in
-dynamic models.
-
-Consider the standard model's import tariff parameter, `taum`.
-
-## Solve the benchmark
+Start from a solved benchmark:
 
 ```python
-from cge_core import CGE, example_data
-from cge_core.models import StdCGE
+from cge_core import StandardCGE
 
-model = CGE(
-    model=StdCGE(),
-    data=example_data("stdcge"),
-)
-
-benchmark = model.solve_benchmark(
-    numeraire=("pf", "LAB"),
-    redundant=("eqpf", "LAB"),
-)
+base = StandardCGE.example().solve()
 ```
 
-`CGE` is a stateless blueprint. Every call to `solve_benchmark()` constructs and
-solves a fresh backend, so solved benchmarks do not compete for one mutable
-simulation slot.
-
-At this point CGE-Core has recovered the calibrated model state needed to
-reproduce the benchmark equilibrium. Public reads use the protected numerical
-snapshot:
+Create an independent scenario and change an economic assumption:
 
 ```python
-print(benchmark.value("Z", "BRD"))
-print(benchmark.value("pf", "LAB"))
-print(benchmark.objective)
+policy = base.scenario("Tariff cut")
+policy.tariff("BRD", change=-0.50)
 ```
 
-## Create the counterfactual
+`change=-0.50` means “reduce the existing tariff rate by 50 percent.” It does not mean
+“subtract 50 percentage points.”
+
+Solve the new equilibrium:
 
 ```python
-scenario = benchmark.scenario("bread tariff abolition")
-scenario.set("taum", "BRD", 0.0)
-result = scenario.solve()
+result = policy.solve()
 ```
 
-The scenario owns an independent copy of the calibrated backend. The shock
-sets the bread import tariff to zero in that scenario while leaving the
-benchmark protected and available for other scenarios.
-
-You can therefore branch more than one experiment from the same benchmark:
+Compare all endogenous variables with the benchmark:
 
 ```python
-tariff = benchmark.scenario("tariff abolition")
-tariff.set("taum", "BRD", 0.0)
-
-tax = benchmark.scenario("production-tax abolition")
-tax.set("tauz", "BRD", 0.0)
-
-result_tariff = tariff.solve()
-result_tax = tax.solve()
+comparison = result.compare(base)
+comparison
 ```
 
-## Compare immutable results
+The resulting differences reflect **all model adjustments together**: domestic and import
+prices, production, trade, factor allocation, income, demand, saving, and other endogenous
+quantities respond jointly.
+
+For a second independent experiment:
 
 ```python
-comparison = result.compare(benchmark)
-
-print(comparison)
-print(comparison.attrs["objective"])
+factor_case = base.scenario("More capital")
+factor_case.endowment("CAP", change=0.10)
+factor_result = factor_case.solve()
 ```
 
-The returned `Result` is an immutable numerical snapshot: later scenario edits
-or solves do not retroactively change an earlier result. You can also compare one compatible
-`Result` with another.
-
-## What changed economically?
-
-Removing a tariff directly changes the domestic price wedge on imports. The
-model then re-solves **all markets simultaneously**: import demand, domestic
-production, factor demand, household demand, government revenue, saving,
-investment and trade adjust until a new equilibrium is reached.
-
-That general-equilibrium feedback is the central reason to use a CGE model
-rather than applying the tariff change to one equation in isolation.
-
-For the trade equations, see {doc}`../theory/trade`. For the public object
-reference, see {doc}`../api/public`. For the underlying `PyCGE` engine workflow,
-see {doc}`../workflow`.
+The two scenarios do not share mutable counterfactual state.

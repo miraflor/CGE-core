@@ -1,13 +1,21 @@
 # CAMCGE
 
-CAMCGE is included as a repository-level replication benchmark.
+CAMCGE is the published Cameroon model replication used as an independent historical
+validation benchmark.
 
-Its role is different from the installed core models: it tests whether CGE-Core can reproduce a published CGE implementation beyond the Hosoe and IFPRI benchmark families.
+v0.7 makes it a first-class installed model:
 
-The replication checks:
+```python
+from cge_core import CamCGE
 
-- published base-equilibrium variable levels;
-- the published objective value; and
-- three published policy experiments.
+base = CamCGE.example().solve()
 
-CAMCGE remains outside the installed `cge_core` package because it is a replication benchmark rather than an independently authored core model subsystem.
+windfall = base.scenario("Oil windfall")
+windfall.set("fsav", None, 500)
+result = windfall.solve()
+```
+
+Its equations and closure remain CAMCGE-specific. The façade is a usability layer, not a
+rewrite into the Hosoe model.
+
+See `CAMCGE_REPLICATION_GUIDE.md` and `CAMCGE_VALIDATION_REPORT.md` in the repository root.

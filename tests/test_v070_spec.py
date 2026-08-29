@@ -24,7 +24,6 @@ shockable endowment
 ```
 """
 
-
 def test_prose_is_inert():
     a = validate_document(parse_text(MODEL, path="a.cge.md"))
     b = validate_document(
@@ -37,7 +36,6 @@ def test_prose_is_inert():
     assert [(x.name, x.lhs, x.rhs) for x in a.equations] == [
         (x.name, x.lhs, x.rhs) for x in b.equations
     ]
-
 
 def test_reference_spec_compiles_to_square_model():
     from pyomo.environ import Constraint, Var
@@ -52,7 +50,6 @@ def test_reference_spec_compiles_to_square_model():
     assert model.p["FOOD"].fixed
     assert not model.market_food.active
     assert model._cge_shockable == frozenset({"endowment"})
-
 
 def test_multidimensional_parameter_compiles():
     from pyomo.environ import value
@@ -73,19 +70,15 @@ shockable a
     model = compile_document(validate_document(doc))
     assert value(model.a["A", "X"]) == 1.0
 
-
 def test_hyphenated_component_name_is_rejected_at_parse_time():
     import pytest
-
     from cge_core.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Unsupported CGE statement"):
         parse_text("```cge\nvar x-y >= 0\n```", path="bad-name.cge.md")
 
-
 def test_comparison_operator_has_named_error():
     import pytest
-
     from cge_core.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Comparison operators"):
@@ -94,10 +87,8 @@ def test_comparison_operator_has_named_error():
             path="comparison.cge.md",
         )
 
-
 def test_parameter_only_equation_is_rejected():
     import pytest
-
     from cge_core.spec import CGESpecError
 
     doc = validate_document(
@@ -113,10 +104,8 @@ equation e: a = b
     with pytest.raises(CGESpecError, match="contains no decision variable"):
         compile_document(doc)
 
-
 def test_set_member_component_collision_is_rejected():
     import pytest
-
     from cge_core.spec import CGESpecError
 
     doc = parse_text(

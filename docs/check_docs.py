@@ -13,21 +13,18 @@ LEGACY = [
 ]
 FORBIDDEN = [
     "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF", "sys.path.insert",
-    "os.chdir(", "os.environ[\"PATH\"]", "amplpy.modules", "subprocess.run",
+    "os.chdir(", 'os.environ["PATH"]', "amplpy.modules", "subprocess.run",
 ]
-
 
 def notebook_text(path):
     nb = json.loads(path.read_text(encoding="utf-8"))
     return "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
 
-
 def main():
     nbdir = ROOT / "notebooks"
     docs_nb = ROOT / "docs" / "notebooks"
     for name in CANONICAL:
-        a = nbdir / name
-        b = docs_nb / name
+        a, b = nbdir / name, docs_nb / name
         assert a.is_file(), f"missing canonical notebook: {name}"
         assert b.is_file(), f"missing docs notebook copy: {name}"
         assert a.read_bytes() == b.read_bytes(), f"docs copy differs: {name}"
@@ -37,18 +34,59 @@ def main():
         text = notebook_text(path)
         for token in FORBIDDEN:
             assert token not in text, (path.name, token)
+
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for required in (
-        "StandardCGE.example().solve()", "CGE-Core Control Room", "01_first_cge.ipynb",
-        "ifpri_cleanroom.md",
-    ):
+    for required in ("StandardCGE.example().solve()", "CGE-Core Control Room", "01_first_cge.ipynb", "ifpri_cleanroom.md"):
         assert required in readme, required
-    app = (ROOT / "docs/microsites/control-room/assets/app.js").read_text(encoding="utf-8")
+
+    config = (ROOT / "docs/_config.yml").read_text(encoding="utf-8")
+    for required in ("sphinxcontrib.mermaid", 'mermaid_version: "11.12.1"', "mermaid_d3_zoom: true", "mermaid_fullscreen: true"):
+        assert required in config, required
+
+    toc = (ROOT / "docs/_toc.yml").read_text(encoding="utf-8")
+    for required in (
+        "Getting Started", "Practitioner Guides", "Models", "Theory", "Tutorials",
+        "Executable Notebooks", "Validation", "API Reference", "Developer Reference",
+        "Detailed Reference", "theory/overview", "api/public", "architecture",
+    ):
+        assert required in toc, required
+
+    for diagram in (
+        ROOT / "docs/diagrams/pycge-architecture.mmd",
+        ROOT / "docs/diagrams/standard-cge-theory.mmd",
+        ROOT / "docs/diagrams/cge-core-v070-public.mmd",
+    ):
+        assert diagram.is_file(), f"missing Mermaid source: {diagram.name}"
+        assert diagram.stat().st_size > 200, f"Mermaid source unexpectedly tiny: {diagram.name}"
+
+    html = (ROOT / "docs/microsites/control-room/index.html").read_text(encoding="utf-8")
+    app_path = ROOT / "docs/microsites/control-room/assets/app.js"
+    css_path = ROOT / "docs/microsites/control-room/assets/styles.css"
+    app = app_path.read_text(encoding="utf-8")
+
+    # Protect the mature six-step Control Room from being replaced by another tiny demo.
+    for required_id in (
+        'id="modelStep"', 'id="walkthroughStep"', 'id="economyStep"',
+        'id="closureStep"', 'id="scenarioStep"', 'id="scriptStep"',
+        'id="notationPrimer"', 'id="variableGlossary"', 'id="flowStory"',
+        'id="scenarioStack"', 'id="downloadPyBtn"', 'id="downloadJsonBtn"',
+    ):
+        assert required_id in html, required_id
+    assert app_path.stat().st_size > 30000, "Control Room app was unexpectedly simplified"
+    assert css_path.stat().st_size > 10000, "Control Room styling was unexpectedly simplified"
     assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
     assert "from cge_core import StandardCGE" in app
     assert "from cge_core import CGE, example_data" not in app
-    print("documentation/notebook/control-room checks passed")
+    for required in ("TARCUT1", "EXP1", "scenario.tariff", "scenario.endowment", "StandardCGE.from_sam"):
+        assert required in app, required
 
+    architecture = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
+    assert "cge-core-v070-public.mmd" in architecture
+    assert "pycge-architecture.mmd" in architecture
+    theory = (ROOT / "docs/theory/overview.md").read_text(encoding="utf-8")
+    assert "standard-cge-theory.mmd" in theory
+
+    print("documentation/notebook/control-room/Mermaid checks passed")
 
 if __name__ == "__main__":
     main()

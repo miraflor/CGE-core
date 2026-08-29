@@ -1,16 +1,21 @@
 # IFPRI Standard CGE
 
-CGE-Core includes a separate implementation of the IFPRI Standard CGE test economy.
+The IFPRI implementation remains a separate model family with richer institutions and
+explicit macro-closure logic.
 
-This subsystem is intended as an **independent benchmark**, not merely another parameterization of the Hosoe standard model. It provides:
+For public tutorials and CI, use the independently authored synthetic dataset:
 
-- algebraic calibration;
-- explicit closure handling;
-- benchmark solution;
-- five policy scenarios;
-- result extraction; and
-- comparison against external reference runs.
+```python
+from cge_core import IFPRICGE
 
-The official IFPRI source package and `test.dat` are not redistributed with CGE-Core.
+base = IFPRICGE.synthetic().solve()
+result = base.scenario("TARCUT1").solve()
+result.compare(base)
+```
 
-For setup, calibration, scenarios and validation details, see {doc}`../IFPRI`.
+The bundled public path deliberately exposes the validated named scenarios rather than
+pretending that IFPRI closure changes are interchangeable with the Hosoe `Scenario.set()`
+interface.
+
+Official-source replication is a separate evidence lane. See {doc}`../ifpri_cleanroom`
+and {doc}`../IFPRI`.

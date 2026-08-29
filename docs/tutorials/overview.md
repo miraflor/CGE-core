@@ -1,22 +1,10 @@
 # Tutorials
 
-These tutorials focus on concrete modelling tasks rather than API details.
+The tutorials explain the economics first and the implementation second.
 
-## Interactive notebook course
+- {doc}`colab-notebooks` — executable browser course
+- {doc}`loading-sam` — use a balanced SAM
+- {doc}`tariff-reform` — interpret a policy counterfactual
 
-- {doc}`colab-notebooks` — a progressive Google Colab course from the simplest
-  Hosoe CGE through the standard model, policy experiments, SAM loading, IFPRI,
-  CAMCGE replication, and CGE-Core's Pyomo internals.
-
-The Colab notebooks are self-contained and intended to be run directly in the
-browser.
-
-## Task-focused tutorials
-
-- {doc}`loading-sam` — turn a balanced Social Accounting Matrix into a
-  CGE-Core dataset.
-- {doc}`tariff-reform` — calibrate the standard model, remove an import
-  tariff, solve the counterfactual, and compare it with the base.
-
-For the underlying equations, see {doc}`../theory/overview`. For the Python
-interfaces used by the tutorials, see {doc}`../api/index`.
+For a visual, no-install orientation, open the
+[Interactive Control Room](../control-room/).

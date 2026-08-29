@@ -1,51 +1,66 @@
 # Architecture
 
-CGE-Core separates four concerns that are often mixed together in small CGE
-implementations:
+CGE-Core v0.7 separates five concerns:
 
-1. **benchmark data and calibration**;
-2. **economic equations**;
-3. **counterfactual workflow**; and
-4. **numerical result snapshots**.
+1. **economic model definitions**;
+2. **benchmark data and calibration**;
+3. **model-owned closure**;
+4. **counterfactual workflow**; and
+5. **numerical result snapshots**.
 
-## Public Hosoe workflow
+The public interface is deliberately smaller than the implementation.
 
-For the Hosoe simple and standard models, the v0.6 user-facing architecture is:
+## Practitioner-first public architecture
+
+```{mermaid} diagrams/cge-core-v070-public.mmd
+:name: cge-core-v070-public-architecture
+:alt: CGE-Core v0.7 architecture showing practitioner model facades, benchmark and scenario workflow, model-specific economics, lower-level compatibility, Pyomo, and the nonlinear solver.
+```
+
+Use the mouse wheel or a trackpad pinch gesture to **zoom**, drag to **pan**, or select
+**⛶** to inspect the diagram in full screen.
+
+````{dropdown} Mermaid source
+{download}`Download the .mmd source </diagrams/cge-core-v070-public.mmd>`
+
+```{literalinclude} /diagrams/cge-core-v070-public.mmd
+:language: text
+```
+````
+
+For ordinary work, the modeller sees:
 
 ```text
-CGE                     stateless configured blueprint
- │
- └── solve_benchmark(...)
-          ↓
-     Equilibrium         protected solved benchmark
-          │
-          ├── scenario("A") ──→ Scenario A ── set(...) ── solve() ──→ Result A
-          │
-          └── scenario("B") ──→ Scenario B ── set(...) ── solve() ──→ Result B
+StandardCGE.example()
+        │
+        └── solve()
+              ↓
+         Equilibrium
+              │
+              ├── scenario("A") → tariff/endowment/... → solve() → Result A
+              │
+              └── scenario("B") → tariff/endowment/... → solve() → Result B
 
 Result A.compare(Equilibrium)
 Result A.compare(Result B)
 ```
 
-`CGE` owns no solved state. Each benchmark solve creates a fresh validated
-`PyCGE` backend. A solved `Equilibrium` owns that benchmark backend plus an
-immutable numerical snapshot. Creating a `Scenario` deep-copies the calibrated
-backend so multiple counterfactuals can coexist without sharing the legacy
-engine's single simulation slot. A successful scenario solve returns an
-immutable `Result` snapshot.
+`SimpleCGE`, `StandardCGE`, and `CamCGE` supply their canonical closure automatically.
+`IFPRICGE` retains the IFPRI model's own closure and named scenario machinery.
 
-The public snapshot contract is intentional: ordinary result inspection should
-not require traversing mutable Pyomo objects.
+A scenario owns one independent concrete model clone. The benchmark remains protected.
+A solved result exposes numerical snapshots for ordinary inspection so that users do not
+need to traverse mutable Pyomo objects.
 
-## Underlying PyCGE software architecture
+## Underlying PyCGE architecture
+
+The mature lower-level engine remains part of v0.7 and is still useful for implementation,
+validation, and compatibility work.
 
 ```{mermaid} diagrams/pycge-architecture.mmd
 :name: pycge-software-architecture
-:alt: PyCGE software architecture showing the data, model definition, workflow engine, solver, benchmark, simulation, and results layers.
+:alt: PyCGE software architecture showing data, model definition, workflow engine, solver, benchmark, simulation, and results layers.
 ```
-
-Use the mouse wheel or a trackpad pinch gesture to **zoom**, drag to **pan**,
-or select **⛶** to inspect the diagram in full screen.
 
 ````{dropdown} Mermaid source
 {download}`Download the .mmd source </diagrams/pycge-architecture.mmd>`
@@ -55,20 +70,22 @@ or select **⛶** to inspect the diagram in full screen.
 ```
 ````
 
-The Hosoe façade is additive: it reuses the validated `PyCGE` engine rather
-than replacing or rewriting the equations. The economic algebra remains in the
-model-definition classes; the lower-level engine manages data loading,
-numeraire/redundant-equation handling, calibration, mutable simulation state,
-and nonlinear solving.
+The practitioner façades do **not** rewrite the validated economic algebra. They configure
+and call the model-specific implementation while hiding routine framework plumbing.
 
-The IFPRI subsystem is deliberately separate because it is an independently
-implemented model family with its own calibration, closure, and scenario
-machinery.
+## Model-family boundaries
 
-CAMCGE remains at repository level as a replication benchmark rather than as
-another installed core model.
+| Family | v0.7 role | Closure |
+| --- | --- | --- |
+| Hosoe Simple | Teaching / closed-economy benchmark | Model-owned canonical closure |
+| Hosoe Standard | Generic open-economy policy model | Model-owned canonical closure |
+| CAMCGE | First-class installed historical replication | CAMCGE-specific closure |
+| IFPRI Standard | Separate richer institutional model | IFPRI-specific closure and named scenarios |
 
-## The standard model in economic blocks
+The project therefore shares workflow semantics without pretending there is one universal
+CGE equation template.
+
+## The Standard CGE in economic blocks
 
 | Block | Main role |
 | --- | --- |
@@ -77,23 +94,23 @@ another installed core model.
 | Government | Tax revenue finances government demand and saving |
 | Investment | Domestic and foreign saving finance investment demand |
 | Armington trade | Imports and domestic goods form composite supply |
-| CET transformation | Domestic output is allocated between home and export markets |
+| CET transformation | Output is allocated between domestic and export markets |
 | Market clearing | Commodity and factor markets balance |
 | External balance | Export receipts and foreign saving finance imports |
-| Closure | A numeraire and independent equilibrium conditions complete the system |
+| Closure | A price anchor and independent equilibrium conditions complete the system |
 
 ## Trace economics to implementation
 
-| Economic concept | Theory | Equation reference | Python/API |
+| Economic concept | Theory | Detailed equations | Public workflow |
 | --- | --- | --- | --- |
-| Production | {doc}`theory/production` | {doc}`MODEL` | {doc}`api/model-definitions` |
-| Final demand | {doc}`theory/final-demand` | {doc}`MODEL` | {doc}`api/model-definitions` |
-| Trade | {doc}`theory/trade` | {doc}`MODEL` | {doc}`api/model-definitions` |
-| Closure / Walras' law | {doc}`theory/closure` | {doc}`MODEL` | {doc}`api/public` |
-| SAM loading | {doc}`theory/sam` | {doc}`workflow` | {doc}`api/samtools` |
-| Policy simulation | {doc}`getting-started/first-simulation` | {doc}`workflow` | {doc}`api/public` |
-| Advanced engine inspection | {doc}`theory/closure` | {doc}`workflow` | {doc}`api/engine` |
+| Production | {doc}`theory/production` | {doc}`MODEL` | `StandardCGE.example().solve()` |
+| Final demand | {doc}`theory/final-demand` | {doc}`MODEL` | result inspection |
+| Trade | {doc}`theory/trade` | {doc}`MODEL` | `scenario.tariff(...)` |
+| Closure / Walras' law | {doc}`theory/closure` | {doc}`workflow` | automatic for bundled models |
+| SAM loading | {doc}`theory/sam` | {doc}`workflow` | `StandardCGE.from_sam(...)` |
+| Policy simulation | {doc}`getting-started/first-simulation` | {doc}`workflow` | benchmark → scenario → result |
+| Advanced engine inspection | {doc}`api/engine` | {doc}`workflow` | `.raw` / lower-level API |
 
 The intended reading path is:
 
-**economic meaning → equation → public workflow → lower-level implementation when needed**.
+**economic meaning → equation → practitioner workflow → lower-level implementation only when needed**.

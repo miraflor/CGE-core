@@ -1,0 +1,42 @@
+flowchart LR
+    U["Practitioner"]
+    F["Model façade<br/>SimpleCGE · StandardCGE<br/>CamCGE · IFPRICGE"]
+    B["Solved benchmark<br/>Equilibrium"]
+    S["Independent scenario<br/>one concrete model clone"]
+    R["Immutable numerical result<br/>summary · value · compare"]
+
+    subgraph ECON["Model-specific economics"]
+      H["Hosoe Simple / Standard"]
+      C["CAMCGE"]
+      I["IFPRI Standard CGE"]
+    end
+
+    subgraph CORE["CGE-Core lower-level compatibility"]
+      A["CGE lifecycle"]
+      E["CoreEngine / PyCGE"]
+    end
+
+    P["Pyomo model"]
+    N["NLP solver"]
+
+    U --> F
+    F --> B
+    B --> S
+    S --> R
+
+    F --> H
+    F --> C
+    F --> I
+    H --> A
+    C --> A
+    A --> E
+    I --> P
+    E --> P
+    P --> N
+
+    classDef public fill:#eef4ff,stroke:#4f6fad,stroke-width:2px,color:#172033;
+    classDef econ fill:#edf8f4,stroke:#3c806b,stroke-width:1.5px,color:#172033;
+    classDef internal fill:#f6f2ff,stroke:#7252b8,stroke-width:1.5px,color:#172033;
+    class U,F,B,S,R public;
+    class H,C,I econ;
+    class A,E,P,N internal;

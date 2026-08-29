@@ -1,46 +1,38 @@
 # Installation
 
-CGE-Core requires Python, Pyomo, and a local nonlinear-programming solver.
+## Released v0.7.0 source
 
-## Recommended: conda + IPOPT
-
-```bash
-conda create -n cgecore python=3.11
-conda activate cgecore
-conda install -c conda-forge ipopt
-git clone https://github.com/miraflor/CGE-core.git
-cd CGE-core
-pip install -e .
-```
-
-This installs CGE-Core from the current repository and places the `ipopt` executable on your environment's PATH.
-
-## Alternative: cyipopt
-
-CGE-Core also supports Pyomo's `cyipopt` interface:
+Until CGE-Core is distributed through a package index, install the tagged release directly:
 
 ```bash
-pip install -e ".[solver]"
+pip install "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-This route requires the IPOPT system library and a working PyNumero ASL build.
+Then, once per environment if an NLP solver is not already available:
 
-## Check the installation
+```bash
+cge install-solver
+```
+
+Ordinary model code does not name the solver:
 
 ```python
-from cge_core import CGE, example_data
-from cge_core.models import StdCGE
+from cge_core import StandardCGE
 
-model = CGE(
-    model=StdCGE(),
-    data=example_data("stdcge"),
-)
-print(type(model).__name__)
+base = StandardCGE.example().solve()
 ```
 
-If that imports and constructs the model blueprint successfully, continue to
-{doc}`quickstart`.
+## Google Colab
 
-```{important}
-A solver is required at runtime. Installing the Python package alone is not enough to solve a CGE model.
+Use the **Open in Colab** badge in the repository README. The canonical notebooks contain
+one installation cell; the rest of the notebook is economics and model use.
+
+## Developer checkout
+
+Contributors working from a local clone can install the checkout in editable mode:
+
+```bash
+pip install -e ".[test,docs]"
 ```
+
+That developer workflow is intentionally separate from the practitioner notebooks.

@@ -1,7 +1,16 @@
 format: jb-book
-root: index
+root: intro
+
 parts:
-  - caption: Practitioner guides
+  - caption: Getting Started
+    chapters:
+      - file: getting-started/overview
+      - file: architecture
+      - file: getting-started/installation
+      - file: getting-started/quickstart
+      - file: getting-started/first-simulation
+
+  - caption: Practitioner Guides
     chapters:
       - file: install
       - file: first_cge
@@ -13,7 +22,32 @@ parts:
       - file: cge_md
       - file: validation
       - file: advanced
-  - caption: Notebooks
+
+  - caption: Models
+    chapters:
+      - file: models/overview
+      - file: models/simple
+      - file: models/standard
+      - file: models/ifpri
+      - file: models/camcge
+
+  - caption: Theory
+    chapters:
+      - file: theory/overview
+      - file: theory/sam
+      - file: theory/production
+      - file: theory/final-demand
+      - file: theory/trade
+      - file: theory/closure
+
+  - caption: Tutorials
+    chapters:
+      - file: tutorials/overview
+      - file: tutorials/colab-notebooks
+      - file: tutorials/loading-sam
+      - file: tutorials/tariff-reform
+
+  - caption: Executable Notebooks
     chapters:
       - file: notebooks/01_first_cge
       - file: notebooks/02_policy_experiments
@@ -22,11 +56,34 @@ parts:
       - file: notebooks/05_ifpri
       - file: notebooks/06_build_a_model
       - file: notebooks/90_internals
-  - caption: Reference
+
+  - caption: Validation
     chapters:
+      - file: validation/overview
+      - file: validation/hosoe-gams
+      - file: validation/ifpri
+      - file: validation/camcge
+
+  - caption: API Reference
+    chapters:
+      - file: api/index
+      - file: api/public
+      - file: api/model-definitions
+      - file: api/samtools
+      - file: api/datasets
+      - file: api/ifpri
+      - file: api/engine
+
+  - caption: Developer Reference
+    chapters:
+      - file: developer/overview
+      - file: developer/extension-contract
+      - file: OG_CORE_CROSSWALK
+      - file: GAMS_CROSSWALK
+
+  - caption: Detailed Reference
+    chapters:
+      - file: workflow
       - file: MODEL
       - file: IFPRI
       - file: GAMS_STDCGE_VALIDATION
-      - file: GAMS_CROSSWALK
-      - file: OG_CORE_CROSSWALK
-      - file: architecture

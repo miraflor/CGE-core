@@ -1,25 +1,16 @@
-# API Reference
+# API reference
 
-These pages are generated directly from the Python docstrings in CGE-Core.
+## Practitioner entry points
 
-That means the website reference follows the code: when a public method's
-docstring changes, the rendered API documentation changes with it.
+- {doc}`public` — `SimpleCGE`, `StandardCGE`, `CamCGE`, `IFPRICGE`, benchmark/scenario/results
+- {doc}`samtools` — SAM conversion and validation
+- {doc}`ifpri` — advanced IFPRI-specific API
 
-## Main interfaces
+## Lower-level compatibility
 
-| Interface | Purpose |
-| --- | --- |
-| {doc}`public` | Canonical Hosoe workflow: `CGE`, `Equilibrium`, `Scenario`, `Result` |
-| {doc}`model-definitions` | Public `SplCGE` and `StdCGE` model-definition imports |
-| {doc}`samtools` | Build model datasets from a Social Accounting Matrix |
-| {doc}`datasets` | Access bundled example datasets |
-| {doc}`ifpri` | Public IFPRI benchmark, scenario and reporting API |
-| {doc}`engine` | Advanced/lower-level `PyCGE` engine and typed exceptions |
+- {doc}`model-definitions` — model-definition classes
+- {doc}`datasets` — packaged example data
+- {doc}`engine` — `PyCGE` / engine-level implementation
 
-For a guided workflow rather than function-by-function documentation, begin
-with {doc}`../getting-started/quickstart`.
-
-The Hosoe façade and the IFPRI subsystem are intentionally not presented as one
-universal backend interface. Their calibration and closure structures differ,
-and v0.6 preserves that distinction rather than hiding it behind speculative
-abstractions.
+New application code should normally begin with a model-specific practitioner entry point.
+The lower-level API remains supported for advanced inspection and compatibility.

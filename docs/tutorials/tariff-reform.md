@@ -1,67 +1,39 @@
-# Tutorial: Remove an Import Tariff
+# Tariff reform
 
-This is the smallest complete policy experiment in CGE-Core.
-
-## 1. Solve the benchmark
+Consider abolition of the import tariff on `BRD`.
 
 ```python
-from cge_core import CGE, example_data
-from cge_core.models import StdCGE
+from cge_core import StandardCGE
 
-model = CGE(
-    model=StdCGE(),
-    data=example_data("stdcge"),
-)
+base = StandardCGE.example().solve()
 
-benchmark = model.solve_benchmark(
-    numeraire=("pf", "LAB"),
-    redundant=("eqpf", "LAB"),
-)
+reform = base.scenario("Abolish BRD tariff")
+reform.tariff("BRD", 0)
+
+result = reform.solve()
+comparison = result.compare(base)
 ```
 
-The benchmark is the SAM-replicating static reference equilibrium.
+The direct policy change is only the tariff. The economic result is broader.
 
-## 2. Create a scenario
+A lower tariff changes the tariff-inclusive import price. Through the Armington structure,
+users of the composite good may substitute between imports and domestic supply. Producers,
+factor markets, household income and demand, government revenue, investment demand, trade,
+and the exchange rate then adjust together.
+
+Useful quantities to inspect include:
 
 ```python
-scenario = benchmark.scenario("remove bread tariff")
+for component in ["M", "D", "Q", "Z", "pq", "pm", "epsilon"]:
+    print(component, base.value(component, "BRD"), result.value(component, "BRD"))
 ```
 
-A scenario starts from an independent copy of the solved benchmark, so changes
-to it do not mutate the benchmark.
-
-## 3. Remove the bread tariff
+For a proportional tariff cut instead of abolition:
 
 ```python
-scenario.set("taum", "BRD", 0.0)
+half_tariff = base.scenario("Half tariff")
+half_tariff.tariff("BRD", change=-0.50)
+half_result = half_tariff.solve()
 ```
 
-## 4. Solve
-
-```python
-result = scenario.solve()
-```
-
-## 5. Compare with the benchmark
-
-```python
-frame = result.compare(benchmark)
-print(frame)
-```
-
-The tariff shock changes one parameter, but the counterfactual solution changes
-every endogenous variable required to restore general equilibrium.
-
-To remove both benchmark import tariffs, branch a fresh scenario from the same
-benchmark:
-
-```python
-both = benchmark.scenario("remove both tariffs")
-both.set("taum", "BRD", 0.0)
-both.set("taum", "MLK", 0.0)
-both_result = both.solve()
-
-print(both_result.compare(benchmark))
-```
-
-The two scenarios are independent and can remain live at the same time.
+The percentage is applied to the benchmark rate, not interpreted as percentage points.

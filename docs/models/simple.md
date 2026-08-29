@@ -1,16 +1,19 @@
 # Simple CGE
 
-The simple model is the smallest CGE implementation bundled with CGE-Core.
+The Simple CGE is the smallest bundled Hosoe teaching economy: goods, primary factors,
+firms, and a representative household, without government or foreign trade.
 
-It follows the Hosoe textbook teaching model and uses:
+```python
+from cge_core import SimpleCGE
 
-- two goods;
-- two primary factors;
-- a closed economy;
-- household demand;
-- factor markets; and
-- market-clearing equilibrium conditions.
+base = SimpleCGE.example().solve()
 
-Its main purpose is conceptual clarity and regression testing. It is useful for understanding the mechanics of calibration and equilibrium before moving to the open-economy standard model.
+case = base.scenario("More labor")
+case.endowment("LAB", change=0.10)
+result = case.solve()
 
-The implementation corresponds to the GAMS Model Library `splcge` reference.
+result.compare(base)
+```
+
+Use it to learn price adjustment, factor allocation, production, consumption, and welfare
+without the additional trade and fiscal blocks of the Standard CGE.

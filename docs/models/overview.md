@@ -1,12 +1,13 @@
-# Model Guide
+# Bundled models
 
-CGE-Core contains model implementations and validation benchmarks with different purposes.
+CGE-Core v0.7 exposes four model families through model-specific façades.
 
-| Model | Economy | Main use |
+| Model | Entry point | Primary role |
 | --- | --- | --- |
-| Simple CGE | Closed | Teaching and minimal regression tests |
-| Standard CGE | Open | General policy simulation |
-| IFPRI Standard CGE | Open, institutionally richer | Independent benchmark and scenario validation |
-| CAMCGE | Cameroon benchmark | Published-model replication |
+| Simple CGE | `SimpleCGE` | Closed-economy teaching model |
+| Standard CGE | `StandardCGE` | Open-economy policy analysis |
+| IFPRI Standard CGE | `IFPRICGE` | Rich institutions and named macro-closure scenarios |
+| CAMCGE | `CamCGE` | Published Cameroon replication |
 
-The models are not interchangeable datasets placed into one universal equation system. Each represents a particular CGE specification and should be interpreted according to its own closure, accounts and equations.
+They share the broad benchmark → scenario → result workflow where that is scientifically
+appropriate, but retain separate equations, calibration logic, closure, and validation.

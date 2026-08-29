@@ -1,74 +1,257 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Interactive CGE-Core v0.7 Control Room for understanding models, data, closure, policy shocks, runnable code, and outputs.">
   <title>CGE-Core 0.7 Control Room</title>
-  <meta name="description" content="Interactive guide and code generator for CGE-Core 0.7.0">
+  <script>
+    (() => {
+      try {
+        let theme = localStorage.getItem('cge-control-room-theme') || 'light';
+        if (!['light','dark','system'].includes(theme)) theme = 'light';
+        document.documentElement.dataset.theme = theme;
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="../">CGE-Core <span>0.7.0</span></a>
-    <nav>
-      <a href="../">Docs</a>
-      <a href="https://github.com/miraflor/CGE-core">GitHub</a>
-      <a href="https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb">Colab</a>
-    </nav>
+  <header class="site-header">
+    <div class="shell header-row">
+      <div>
+        <div class="kicker">CGE-Core 0.7.0 · interactive policy simulation</div>
+        <h1>Control Room</h1>
+        <p class="hero-copy">
+          Read the economy, choose the data, understand the closure, build a policy
+          counterfactual, and turn it into runnable practitioner-API code.
+        </p>
+      </div>
+      <div class="header-actions">
+        <a class="button ghost" href="../index.html">← Docs</a>
+        <a class="button ghost" href="https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb" target="_blank" rel="noopener">Colab ↗</a>
+        <a class="button ghost" href="https://github.com/miraflor/CGE-core" target="_blank" rel="noopener">GitHub ↗</a>
+        <select id="themeSelect" class="select compact" aria-label="Theme">
+          <option value="light">☀ Light</option>
+          <option value="dark">☾ Dark</option>
+          <option value="system">System</option>
+        </select>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <div>
-        <p class="eyebrow">CGE-Core Control Room</p>
-        <h1>Design the economic experiment first.</h1>
-        <p class="lede">Choose a model, inspect what it contains, configure a policy shock, and copy runnable v0.7.0 code. The generated workflow uses the practitioner API—no Git checkout, PATH manipulation, solver names, or PyCGE boilerplate.</p>
-      </div>
-      <div class="hero-card">
-        <div class="mini-label">Workflow</div>
-        <div class="flow">benchmark <b>→</b> scenario <b>→</b> shock <b>→</b> solve <b>→</b> compare</div>
-      </div>
-    </section>
+  <main class="shell">
+    <nav class="progress-rail" aria-label="Control Room steps">
+      <a href="#modelStep"><span>1</span>Model</a>
+      <a href="#walkthroughStep"><span>2</span>Read it</a>
+      <a href="#economyStep"><span>3</span>Economy & data</a>
+      <a href="#closureStep"><span>4</span>Closure</a>
+      <a href="#scenarioStep"><span>5</span>Scenario</a>
+      <a href="#scriptStep"><span>6</span>Run</a>
+    </nav>
 
-    <section>
-      <div class="section-head"><div><p class="eyebrow">1 · Choose a model</p><h2>Which economy are you modelling?</h2></div></div>
-      <div id="model-cards" class="model-grid"></div>
-    </section>
-
-    <section class="workspace">
-      <div class="panel">
-        <p class="eyebrow">2 · Understand it</p>
-        <h2 id="model-title"></h2>
-        <p id="model-description" class="muted"></p>
-        <div id="facts" class="chips"></div>
-        <div class="two-col">
-          <div><h3>Use it when</h3><p id="use-when"></p></div>
-          <div><h3>Do not use it when</h3><p id="avoid-when"></p></div>
+    <section id="modelStep" class="section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 1</div>
+          <h2>Choose the model</h2>
+          <p>Each model keeps its own economics. The Control Room only exposes controls that belong to the selected model.</p>
         </div>
-        <h3>What to watch</h3>
-        <div id="outputs" class="output-list"></div>
       </div>
-
-      <div class="panel">
-        <p class="eyebrow">3 · Configure a scenario</p>
-        <div id="scenario-editor"></div>
-        <div class="code-head"><div><h3>Runnable Python</h3><p class="muted">Generated with the v0.7.0 practitioner API.</p></div><button id="copy-code">Copy</button></div>
-        <pre><code id="code"></code></pre>
-        <p class="fine">The Control Room explains and generates code; the actual equilibrium is solved by CGE-Core in Python/Colab.</p>
+      <div id="modelCards" class="model-grid"></div>
+      <div class="model-overview card">
+        <div class="overview-copy">
+          <div id="modelBadge" class="model-badge"></div>
+          <h3 id="modelTitle"></h3>
+          <p id="modelDescription"></p>
+          <div id="modelPolicyUse" class="policy-use"></div>
+          <div id="modelFacts" class="fact-row"></div>
+        </div>
+        <div id="economyPicture" class="economy-picture" aria-label="Visual model diagram"></div>
       </div>
     </section>
 
-    <section class="next">
-      <p class="eyebrow">Continue</p>
-      <h2>Run the experiment</h2>
-      <div class="next-grid">
-        <a href="https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb"><b>Notebook 01</b><span>Learn the benchmark workflow</span></a>
-        <a href="../policy_experiments.html"><b>Policy tutorial</b><span>Interpret comparative equilibria</span></a>
-        <a href="../ifpri_cleanroom.html"><b>IFPRI boundary</b><span>Public synthetic vs official source</span></a>
+    <section id="walkthroughStep" class="section story-section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 2</div>
+          <h2>Read the model before changing it</h2>
+          <p id="walkthroughIntro"></p>
+        </div>
+        <div class="status-pill ok">Economic guide</div>
+      </div>
+      <div class="story-grid">
+        <aside class="story-rail card">
+          <div class="mini-label">Reading order</div>
+          <div id="storyNav" class="story-nav"></div>
+        </aside>
+        <div class="story-main">
+          <section class="card panel story-panel" id="notationPanel">
+            <div class="mini-label">Notation first</div>
+            <h3>How to read the symbols</h3>
+            <div id="notationPrimer" class="notation-grid"></div>
+          </section>
+          <section class="card panel story-panel" id="glossaryPanel">
+            <div class="mini-label">Variables and parameters</div>
+            <h3 id="variableGlossaryTitle">What the symbols mean</h3>
+            <p class="help" id="variableGlossaryIntro"></p>
+            <div id="variableGlossary" class="variable-glossary"></div>
+          </section>
+          <section class="card panel story-panel" id="storyPanel">
+            <div class="mini-label">Follow the adjustment</div>
+            <h3 id="flowStoryTitle">The economic story</h3>
+            <div id="flowStory" class="flow-story"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="economyStep" class="section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 3</div>
+          <h2>Set up the economy and data</h2>
+          <p id="economyIntro"></p>
+        </div>
+        <div id="economyStatus" class="status-pill"></div>
+      </div>
+      <div class="two-col">
+        <div class="card panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="mini-label">Scenario target labels</div>
+              <h3 id="labelsTitle">Economy structure</h3>
+            </div>
+            <button id="resetLabelsBtn" class="button small ghost" type="button">Reset examples</button>
+          </div>
+          <div id="labelManagers" class="label-managers"></div>
+          <p id="labelsNote" class="help"></p>
+        </div>
+        <div class="card panel">
+          <div class="mini-label">Data source</div>
+          <h3>Where should the benchmark come from?</h3>
+          <div id="dataSourcePanel"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="closureStep" class="section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 4</div>
+          <h2>Understand the closure</h2>
+          <p id="closureIntro"></p>
+        </div>
+        <div id="closureStatus" class="status-pill ok"></div>
+      </div>
+      <div id="closurePanel" class="card panel"></div>
+      <div id="preflightPanel" class="card panel preflight-panel" aria-live="polite"></div>
+    </section>
+
+    <section id="scenarioStep" class="section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 5</div>
+          <h2 id="scenarioHeading">Build the counterfactual</h2>
+          <p id="scenarioIntro"></p>
+        </div>
+        <div id="scenarioStatus" class="status-pill"></div>
+      </div>
+      <div class="scenario-layout">
+        <div class="card panel">
+          <div class="mini-label">Available controls</div>
+          <h3 id="controlHeading">What do you want to change?</h3>
+          <div id="quickActions" class="quick-actions"></div>
+          <div id="controlCards" class="control-grid"></div>
+          <div id="controlEditor" class="control-editor hidden"></div>
+        </div>
+        <aside class="card panel scenario-stack-panel">
+          <div class="panel-title-row">
+            <div>
+              <div class="mini-label">Scenario stack</div>
+              <h3 id="stackTitle">Planned changes</h3>
+            </div>
+            <button id="clearStackBtn" class="button small ghost" type="button">Clear</button>
+          </div>
+          <div id="scenarioStack"></div>
+          <div id="stackSummary" class="stack-summary"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="scriptStep" class="section">
+      <div class="section-heading">
+        <div>
+          <div class="step-label">Step 6</div>
+          <h2>Generated run script</h2>
+          <p>The scenario becomes concrete CGE-Core v0.7.0 practitioner-API code. Closure and solver plumbing stay out of ordinary model code.</p>
+        </div>
+        <div id="readyStatus" class="status-pill"></div>
+      </div>
+      <div class="script-layout">
+        <div class="card code-card">
+          <div class="code-toolbar">
+            <div>
+              <div class="mini-label">scenario.py</div>
+              <strong id="scriptCaption">Generated from the controls above</strong>
+            </div>
+            <div class="toolbar-buttons">
+              <button id="copyCodeBtn" class="button small ghost" type="button">Copy</button>
+              <button id="downloadPyBtn" class="button small" type="button">Download .py</button>
+              <button id="downloadJsonBtn" class="button small ghost" type="button">Export JSON</button>
+            </div>
+          </div>
+          <pre id="codePreview"><code></code></pre>
+        </div>
+        <aside class="card panel run-card">
+          <div class="mini-label">Run it</div>
+          <h3>No repository plumbing required</h3>
+          <div id="runInstructions"></div>
+          <div class="divider"></div>
+          <div class="mini-label">What the solve returns</div>
+          <div id="resultFiles" class="result-files"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card panel">
+        <div class="mini-label">Model output map</div>
+        <h3>What should you inspect after the solve?</h3>
+        <div id="outputsGrid" class="outputs-grid"></div>
+      </div>
+    </section>
+
+    <section class="section references-section">
+      <div class="card panel">
+        <div class="mini-label">References & model lineage</div>
+        <h3>Where these model structures come from</h3>
+        <div class="references-grid">
+          <article class="reference-card">
+            <div class="reference-tag">Simple + Standard CGE</div>
+            <strong>Hosoe, Gasawa & Hashimoto (2010)</strong>
+            <p><em>Textbook of Computable General Equilibrium Modelling: Programming and Simulations.</em> The teaching models follow the corresponding GAMS formulations.</p>
+          </article>
+          <article class="reference-card">
+            <div class="reference-tag">IFPRI Standard</div>
+            <strong>Löfgren, Harris & Robinson (2002)</strong>
+            <p><em>A Standard Computable General Equilibrium (CGE) Model in GAMS.</em> Microcomputers in Policy Research 5, IFPRI.</p>
+            <a href="https://cgspace.cgiar.org/items/747efff3-568c-43df-9693-ae62a0d2ddd0" target="_blank" rel="noopener">Reference ↗</a>
+          </article>
+          <article class="reference-card">
+            <div class="reference-tag">CAMCGE</div>
+            <strong>Condon, Dahl & Devarajan (1987)</strong>
+            <p><em>Implementing a Computable General Equilibrium Model on GAMS: The Cameroon Model.</em></p>
+            <a href="https://documents1.worldbank.org/curated/en/867181468236660050/pdf/DRD2900Box3773000the0Cameroon0model.pdf" target="_blank" rel="noopener">Paper ↗</a>
+          </article>
+        </div>
       </div>
     </section>
   </main>
-  <footer>CGE-Core 0.7.0 · practitioner-first interface over model-specific CGE implementations</footer>
+
+  <footer class="shell footer">
+    CGE-Core 0.7.0 Control Room · static GitHub Pages interface · explains and generates code; equilibrium solves run in Python/Colab.
+  </footer>
   <script src="assets/app.js"></script>
 </body>
 </html>

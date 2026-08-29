@@ -1,26 +1,25 @@
 # Standard CGE
 
-The standard model extends the simple economy to include the institutions and trade structure commonly used in applied CGE work.
+The Standard CGE adds intermediate inputs, government, saving and investment, imports,
+exports, Armington aggregation, and CET transformation.
 
-It includes:
+```python
+from cge_core import StandardCGE
 
-- production with intermediate inputs and primary factors;
-- household consumption and saving;
-- government taxation, consumption and saving;
-- investment demand;
-- imports using an Armington CES composite;
-- exports using CET transformation;
-- a balance-of-payments condition; and
-- endogenous market-clearing prices.
+base = StandardCGE.example().solve()
+```
 
-The implementation follows Hosoe, Gasawa and Hashimoto and is checked against the GAMS Model Library `stdcge` model.
+Model-specific helpers make common policy experiments explicit:
 
-## Read it at three levels
+```python
+scenario = base.scenario("Policy package")
+scenario.tariff("BRD", change=-0.50)
+scenario.production_tax("MLK", 0.05)
+scenario.endowment("CAP", change=0.10)
+result = scenario.solve()
+```
 
-| Level | Where to go |
-| --- | --- |
-| Economic intuition | {doc}`../theory/overview` |
-| Equation-by-equation specification | {doc}`../MODEL` |
-| Python implementation | {doc}`../api/model-definitions` |
+For advanced components without a semantic helper, `Scenario.set()` remains available.
 
-For the relationship among data, the model definition, the solver and the counterfactual workflow, see {doc}`../architecture`.
+A balanced SAM can be supplied with `StandardCGE.from_sam(...)`; see
+{doc}`../tutorials/loading-sam`.

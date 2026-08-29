@@ -1,68 +1,68 @@
 # CGE-Core
 
-**A Python/Pyomo framework for computable general equilibrium modelling and reproducible policy simulation.**
+**A practitioner-first Python/Pyomo toolkit for computable general equilibrium modelling and reproducible policy simulation.**
 
-CGE-Core separates the **economic model** from the **simulation workflow** and
-makes the counterfactual process explicit:
+CGE-Core keeps the economic model families distinct while giving ordinary users a common
+way to work:
 
-**benchmark data → solve benchmark → create scenario → shock → solve → compare**
+**choose an economy → solve the benchmark → create a scenario → apply an economic shock → solve → compare**
 
 ## Start here
 
 - <a href="control-room/" target="_blank" rel="noopener"><strong>Interactive Control Room ↗</strong></a>
-  — explore models, closures, shocks, and runnable scenario code.
-- **{doc}`tutorials/colab-notebooks`** — learn CGE-Core interactively in Google
-  Colab, from the simplest Hosoe economy to IFPRI and CAMCGE.
-- **{doc}`getting-started/quickstart`** — run the standard model and a policy counterfactual.
-- **{doc}`architecture`** — see how the public API, model equations, solver, and validated engine fit together.
-- **{doc}`theory/overview`** — understand the economic structure and equations.
-- **{doc}`validation/overview`** — see the Hosoe/GAMS, IFPRI, and CAMCGE benchmarks.
-- **{doc}`api/index`** — browse the Python API reference.
+  — a six-step visual guide to model choice, economic structure, data, closure, policy shocks,
+  runnable code, and outputs.
+- **{doc}`getting-started/quickstart`** — the shortest complete Standard CGE experiment.
+- **{doc}`tutorials/colab-notebooks`** — the browser-based course.
+- **{doc}`architecture`** — the public v0.7 architecture and the lower-level PyCGE engine.
+- **{doc}`theory/overview`** — the economic structure and interactive Mermaid diagrams.
+- **{doc}`validation/overview`** — Hosoe/GAMS, IFPRI, and CAMCGE evidence.
+- **{doc}`api/index`** — Python API reference.
 
-## The public workflow
+## The v0.7 practitioner workflow
 
-For the Hosoe teaching models, ordinary v0.6 usage starts with `CGE`:
+```python
+from cge_core import StandardCGE
 
-```text
-CGE(model, data)
-      ↓
-solve_benchmark(...)
-      ↓
-Equilibrium
-      ↓
-scenario(name)
-      ↓
-Scenario.set(...)
-      ↓
-Scenario.solve()
-      ↓
-Result.compare(benchmark)
+base = StandardCGE.example().solve()
+
+reform = base.scenario("Tariff abolition")
+reform.tariff("BRD", 0)
+
+result = reform.solve()
+result.summary()
+result.compare(base)
 ```
 
-A `CGE` object is a stateless model blueprint. A solved `Equilibrium` protects
-the benchmark state. Each `Scenario` is an independent counterfactual, and each
-successful solve returns an immutable numerical `Result` snapshot.
+The ordinary workflow does not ask the modeller to choose a solver name, manipulate `PATH`,
+select a numeraire, drop a Walras equation, change directories, or manage repository state.
+Those are implementation details rather than policy assumptions.
 
-A policy experiment is therefore not a single changed equation. It is a **new
-internally consistent equilibrium** after endogenous prices and quantities
-adjust.
+A scenario is a **new internally consistent equilibrium**, not a spreadsheet-style
+recalculation of one changed cell. Prices and quantities adjust together until the model's
+equilibrium conditions are satisfied.
 
-## What is in the project?
+## Four bundled model families
 
-| Component | Role |
-| --- | --- |
-| **Simple CGE** | Small closed-economy teaching model |
-| **Standard CGE** | Open economy with trade, government, and investment |
-| **Public CGE API** | `CGE`, `Equilibrium`, `Scenario`, and `Result` |
-| **PyCGE engine** | Supported lower-level engine used by the Hosoe façade and advanced workflows |
-| **IFPRI Standard CGE** | Independently implemented benchmark and policy scenarios |
-| **CAMCGE** | Published-model replication benchmark |
-| **SAM tools** | Convert benchmark accounting into model-ready data |
-| **Colab course** | Progressive executable tutorials in the browser |
+| Model | Main use | Public entry point |
+| --- | --- | --- |
+| **Simple CGE** | Learn general-equilibrium mechanics in a closed economy | `SimpleCGE` |
+| **Standard CGE** | Open-economy policy analysis with government, trade and intermediates | `StandardCGE` |
+| **IFPRI Standard CGE** | Richer institutions and explicit named macro-closure experiments | `IFPRICGE` |
+| **CAMCGE** | Published Cameroon replication and historical validation | `CamCGE` |
+
+The shared surface is a workflow, not a claim that these models have the same equations.
+
+## Advanced compatibility
+
+The v0.6 `CGE → Equilibrium → Scenario → Result` lifecycle and the lower-level `PyCGE`
+engine remain available for advanced or downstream code. They are compatibility and
+inspection paths; new practitioner material should start with the four model-specific
+entry points above.
 
 ```{note}
-CGE-Core is an independent project. It is not affiliated with or endorsed by
-the Policy Simulation Library.
+CGE-Core is an independent project. It is not affiliated with or endorsed by the
+Policy Simulation Library.
 ```
 
 For provenance, licensing, and citation metadata, see
