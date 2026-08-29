@@ -47,7 +47,7 @@
       ],
       controls:[
         {id:'endowment',name:'Factor endowment',symbol:'FF[h]',target:'factor',kind:'semantic',
-         method:'endowment',description:'Change the economy-wide supply of LAB or CAP.',
+         method:'endowment',domain:'positive',allowZero:false,description:'Change the economy-wide supply of LAB or CAP.',
          meaning:'Ask how the equilibrium changes if more or less of a primary factor is available.',
          watch:'Factor returns, sectoral factor allocation, output, consumption, welfare.',
          caution:'This is an endowment/full-employment counterfactual, not a mechanical jobs-created calculation.'}
@@ -109,32 +109,32 @@
         'The counterfactual is complete only when the entire system again satisfies its equilibrium conditions.'
       ],
       controls:[
-        {id:'tariff',name:'Import tariff',symbol:'taum[i]',target:'good',kind:'semantic',method:'tariff',
+        {id:'tariff',name:'Import tariff',symbol:'taum[i]',target:'good',kind:'semantic',method:'tariff',domain:'nonnegative',allowZero:true,
          description:'Set or proportionally change the import tariff on one good.',
          meaning:'Changes the border tax entering the tariff-inclusive import price.',
          watch:'Imports M, domestic supply D, composite price pq, output Z, tariff revenue, welfare.',
          caution:'A 50% cut to a 10% tariff gives 5%; it does not subtract 50 percentage points.'},
-        {id:'production_tax',name:'Production tax',symbol:'tauz[i]',target:'good',kind:'semantic',method:'production_tax',
+        {id:'production_tax',name:'Production tax',symbol:'tauz[i]',target:'good',kind:'semantic',method:'production_tax',domain:'nonnegative',allowZero:true,
          description:'Set or proportionally change the production/indirect tax rate on one sector.',
          meaning:'Changes the tax on sector gross output; it is not a household income tax.',
          watch:'Producer price, output, intermediate demand, factor use, government revenue.',
          caution:'Rates are decimals in model code: 0.05 means 5%.'},
-        {id:'endowment',name:'Factor endowment',symbol:'FF[h]',target:'factor',kind:'semantic',method:'endowment',
+        {id:'endowment',name:'Factor endowment',symbol:'FF[h]',target:'factor',kind:'semantic',method:'endowment',domain:'positive',allowZero:false,
          description:'Change the economy-wide supply of a primary factor.',
          meaning:'Asks what equilibrium absorbs a larger or smaller factor endowment.',
          watch:'Factor price, sectoral factor demand, output, household income, trade, welfare.',
          caution:'Full-employment closure means the factor price and allocation adjust to absorb the endowment.'},
-        {id:'foreign_saving',name:'Foreign saving',symbol:'Sf',target:'scalar',kind:'component',component:'Sf',
+        {id:'foreign_saving',name:'Foreign saving',symbol:'Sf',target:'scalar',kind:'component',component:'Sf',domain:'free',allowZero:true,
          description:'Change the exogenous foreign-saving/resource-balance term.',
          meaning:'Changes external financing available to the economy under the savings-driven investment closure.',
          watch:'Investment, exchange rate, imports, exports, absorption, output.',
          caution:'Do not automatically label this FDI; it is an aggregate external-balance term.'},
-        {id:'world_import_price',name:'World import price',symbol:'pWm[i]',target:'good',kind:'component',component:'pWm',
+        {id:'world_import_price',name:'World import price',symbol:'pWm[i]',target:'good',kind:'component',component:'pWm',domain:'positive',allowZero:false,
          description:'Change the exogenous foreign-currency import price of one good.',
          meaning:'Represents an external price shock under the small-country assumption.',
          watch:'pm, M, D, pq, sector costs, household demand, exchange rate.',
          caution:'This is a world price, not a domestic tax.'},
-        {id:'world_export_price',name:'World export price',symbol:'pWe[i]',target:'good',kind:'component',component:'pWe',
+        {id:'world_export_price',name:'World export price',symbol:'pWe[i]',target:'good',kind:'component',component:'pWe',domain:'positive',allowZero:false,
          description:'Change the exogenous foreign-currency export price received for one good.',
          meaning:'Changes the export opportunity and induces CET reallocation between exports and domestic sales.',
          watch:'E, D, Z, domestic prices, factor demand, household income.',
@@ -275,6 +275,118 @@
     }
   };
 
+  // Preserve the mature model-reading layer from the pre-v0.7 Control Room.
+  MODELS.simple.glossary = [
+    ['X[i]','Household consumption','How much of good i the representative household buys.'],
+    ['Z[i]','Sector output','How much good i firms produce.'],
+    ['F[h,i]','Factor input','How much factor h sector i employs.'],
+    ['FF[h]','Factor endowment','Total exogenous supply of primary factor h.'],
+    ['px[i]','Demand price','Price entering household demand.'],
+    ['pz[i]','Supply price','Price entering firms’ production and factor-demand decisions.'],
+    ['pf[h]','Factor price','Wage or capital return for primary factor h.'],
+    ['alpha[i]','Preference share','Calibrated Cobb-Douglas household expenditure share.'],
+    ['beta[h,i]','Factor share','Calibrated factor cost share in sector i.'],
+    ['b[i]','Production scale / TFP','Calibrated production-function scale parameter.']
+  ];
+  MODELS.simple.story = [
+    'The household begins with fixed factor endowments FF[h].',
+    'Firms demand factors F[h,i]; factor prices pf[h] adjust until total demand matches supply.',
+    'Those factors produce sector output Z[i].',
+    'Factor income finances household consumption X[i], with relative prices allocating expenditure.',
+    'Goods and factor markets clear simultaneously; the solution is one internally consistent equilibrium.'
+  ];
+
+  MODELS.standard.glossary = [
+    ['Y[i]','Value added','Primary factors combined into sector i’s value-added bundle.'],
+    ['F[h,i]','Primary-factor input','Labor/capital used by sector i.'],
+    ['X[i,j]','Intermediate input','Good i used by sector j; the input-output propagation channel.'],
+    ['Z[i]','Gross sector output','Total output before allocation between export and domestic markets.'],
+    ['Xp[i]','Household consumption','Private final demand for composite good i.'],
+    ['Xg[i]','Government consumption','Government purchases of composite good i.'],
+    ['Xv[i]','Investment demand','Investment-good demand financed by total saving.'],
+    ['E[i]','Exports','Quantity sold abroad.'],
+    ['M[i]','Imports','Quantity purchased from abroad.'],
+    ['D[i]','Domestic sales','Domestic production sold in the home market.'],
+    ['Q[i]','Armington composite','Composite of imports and domestic supply used by domestic demanders.'],
+    ['pf[h]','Factor price','Wage or capital return.'],
+    ['py[i]','Value-added price','Unit value/cost of sector value added.'],
+    ['pz[i]','Gross-output price','Supply price linking production, taxes and market allocation.'],
+    ['pq[i]','Composite-good price','Price of the Armington composite.'],
+    ['pe[i]','Export price','Domestic-currency export price.'],
+    ['pm[i]','Import price','Domestic-currency tariff-inclusive import price.'],
+    ['pd[i]','Domestic-good price','Price of domestically produced goods sold at home.'],
+    ['epsilon','Exchange rate','Domestic-currency price of foreign exchange.'],
+    ['Sp','Private saving','Household saving available to finance investment.'],
+    ['Sg','Government saving','Fiscal saving feeding the saving-investment balance.'],
+    ['Sf','Foreign saving','Exogenous external financing/resource-balance term.'],
+    ['tauz[i]','Production-tax rate','Ad valorem tax rate on gross sector output.'],
+    ['taum[i]','Import-tariff rate','Ad valorem tariff on imports.'],
+    ['Tz[i]','Production-tax revenue','Endogenous revenue after output changes.'],
+    ['Tm[i]','Tariff revenue','Endogenous revenue after imports change.'],
+    ['Td','Direct-tax revenue','Revenue from the calibrated direct tax.'],
+    ['pWe[i]','World export price','Exogenous foreign-currency export price.'],
+    ['pWm[i]','World import price','Exogenous foreign-currency import price.'],
+    ['sigma[i]','Armington elasticity','Substitution elasticity between imported and domestic goods.'],
+    ['psi[i]','CET elasticity','Transformation elasticity between exports and domestic sales.']
+  ];
+  MODELS.standard.story = [
+    'Sectors combine primary-factor value added with intermediate inputs to produce gross output.',
+    'Producers allocate output between exports and domestic sales through the CET structure.',
+    'Domestic users combine imports and domestic goods through the Armington structure.',
+    'The composite good is absorbed by households, government, investment and intermediate users.',
+    'Factor markets transmit incidence: sector expansion changes factor demand and therefore factor returns.',
+    'Tax receipts feed the government account and saving; saving finances investment demand.',
+    'World prices, trade quantities, the exchange rate and foreign saving jointly satisfy the external account.',
+    'Every market and accounting identity is solved together; a tariff shock is never a one-sector calculation.'
+  ];
+
+  MODELS.ifpri.glossary = [
+    ['QA[a]','Activity level','Scale of production activity a.'],
+    ['QX[c]','Commodity output','Supply of commodity c.'],
+    ['QM[c]','Imports','Imported quantity of commodity c.'],
+    ['QE[c]','Exports','Exported quantity of commodity c.'],
+    ['QH[c,h]','Household consumption','Commodity c consumed by household h.'],
+    ['QG[c]','Government demand','Government consumption of commodity c.'],
+    ['QINV[c]','Investment demand','Commodity demand for investment.'],
+    ['PQ[c]','Composite price','Domestic user price of composite commodity c.'],
+    ['CPI','Consumer price index','Consumer-side nominal price anchor in the BASE closure.'],
+    ['DPI','Domestic producer price index','Alternative aggregate price index used by DEVAL.'],
+    ['EXR','Exchange rate','Domestic-currency price of foreign exchange.'],
+    ['FSAV','Foreign saving','External financing/resource-balance term.'],
+    ['GSAV','Government saving','Fiscal saving variable used in macro closure.'],
+    ['DTINS','Direct-tax adjustment','Uniform direct-tax-rate adjustment used by TARCUT2.']
+  ];
+  MODELS.ifpri.story = [
+    'Activities produce commodities and demand factors.',
+    'Factor returns generate institutional incomes.',
+    'Households and government allocate income to demand, taxes, transfers and saving.',
+    'Imports, exports, world prices and the exchange rate connect the domestic and external accounts.',
+    'Macro closure explicitly determines which aggregate is fixed and which variable absorbs adjustment.',
+    'The same tariff cut can have different incidence under TARCUT1 and TARCUT2 because fiscal adjustment differs.'
+  ];
+
+  MODELS.camcge.glossary = [
+    ['x[i]','Sector production','Published sector production quantity.'],
+    ['xd[i]','Domestic output','Domestic output measure used in experiment comparisons.'],
+    ['xxd[i]','Related production quantity','Additional production quantity retained from the published formulation.'],
+    ['p[i]','Composite / market price','Sector price measure in the published model.'],
+    ['pd[i]','Domestic price','Domestic-sector price.'],
+    ['pva[i]','Value-added price','Price of sector value added.'],
+    ['e[i]','Exports','Exports for tradable sectors.'],
+    ['mq[i]','Imports','Imports for tradable sectors.'],
+    ['wa[l]','Labor price / wage','Return to each published labor category.'],
+    ['dk[i]','Investment by sector','Sectoral investment allocation.'],
+    ['fsav','Foreign saving','External resource/saving term changed in Experiment 1.'],
+    ['tm[i]','Import tariff','Sectoral tariff rate changed in Experiments 2 and 3.']
+  ];
+  MODELS.camcge.story = [
+    'Start from the published Cameroon benchmark equilibrium.',
+    'Preserve the model-specific historical closure used by the replication.',
+    'Apply one published foreign-saving or tariff experiment exactly as documented.',
+    'Resolve output, prices, trade, labor returns, investment and fiscal variables simultaneously.',
+    'Compare the counterfactual changes with the published validation targets.'
+  ];
+
   const state = {
     model:'standard',
     labels:{goods:['BRD','MLK'],factors:['CAP','LAB']},
@@ -284,6 +396,26 @@
     scenarioName:'Policy experiment',
     stack:[]
   };
+
+  function saveLocal(){
+    try{
+      localStorage.setItem('cge-control-room-state-v070', JSON.stringify(state));
+    }catch(_){}
+  }
+
+  function loadLocal(){
+    try{
+      const saved=JSON.parse(localStorage.getItem('cge-control-room-state-v070') || 'null');
+      if(!saved || !MODELS[saved.model]) return;
+      state.model=saved.model;
+      if(saved.labels && Array.isArray(saved.labels.goods) && Array.isArray(saved.labels.factors)) state.labels=saved.labels;
+      if(typeof saved.dataChoice==='string') state.dataChoice=saved.dataChoice;
+      if(typeof saved.dataPath==='string') state.dataPath=saved.dataPath;
+      if(typeof saved.directoryPath==='string') state.directoryPath=saved.directoryPath;
+      if(typeof saved.scenarioName==='string') state.scenarioName=saved.scenarioName;
+      if(Array.isArray(saved.stack)) state.stack=saved.stack;
+    }catch(_){}
+  }
 
   const CANONICAL_STDCGE_TARIFF = `from cge_core import StandardCGE
 
@@ -301,67 +433,60 @@ print(result.compare(base))`;
 
   function setText(id, text){ const el=$(id); if(el) el.textContent=text; }
 
-  function picture(kind){
-    const common = `font-family="Inter,Segoe UI,sans-serif" font-size="12"`;
-    const box = (x,y,w,h,label,fill='var(--panel)') =>
-      `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="var(--line)"/>
-       <text x="${x+w/2}" y="${y+h/2+4}" text-anchor="middle" fill="var(--text)" ${common} font-weight="700">${esc(label)}</text></g>`;
-    const arrow = (x1,y1,x2,y2,label='') =>
-      `<g><path d="M${x1},${y1} L${x2},${y2}" stroke="var(--muted)" stroke-width="2" marker-end="url(#a)"/>
-       ${label?`<text x="${(x1+x2)/2}" y="${(y1+y2)/2-5}" text-anchor="middle" fill="var(--muted)" ${common}>${esc(label)}</text>`:''}</g>`;
-    let body='';
-    if(kind==='simple'){
-      body += box(28,40,120,54,'Household','var(--blue-soft)');
-      body += box(292,40,120,54,'Firms','var(--green-soft)');
-      body += box(28,210,120,54,'Factor markets');
-      body += box(292,210,120,54,'Goods markets');
-      body += arrow(148,65,292,65,'consumption');
-      body += arrow(292,82,148,225,'factor income');
-      body += arrow(148,235,292,82,'labor / capital');
-      body += arrow(412,215,412,95,'output');
-    } else if(kind==='standard'){
-      body += box(18,28,105,50,'Household','var(--blue-soft)');
-      body += box(168,28,105,50,'Government','var(--gold-soft)');
-      body += box(318,28,105,50,'Investment','var(--violet-soft)');
-      body += box(168,130,105,50,'Sectors','var(--green-soft)');
-      body += box(18,225,105,50,'Factors');
-      body += box(318,225,105,50,'Rest of world','var(--rose-soft)');
-      body += arrow(70,78,190,130,'demand');
-      body += arrow(220,78,220,130,'demand / tax');
-      body += arrow(370,78,255,130,'investment');
-      body += arrow(168,155,123,245,'factor demand');
-      body += arrow(273,155,318,245,'trade');
-      body += arrow(123,235,170,175,'income');
-    } else if(kind==='ifpri'){
-      body += box(18,28,110,48,'Activities','var(--green-soft)');
-      body += box(165,28,110,48,'Commodities','var(--blue-soft)');
-      body += box(312,28,110,48,'Rest of world','var(--rose-soft)');
-      body += box(18,215,110,48,'Factors');
-      body += box(165,215,110,48,'Households');
-      body += box(312,215,110,48,'Government','var(--gold-soft)');
-      body += box(165,120,110,48,'Macro closure','var(--violet-soft)');
-      body += arrow(128,52,165,52);
-      body += arrow(312,52,275,52,'trade');
-      body += arrow(72,215,72,76,'factor use');
-      body += arrow(128,239,165,239,'income');
-      body += arrow(275,239,312,239,'tax');
-      body += arrow(220,215,220,168);
-      body += arrow(367,215,260,168);
-    } else {
-      body += box(18,28,110,48,'11 sectors','var(--green-soft)');
-      body += box(165,28,110,48,'Domestic market','var(--blue-soft)');
-      body += box(312,28,110,48,'Trade','var(--rose-soft)');
-      body += box(18,215,110,48,'3 labor groups');
-      body += box(165,215,110,48,'Investment','var(--violet-soft)');
-      body += box(312,215,110,48,'External balance','var(--gold-soft)');
-      body += box(165,120,110,48,'CAMCGE closure');
-      body += arrow(128,52,165,52); body += arrow(275,52,312,52);
-      body += arrow(72,215,72,76); body += arrow(220,215,220,168);
-      body += arrow(367,215,260,168);
+  function diagramFor(id){
+    const base = `viewBox="0 0 720 270" role="img" aria-label="${esc(MODELS[id].title)} economy diagram"`;
+    const arrow = `<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/></marker></defs>`;
+    const node=(x,y,w,h,title,sub,fill='var(--blue-soft)',stroke='var(--blue)')=>`
+      <g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="14" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+      <text x="${x+w/2}" y="${y+25}" text-anchor="middle" fill="var(--text)" font-size="14" font-weight="800">${title}</text>
+      <text x="${x+w/2}" y="${y+43}" text-anchor="middle" fill="var(--muted)" font-size="11">${sub}</text></g>`;
+    const line=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a)"/>`;
+
+    if(id==='simple'){
+      return `<svg ${base}>${arrow}
+        ${node(55,95,150,70,'Household','consumes goods','var(--green-soft)','var(--green)')}
+        ${node(515,95,150,70,'Firms','produce BRD / MLK','var(--blue-soft)','var(--blue)')}
+        ${node(285,25,150,62,'Goods market','X = Z','var(--gold-soft)','var(--gold)')}
+        ${node(285,183,150,62,'Factor market','CAP + LAB','var(--violet-soft)','var(--violet)')}
+        ${line(205,112,285,70)} ${line(435,70,515,112)}
+        ${line(515,150,435,212)} ${line(285,212,205,150)}
+        <text x="360" y="137" text-anchor="middle" fill="var(--muted)" font-size="12">relative prices clear both markets</text>
+      </svg>`;
     }
-    return `<svg viewBox="0 0 440 300" role="img" aria-label="${esc(kind)} economy diagram">
-      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L7,3 z" fill="var(--muted)"/></marker></defs>${body}</svg>`;
+    if(id==='standard'){
+      return `<svg ${base}>${arrow}
+        ${node(275,94,170,76,'Firms & sectors','factors + intermediates','var(--blue-soft)','var(--blue)')}
+        ${node(30,28,145,62,'Household','consumption + saving','var(--green-soft)','var(--green)')}
+        ${node(30,180,145,62,'Government','taxes + demand','var(--gold-soft)','var(--gold)')}
+        ${node(545,28,145,62,'Rest of world','imports + exports','var(--violet-soft)','var(--violet)')}
+        ${node(545,180,145,62,'Investment','saving → demand','var(--rose-soft)','var(--rose)')}
+        ${line(175,58,275,108)} ${line(175,211,275,146)}
+        ${line(445,108,545,58)} ${line(445,146,545,211)}
+        ${line(360,94,360,58)} ${line(360,170,360,210)}
+        <text x="360" y="36" text-anchor="middle" fill="var(--muted)" font-size="11">factor & goods markets</text>
+        <text x="360" y="235" text-anchor="middle" fill="var(--muted)" font-size="11">saving / investment balance</text>
+      </svg>`;
+    }
+    if(id==='ifpri'){
+      return `<svg ${base}>${arrow}
+        ${node(270,93,180,76,'Activities','production','var(--blue-soft)','var(--blue)')}
+        ${node(55,92,150,76,'Institutions','households + govt','var(--green-soft)','var(--green)')}
+        ${node(515,92,150,76,'Commodities','domestic + trade','var(--violet-soft)','var(--violet)')}
+        ${node(270,18,180,52,'Factors','labor / capital','var(--gold-soft)','var(--gold)')}
+        ${node(270,197,180,52,'Macro closure','CPI · FSAV · GSAV · EXR','var(--rose-soft)','var(--rose)')}
+        ${line(205,130,270,130)} ${line(450,130,515,130)} ${line(360,70,360,93)} ${line(360,169,360,197)}
+        <text x="360" y="263" text-anchor="middle" fill="var(--muted)" font-size="11">named policy scenarios alter shocks + closures together</text>
+      </svg>`;
+    }
+    return `<svg ${base}>${arrow}
+      ${node(270,92,180,76,'CAMCGE','Cameroon benchmark','var(--blue-soft)','var(--blue)')}
+      ${node(25,28,155,62,'11 sectors','agriculture → services','var(--green-soft)','var(--green)')}
+      ${node(25,180,155,62,'3 labor groups','rural · unsk · skilled','var(--gold-soft)','var(--gold)')}
+      ${node(540,28,155,62,'Trade','9 tradable sectors','var(--violet-soft)','var(--violet)')}
+      ${node(540,180,155,62,'3 experiments','published regressions','var(--rose-soft)','var(--rose)')}
+      ${line(180,58,270,108)} ${line(180,211,270,146)} ${line(450,108,540,58)} ${line(450,146,540,211)}
+      <text x="360" y="250" text-anchor="middle" fill="var(--muted)" font-size="11">replication benchmark: preserve the published closure</text>
+    </svg>`;
   }
 
   function renderModelCards(){
@@ -383,7 +508,7 @@ print(result.compare(base))`;
       `<div class="policy-box good"><strong>Use it when</strong>${esc(m.useWhen)}</div>
        <div class="policy-box caution"><strong>Do not use it when</strong>${esc(m.avoidWhen)}</div>`;
     $('modelFacts').innerHTML=m.facts.map(x=>`<span class="fact">${esc(x)}</span>`).join('');
-    $('economyPicture').innerHTML=picture(state.model);
+    $('economyPicture').innerHTML=diagramFor(state.model);
   }
 
   function renderWalkthrough(){
@@ -458,7 +583,7 @@ print(result.compare(base))`;
 
   function renderDataSource(){
     const m=model();
-    $('dataSourcePanel').innerHTML =
+    $('dataSourcePanel').innerHTML=
       `<div class="data-choice">${m.dataChoices.map(([id,title,desc])=>
         `<button class="choice-card ${state.dataChoice===id?'active':''}" data-data="${id}">
           <strong>${esc(title)}</strong><span>${esc(desc)}</span></button>`).join('')}</div>
@@ -496,26 +621,77 @@ print(result.compare(base))`;
     $('economyStatus').className='status-pill ok'; setText('economyStatus','Data path selected');
   }
 
+  function closureContract(){
+    if(state.model==='simple') return {
+      label:'Simple CGE · canonical model-owned closure',
+      fixed:'Primary-factor endowments FF[h] are exogenous except for an explicit scenario shock. The bundled price normalization is applied internally.',
+      adjusts:'Production, consumption, factor allocation, factor prices and all non-anchor relative prices adjust jointly.',
+      balance:'Goods markets and factor markets clear simultaneously; CGE-Core handles the model’s redundant equilibrium condition internally.',
+      commitment:'This is a full-employment comparative-static experiment. A factor-supply shock is absorbed through factor prices and reallocation, not a time path.'
+    };
+    if(state.model==='standard') return {
+      label:'Standard CGE · canonical Hosoe closure',
+      fixed:'Factor endowments, world prices and foreign saving are exogenous unless explicitly shocked. The bundled price normalization is model-owned.',
+      adjusts:'Sector output, intermediate demand, Armington/CET allocation, factor returns, household demand, government saving, investment, trade and the exchange rate adjust together.',
+      balance:'Saving finances investment and the external account clears with the model’s exogenous foreign-saving assumption. The redundant market equation is handled internally.',
+      commitment:'A tariff or production-tax revenue loss is not automatically replaced by another tax. Fiscal incidence follows the calibrated Standard-CGE closure.'
+    };
+    if(state.model==='ifpri') return {
+      label:'IFPRI Standard · scenario-specific macro closure',
+      fixed:'The BASE closure fixes its recorded macro anchors. A named scenario can deliberately switch which fiscal or external variable is fixed.',
+      adjusts:'Activities, commodities, factors, institutions, prices and the scenario-specific macro adjustment variables respond jointly.',
+      balance:'TARCUT1 and TARCUT2 deliberately use different fiscal adjustment rules; DEVAL deliberately switches the price/external closure.',
+      commitment:'Closure is part of the policy experiment. Two runs with the same tariff shock but different fiscal closure are economically different experiments.'
+    };
+    return {
+      label:'CAMCGE · published replication closure',
+      fixed:'The historical Cameroon model keeps the published price/saving and external-balance closure used by the validated replication.',
+      adjusts:'Sector output, prices, trade, labor returns, investment and fiscal quantities adjust according to the CAMCGE equations.',
+      balance:'The same structural closure used in the published benchmark is retained so experiment results remain like-for-like replication evidence.',
+      commitment:'Changing the closure would create a different economic experiment and would no longer be a direct reproduction of the published Cameroon results.'
+    };
+  }
+
   function renderClosure(){
     const c=model().closure;
-    setText('closureIntro','Closure determines which variables are exogenous and which variables adjust to clear the model. v0.7 hides routine closure plumbing without hiding its economic meaning.');
+    const contract=closureContract();
+    setText('closureIntro','Closure answers the economic question “what is fixed, and what is allowed to move?” CGE-Core applies each bundled model’s canonical structural closure automatically, but the assumption remains visible here.');
     setText('closureStatus','Model-owned');
-    $('closurePanel').innerHTML =
+    $('closurePanel').innerHTML=
       `<div class="mini-label">${esc(c.title)}</div>
        <div class="closure-map">
          <div class="closure-box"><strong>Fixed / exogenous side</strong><p class="help">${esc(c.anchor)}</p></div>
          <div class="closure-arrow">→</div>
          <div class="closure-box"><strong>Endogenous adjustment</strong><p class="help">${esc(c.adjusts)}</p></div>
        </div>
-       <div class="closure-summary">${esc(c.note)}</div>`;
-    $('preflightPanel').innerHTML =
-      `<div class="mini-label">Preflight</div><h3>Before you solve</h3>
-       <div class="check-list">
-         <div class="check"><b>✓</b><span>Model family: ${esc(model().title)}</span></div>
-         <div class="check"><b>✓</b><span>Data source: ${esc(state.dataChoice)}</span></div>
-         <div class="check"><b>✓</b><span>Canonical/model-specific closure will be applied by CGE-Core.</span></div>
-         <div class="check"><b>✓</b><span>Each scenario will be an independent counterfactual.</span></div>
+       <div class="closure-summary">${esc(c.note)}</div>
+       <div class="contract-title"><div class="mini-label">Economic closure contract</div><h3>${esc(contract.label)}</h3></div>
+       <div class="contract-grid">
+         <div class="contract-card"><strong>Fixed / exogenous</strong><p>${esc(contract.fixed)}</p></div>
+         <div class="contract-card"><strong>Allowed to adjust</strong><p>${esc(contract.adjusts)}</p></div>
+         <div class="contract-card"><strong>Balance rule</strong><p>${esc(contract.balance)}</p></div>
+         <div class="contract-card commitment"><strong>What this commits you to</strong><p>${esc(contract.commitment)}</p></div>
        </div>`;
+
+    const dataText = state.dataChoice==='sam'
+      ? `SAM: ${state.dataPath || 'not specified'}`
+      : state.dataChoice==='directory' || state.dataChoice==='official'
+        ? `Directory/source: ${state.directoryPath || 'not specified'}`
+        : `Bundled ${state.dataChoice} benchmark`;
+    const scenarioText = state.stack.length
+      ? `${state.stack.length} planned change${state.stack.length===1?'':'s'}`
+      : 'No counterfactual queued yet';
+    $('preflightPanel').innerHTML=
+      `<div class="preflight-head"><div><div class="mini-label">Structural preflight</div><h3>Before you run</h3>
+       <p class="help">The browser checks that the modelling choices are coherent enough to export. The numerical solver still determines whether the nonlinear system actually converges.</p></div></div>
+       <div class="check-list">
+         <div class="check"><b>✓</b><span><strong>Model family:</strong> ${esc(model().title)}</span></div>
+         <div class="check"><b>✓</b><span><strong>Data:</strong> ${esc(dataText)}</span></div>
+         <div class="check"><b>✓</b><span><strong>Closure:</strong> canonical/model-specific closure is applied by CGE-Core.</span></div>
+         <div class="check"><b>✓</b><span><strong>Scenario isolation:</strong> each counterfactual starts from the solved benchmark.</span></div>
+         <div class="check ${state.stack.length?'':'warn'}"><b>${state.stack.length?'✓':'!'}</b><span><strong>Counterfactual:</strong> ${esc(scenarioText)}</span></div>
+       </div>
+       <div class="preflight-note"><strong>Important:</strong> structural consistency is not the same thing as numerical convergence. A nonlinear CGE solve still has to find a feasible optimum.</div>`;
   }
 
   function targetOptions(control){
@@ -526,8 +702,9 @@ print(result.compare(base))`;
 
   function renderControlEditor(control){
     const options=targetOptions(control);
+    const target = options[0] || '';
     $('controlEditor').classList.remove('hidden');
-    $('controlEditor').innerHTML =
+    $('controlEditor').innerHTML=
       `<div class="editor-head"><div><div class="mini-label">${esc(control.symbol)}</div><h3>${esc(control.name)}</h3></div>
        <button class="button small ghost" id="closeEditor">Close</button></div>
        <p class="help">${esc(control.description)}</p>
@@ -537,7 +714,7 @@ print(result.compare(base))`;
          <div class="form-field"><label>Scenario name</label><input id="scenarioNameInput" class="text-input" value="${esc(state.scenarioName)}"></div>
        </div>
        <div class="operation-grid">
-         <button class="choice-card" data-op="zero"><strong>Set to zero</strong><span>Useful for abolition.</span></button>
+         ${control.allowZero!==false?`<button class="choice-card" data-op="zero"><strong>Set to zero</strong><span>Useful for abolition.</span></button>`:''}
          <button class="choice-card" data-op="level"><strong>Set level</strong><span>Enter a new level/rate.</span></button>
          <button class="choice-card" data-op="pct"><strong>Percent change</strong><span>Scale the benchmark value.</span></button>
        </div>
@@ -555,7 +732,7 @@ print(result.compare(base))`;
   function renderOperation(control,op){
     let prompt=op==='pct'?'Percent change':op==='level'?'New level / rate':'Set to zero';
     let defaultValue=op==='pct'?'10':control.id.includes('tax')||control.id==='tariff'?'0.05':'1.0';
-    $('operationDetail').innerHTML =
+    $('operationDetail').innerHTML=
       `<div class="form-grid">
         ${op!=='zero'?`<div class="form-field"><label>${prompt}</label><input id="operationValue" class="text-input" type="number" step="any" value="${defaultValue}"></div>`:''}
         <div class="form-field"><label>Action</label><button id="addShockBtn" class="button primary">Add to scenario</button></div>
@@ -564,6 +741,11 @@ print(result.compare(base))`;
       const targetEl=$('editorTarget');
       const target=targetEl?targetEl.value:null;
       const val=op==='zero'?0:Number($('operationValue').value);
+      if(!Number.isFinite(val)){ alert('Enter a finite numeric value.'); return; }
+      if(op==='level' && control.domain==='nonnegative' && val<0){ alert('This control cannot be negative.'); return; }
+      if(op==='level' && control.domain==='positive' && val<=0){ alert('This control must remain positive.'); return; }
+      if(op==='pct' && control.domain==='nonnegative' && val<-100){ alert('A reduction below -100% would imply a negative value.'); return; }
+      if(op==='pct' && control.domain==='positive' && val<=-100){ alert('This control must remain positive after the change.'); return; }
       state.stack.push({type:'shock',control:control.id,target,op,amount:val});
       renderScenario();renderScript();
     });
@@ -709,11 +891,11 @@ print(result.compare(base))`;
   }
 
   function renderRunInstructions(){
-    $('runInstructions').innerHTML =
+    $('runInstructions').innerHTML=
       `<div class="run-steps">
         <div class="run-step"><div><strong>Install v0.7.0</strong><div class="command">${esc(INSTALL)}</div></div></div>
         <div class="run-step"><div><strong>Run your script</strong><div class="command">python scenario.py</div></div></div>
-        <div class="run-step"><div><strong>Or use Colab</strong><p class="help">The canonical notebook performs the package installation in one cell, then goes directly to modelling.</p></div></div>
+        <div class="run-step"><div><strong>Or use Colab</strong><p class="help">The canonical notebook performs package installation in one cell, then goes directly to modelling.</p></div></div>
        </div>`;
     $('resultFiles').innerHTML=[
       'base.summary() — benchmark solve metadata',
@@ -729,6 +911,8 @@ print(result.compare(base))`;
   }
 
   function renderScript(){
+    saveLocal();
+    renderClosure();
     const code=generateCode();
     $('codePreview').querySelector('code').textContent=code;
     setText('scriptCaption',`${model().title} · ${state.stack.length?state.scenarioName:'benchmark only'}`);
@@ -769,11 +953,32 @@ print(result.compare(base))`;
     renderModelCards();renderOverview();renderWalkthrough();renderData();renderClosure();renderScenario();renderScript();
   }
 
-  $('themeSelect').value=document.documentElement.dataset.theme || 'light';
-  $('themeSelect').addEventListener('change',e=>{
-    document.documentElement.dataset.theme=e.target.value;
-    try{localStorage.setItem('cge-control-room-theme',e.target.value);}catch(_){}
-  });
+  function inheritedDocsTheme(){
+    try{
+      if(!document.referrer) return '';
+      const ref=new URL(document.referrer);
+      const openedFromSameSite=ref.origin===window.location.origin && !ref.pathname.includes('/control-room/');
+      if(!openedFromSameSite) return '';
+      const mode=localStorage.getItem('mode');
+      if(mode==='auto') return 'system';
+      if(mode==='light'||mode==='dark') return mode;
+    }catch(_){}
+    return '';
+  }
+
+  function applyTheme(theme){
+    if(!['light','dark','system'].includes(theme)) theme='light';
+    document.documentElement.dataset.theme=theme;
+    $('themeSelect').value=theme;
+    try{localStorage.setItem('cge-control-room-theme',theme);}catch(_){}
+  }
+
+  loadLocal();
+  let initialTheme=document.documentElement.dataset.theme || 'light';
+  const inherited=inheritedDocsTheme();
+  if(inherited) initialTheme=inherited;
+  applyTheme(initialTheme);
+  $('themeSelect').addEventListener('change',e=>applyTheme(e.target.value));
   $('resetLabelsBtn').addEventListener('click',resetLabels);
   $('clearStackBtn').addEventListener('click',()=>{state.stack=[];renderScenario();renderScript();});
   $('copyCodeBtn').addEventListener('click',async()=>{

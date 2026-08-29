@@ -87,12 +87,12 @@ p{margin:.3rem 0}
 .fact-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .fact{padding:5px 8px;border:1px solid var(--line);border-radius:999px;font-size:.72rem;color:var(--muted);font-weight:750}
 .economy-picture{
-  min-height:300px;border-radius:15px;background:
+  min-height:270px;border-radius:15px;background:
     radial-gradient(circle at 20% 15%,color-mix(in srgb,var(--blue-soft) 90%,transparent),transparent 38%),
     radial-gradient(circle at 83% 84%,color-mix(in srgb,var(--green-soft) 90%,transparent),transparent 38%),
     var(--panel-soft);overflow:hidden;display:grid;place-items:center
 }
-.economy-picture svg{width:100%;height:300px;display:block}
+.economy-picture svg{width:100%;height:270px;display:block}
 .story-grid{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
 .story-rail{padding:12px;position:sticky;top:82px}
 .story-nav{display:grid;gap:5px;margin-top:8px}
@@ -194,3 +194,17 @@ pre{margin:0;min-height:420px;max-height:720px;overflow:auto;background:#101723;
   .header-actions{justify-content:flex-start}.model-grid,.control-grid,.form-grid,.operation-grid,.data-choice,.outputs-grid,.variable-glossary,.notation-grid,.policy-use{grid-template-columns:1fr}
   .model-overview{padding:15px}.economy-picture,.economy-picture svg{min-height:240px;height:240px}
 }
+
+/* Restored mature closure/preflight presentation */
+.contract-title{margin-top:16px}
+.contract-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:10px}
+.contract-card{border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--panel-soft)}
+.contract-card strong{display:block;font-size:.82rem;margin-bottom:4px}
+.contract-card p{font-size:.78rem;line-height:1.48;color:var(--muted);margin:0}
+.contract-card.commitment{background:var(--blue-soft)}
+.contract-card.commitment p{color:var(--text)}
+.preflight-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.preflight-note{margin-top:12px;padding:10px 11px;border-left:3px solid var(--gold);border-radius:8px;background:var(--gold-soft);font-size:.8rem;line-height:1.5}
+.check.warn b{color:var(--gold);background:var(--gold-soft)}
+@media(max-width:980px){.contract-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.contract-grid{grid-template-columns:1fr}.preflight-head{flex-direction:column;align-items:flex-start}}
