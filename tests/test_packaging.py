@@ -43,7 +43,9 @@ def test_practitioner_readme_uses_release_wheel_not_repository_archive():
 
 
 def test_release_workflow_builds_checks_and_publishes_wheel():
-    text = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+    text = (ROOT / ".github" / "workflows" / "release.yml").read_text(
+        encoding="utf-8"
+    )
 
     assert "python -m build --wheel" in text
     assert "forbidden_roots" in text
@@ -53,10 +55,33 @@ def test_release_workflow_builds_checks_and_publishes_wheel():
 
 
 def test_notebook_ci_executes_from_built_wheel_not_checkout_source():
-    text = (ROOT / ".github" / "workflows" / "notebooks.yml").read_text(encoding="utf-8")
+    text = (ROOT / ".github" / "workflows" / "notebooks.yml").read_text(
+        encoding="utf-8"
+    )
 
     assert "python -m build --wheel" in text
     assert "python -m pip install dist/*.whl" in text
     assert "TemporaryDirectory" in text
     assert "allow_errors=False" in text
     assert "pip install -e" not in text
+
+
+def test_main_packaging_ci_uses_canonical_camcge_source_paths():
+    text = (ROOT / ".github" / "workflows" / "tests.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert '"cge_core/models/camcge/model.py"' in text
+    assert '"cge_core/models/camcge/data/set-i-.csv"' in text
+    assert '"validation/cam/replicate_base.py"' in text
+    assert '"validation/cam/replicate_experiments.py"' in text
+
+    # The old layout may be mentioned only inside the explicit stale-path guard.
+    required_block = text.split("required = {", 1)[1].split("}", 1)[0]
+    assert '"cam/data/set-i-.csv"' not in required_block
+    assert '"cam/replicate_base.py"' not in required_block
+    assert '"cam/replicate_experiments.py"' not in required_block
+
+    # Exact normalized sdist paths avoid suffix collisions such as
+    # validation/cam/replicate_base.py accidentally satisfying cam/replicate_base.py.
+    assert 'name.split("/", 1)[1]' in text

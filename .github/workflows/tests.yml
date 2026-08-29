@@ -159,8 +159,8 @@ jobs:
           python -m pip install --upgrade pip "ruff>=0.8,<1"
           ruff check cge_core cam tests --select E9,F
 
-  # Packaging lane: the wheel must not leak the tests package, and the
-  # bundled SAM data must actually ship.
+  # Packaging lane: the wheel contains only runtime packages/data, while the
+  # source distribution also preserves tests, validation evidence, and docs.
   packaging:
     name: packaging
     runs-on: ubuntu-latest
@@ -184,19 +184,57 @@ jobs:
       - name: Assert wheel contents
         run: |
           python - <<'PY'
-          import glob, zipfile, sys
-          names = zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist()
+          import glob
+          import sys
+          import zipfile
+
+          names = set(zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist())
           errors = []
-          leaked = [n for n in names if n.startswith('tests/')]
+
+          leaked = sorted(name for name in names if name.startswith("tests/"))
           if leaked:
-              errors.append("tests package leaked into the wheel: %s" % leaked)
-          csvs = [n for n in names if n.endswith('.csv')]
-          if len(csvs) < 8:
-              errors.append("expected 8 bundled CSVs, found %d" % len(csvs))
+              errors.append(f"tests package leaked into the wheel: {leaked}")
+
+          required = {
+              "cge_core/models/simple/model.py",
+              "cge_core/models/standard/model.py",
+              "cge_core/models/camcge/model.py",
+              "cge_core/models/camcge/data/set-i-.csv",
+              "cge_core/models/ifpri/model.py",
+          }
+          missing = sorted(required - names)
+          if missing:
+              errors.append("runtime files missing from wheel: " + ", ".join(missing))
+
+          csvs = sorted(name for name in names if name.endswith(".csv"))
+          if len(csvs) < 16:
+              errors.append(f"expected at least 16 bundled CSVs, found {len(csvs)}")
+
+          forbidden_roots = {
+              "docs/",
+              "notebooks/",
+              "tests/",
+              "validation/",
+              "examples/",
+              ".github/",
+              "release/",
+          }
+          leaked_roots = sorted(
+              name
+              for name in names
+              if any(name.startswith(root) for root in forbidden_roots)
+          )
+          if leaked_roots:
+              errors.append(
+                  "repository-only content leaked into wheel: "
+                  + ", ".join(leaked_roots[:20])
+              )
+
           if errors:
-              print("\n".join("ERROR: " + e for e in errors))
+              print("\n".join("ERROR: " + error for error in errors))
               sys.exit(1)
-          print("wheel OK: %d data files, no tests leaked" % len(csvs))
+
+          print(f"wheel OK: {len(csvs)} data files; runtime boundary intact")
           PY
 
       - name: Assert source distribution contents
@@ -208,25 +246,51 @@ jobs:
 
           archive = glob.glob("dist/*.tar.gz")[0]
           with tarfile.open(archive, "r:gz") as handle:
-              names = handle.getnames()
-          required = [
+              archive_names = handle.getnames()
+
+          # sdists have one versioned top-level directory. Strip it so every
+          # assertion below is an exact repository-relative path comparison.
+          names = {
+              name.split("/", 1)[1]
+              for name in archive_names
+              if "/" in name and name.split("/", 1)[1]
+          }
+
+          required = {
+              # Historical compatibility package.
               "cam/__init__.py",
               "cam/cam_model_def.py",
-              "cam/replicate_base.py",
-              "cam/replicate_experiments.py",
-              "cam/data/set-i-.csv",
+              # Canonical CAMCGE runtime.
+              "cge_core/models/camcge/model.py",
+              "cge_core/models/camcge/data/set-i-.csv",
+              # Replication/validation evidence.
+              "validation/cam/make_data.py",
+              "validation/cam/replicate_base.py",
+              "validation/cam/replicate_experiments.py",
               "tests/cam/test_replication.py",
+              "tests/cam/test_validation_layout.py",
               "CAMCGE_REPLICATION_GUIDE.md",
               "CAMCGE_VALIDATION_REPORT.md",
-          ]
-          missing = [
-              item for item in required
-              if not any(name.endswith(item) for name in names)
-          ]
+          }
+
+          missing = sorted(required - names)
           if missing:
               print("ERROR: source distribution missing: " + ", ".join(missing))
               sys.exit(1)
-          print("sdist OK: CAMCGE benchmark, tests, data, and docs included")
+
+          stale = sorted({
+              "cam/data/set-i-.csv",
+              "cam/replicate_base.py",
+              "cam/replicate_experiments.py",
+          } & names)
+          if stale:
+              print(
+                  "ERROR: obsolete CAMCGE source paths returned to the sdist: "
+                  + ", ".join(stale)
+              )
+              sys.exit(1)
+
+          print("sdist OK: canonical runtime, validation, tests, and docs included")
           PY
 
       - name: Install from wheel and smoke-test
@@ -235,9 +299,18 @@ jobs:
           /tmp/smoke/bin/pip install dist/*.whl
           /tmp/smoke/bin/python - <<'PY'
           import cge_core
-          from cge_core import PyCGE, example_data
+          from cge_core import CamCGE, StandardCGE
+
+          standard = StandardCGE.example()
+          cam = CamCGE.example()
+
+          assert standard.data.is_dir(), "packaged StandardCGE data missing"
+          assert cam.data.is_dir(), "packaged CAMCGE data missing"
+          assert cge_core.__version__ == "0.7.0"
+
+          # Historical import path remains supported by the compatibility shim.
           from cge_core.examples.stdcge_model_def import StdModelDef
-          d = example_data('stdcge')
-          assert d.is_dir(), "packaged SAM data missing from the wheel"
-          print("import OK, version", cge_core.__version__)
+          assert StdModelDef is not None
+
+          print("wheel import/data smoke test OK, version", cge_core.__version__)
           PY
