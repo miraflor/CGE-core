@@ -1,4 +1,2 @@
-"""No-inheritance authoring interface for research CGE models."""
-from .module_adapter import FunctionalEconomy, model_from_module
-
-__all__ = ["FunctionalEconomy", "model_from_module"]
+"""Compatibility import path for experimental function-based authoring."""
+from cge_core.experimental.authoring import *  # noqa: F401,F403

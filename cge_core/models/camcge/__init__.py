@@ -1,3 +1,4 @@
-"""Canonical installed location for the validated CAMCGE implementation."""
-from cam.cam_model_def import CamModelDef
-__all__ = ["CamModelDef"]
+"""CAMCGE model family."""
+from .api import CamCGE
+from .model import CamModelDef
+__all__ = ["CamCGE", "CamModelDef"]

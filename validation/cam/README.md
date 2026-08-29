@@ -11,21 +11,25 @@ The validation is a three-way comparison:
 2. the published CAMCGE model specification; and
 3. the Pyomo model executed through CGE-Core's public `PyCGE` workflow.
 
-The module is intentionally outside the installed `cge_core` package. It is a
-replication and regression benchmark, not a new claim that CAMCGE was authored
-as part of CGE-Core. See `NOTICE.md` for provenance notes.
+The **runtime CAMCGE implementation** is installed under
+`cge_core/models/camcge/`. This directory contains the independent replication,
+data-transcription, and validation utilities used to protect that implementation.
+Keeping the validation scripts outside the runtime package preserves the
+distinction between an installed model and the evidence used to verify it.
+See `NOTICE.md` for provenance notes.
 
 ## Contents
 
 - `make_data.py` transcribes the benchmark tables, checks adding-up identities,
   and writes the eight CGE-Core CSV input files.
-- `cam_model_def.py` expresses the CAMCGE equations as a CGE-Core model
-  definition.
+- `../../cge_core/models/camcge/model.py` contains the installed CAMCGE
+  model definition used by the replication.
 - `replicate_base.py` solves the base equilibrium and compares 98 published
   variable levels plus the objective value.
 - `replicate_experiments.py` solves the paper's three policy experiments and
   checks the published percentage changes.
-- `data/` contains the generated CSV files committed for reproducibility.
+- `../../cge_core/models/camcge/data/` contains the committed benchmark CSVs
+  used by the installed model and the replication checks.
 - `../tests/cam/` contains structural and numerical regression tests.
 
 ## Run from the repository root
@@ -33,15 +37,15 @@ as part of CGE-Core. See `NOTICE.md` for provenance notes.
 Generate and verify the data:
 
 ```bash
-python cam/make_data.py
+python validation/cam/make_data.py
 python -m pytest tests/cam/test_data.py -v
 ```
 
 Run the base replication and policy experiments with `cyipopt`:
 
 ```bash
-python cam/replicate_base.py --solver cyipopt
-python cam/replicate_experiments.py --solver cyipopt
+python validation/cam/replicate_base.py --solver cyipopt
+python validation/cam/replicate_experiments.py --solver cyipopt
 python -m pytest tests/cam -v
 ```
 

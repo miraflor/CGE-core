@@ -1,15 +1,49 @@
 # Developer reference
 
-CGE-Core v0.7 has three extension levels.
+CGE-Core's source tree is organized around the concepts a modeller actually
+needs to understand.
 
-1. **Use a bundled model façade** when the economics already match the question.
-2. **Functional Python authoring** for a new model without requiring inheritance from a
-   CGE-Core base class.
-3. **Lower-level engine/model-definition work** when extending the validated PyCGE-style
-   architecture.
+```text
+cge_core/
+├── workflow.py          benchmark → scenario → result lifecycle
+├── solver.py            hidden numerical-backend resolution
+├── sam.py               social-accounting-matrix tools
+├── models/              bundled economic model families
+│   ├── simple/
+│   ├── standard/
+│   ├── camcge/
+│   └── ifpri/
+├── experimental/        optional authoring and .cge.md work
+└── compat/              retained lower-level PyCGE implementation
+```
 
-The experimental `.cge.md` format is intentionally limited and is not the implementation
-language of the validated bundled models.
+## Where to make a change
 
-Compatibility is a deliberate boundary: the v0.6 `CGE` lifecycle and lower-level engine
-remain available even though practitioner documentation now starts one level higher.
+- **Economic equations or calibration:** `cge_core/models/<family>/`.
+- **Benchmark/scenario/result behavior:** `cge_core/workflow.py`.
+- **Solver detection and automatic setup:** `cge_core/solver.py`.
+- **SAM conversion and validation:** `cge_core/sam.py`.
+- **Function-based or `.cge.md` authoring:** `cge_core/experimental/`.
+- **Historical PyCGE compatibility:** `cge_core/compat/`.
+
+Compatibility modules remain intentionally tiny so existing v0.6/v0.7 imports
+do not break. They are not parallel implementations.
+
+The model families share a home and a public lifecycle, not ceremonial file
+symmetry. Simple CGE stays simple; IFPRI keeps the extra modules its economics
+and validation genuinely require.
+
+The ordinary interface remains:
+
+```python
+from cge_core import StandardCGE
+
+base = StandardCGE.example().solve()
+scenario = base.scenario("Tariff abolition")
+scenario.tariff("BRD", 0)
+result = scenario.solve()
+result.compare(base)
+```
+
+This cleanup does not alter equations, calibration rules, closures, data, or
+numerical validation targets.

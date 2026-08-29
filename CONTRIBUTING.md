@@ -12,11 +12,14 @@ cd CGE-core
 pip install -e ".[dev]"
 ```
 
-A local NLP solver is needed for the full test suite: either
-`conda install -c conda-forge ipopt` (puts an `ipopt` executable on
-PATH) or `pip install "cge-core[solver]"` (cyipopt; needs the IPOPT
-system library and a PyNumero ASL build). Without one, the
-solver-dependent tests skip and the structural tests still run.
+A usable NLP solver is needed for the full numerical test suite.
+For local development, `conda install -c conda-forge ipopt` is the most
+predictable explicit setup. Without a usable solver, solver-dependent tests
+skip and the structural tests still run.
+
+This developer requirement is separate from the ordinary practitioner API:
+`StandardCGE.example().solve()` performs the supported default solver setup
+internally when needed.
 
 ## Running the tests
 
@@ -38,7 +41,7 @@ that bar locally where you can.
   name, and update `docs/MODEL.md`.
 - **Docstrings follow the OG-Core convention** (NumPy style, `.. math::`
   blocks, Args/Returns); see any rule in
-  `cge_core/examples/stdcge_model_def.py` for the pattern.
+  `cge_core/models/standard/model.py` for the pattern.
 - **Changelog entry** under an "Unreleased" heading, in the existing
   style (what was wrong, why it mattered, what changed).
 

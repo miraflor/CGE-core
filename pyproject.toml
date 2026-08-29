@@ -78,8 +78,12 @@ Issues = "https://github.com/miraflor/CGE-core/issues"
 include = ["cge_core*", "cam*"]
 
 [tool.setuptools.package-data]
-cge_core = ["data/*/*.csv", "spec/examples/*.cge.md"]
-cam = ["data/*.csv"]
+cge_core = [
+    "data/*/*.csv",
+    "models/camcge/data/*.csv",
+    "experimental/spec/examples/*.cge.md",
+    "spec/examples/*.cge.md",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

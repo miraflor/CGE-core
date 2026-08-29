@@ -305,7 +305,7 @@ def test_compare_zero_reference_percentage_is_nan():
     # Result remains non-public, but this avoids requiring a particular model
     # variable to happen to have a zero benchmark level.
     from types import MappingProxyType
-    from cge_core.api import _Snapshot
+    from cge_core.workflow import _Snapshot
 
     reference = Result(_snapshot=_Snapshot(
         model_id="test",

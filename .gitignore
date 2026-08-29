@@ -19,3 +19,14 @@ validation/gams/**/*.g0?
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Python tooling and build artifacts
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist/
+*.egg-info/
+.ipynb_checkpoints/

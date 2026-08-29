@@ -1,16 +1,25 @@
-# -*- coding: utf-8 -*-
-"""Clean-room data and model support for the IFPRI Standard CGE model."""
+"""Compatibility API for the historical ``cge_core.ifpri`` namespace.
 
-from .calibration import calibrate_ifpri_benchmark, validate_ifpri_calibration
-from .data import load_ifpri_test_data, parse_ifpri_test_dat, resolve_ifpri_source
-from .model import (
+The implementation now lives under :mod:`cge_core.models.ifpri`; the names
+below are retained so existing advanced IFPRI code continues to import.
+"""
+from cge_core.models.ifpri.calibration import (
+    calibrate_ifpri_benchmark,
+    validate_ifpri_calibration,
+)
+from cge_core.models.ifpri.data import (
+    load_ifpri_test_data,
+    parse_ifpri_test_dat,
+    resolve_ifpri_source,
+)
+from cge_core.models.ifpri.model import (
     IfpriResidualReport,
     build_ifpri_benchmark_model,
     ifpri_benchmark_residuals,
     summarize_ifpri_benchmark_residuals,
     validate_ifpri_benchmark_model,
 )
-from .scenarios import (
+from cge_core.models.ifpri.scenarios import (
     IFPRI_POLICY_SCENARIOS,
     IFPRI_SCENARIO_DESCRIPTIONS,
     IfpriScenario,
@@ -20,13 +29,13 @@ from .scenarios import (
     normalize_ifpri_scenario,
     solve_ifpri_scenario,
 )
-from .reporting import (
+from cge_core.models.ifpri.reporting import (
     compare_ifpri_models,
     compare_ifpri_scenarios,
     extract_ifpri_solution,
     summarize_ifpri_results,
 )
-from .solve import (
+from cge_core.models.ifpri.solve import (
     IfpriReferenceComparison,
     IfpriSolveReport,
     apply_ifpri_base_closure,
@@ -37,7 +46,7 @@ from .solve import (
     perturb_ifpri_start,
     solve_ifpri_base,
 )
-from .schema import (
+from cge_core.models.ifpri.schema import (
     IfpriBenchmarkCalibration,
     IfpriBenchmarkPrices,
     IfpriBenchmarkQuantities,
@@ -55,8 +64,8 @@ from .schema import (
     IfpriSets,
     IfpriTaxData,
 )
-from .synthetic import build_synthetic_ifpri_dataset
-from .validation import (
+from cge_core.models.ifpri.synthetic import build_synthetic_ifpri_dataset
+from cge_core.models.ifpri.validation import (
     IfpriDataError,
     validate_dataset,
     validate_inputs,

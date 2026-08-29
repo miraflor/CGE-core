@@ -44,7 +44,7 @@ def test_explicit_standard_metadata_has_no_name_heuristic():
     assert "F0" in STANDARD_SPEC.benchmark_only
     assert "FF" in STANDARD_SPEC.base_protected
     assert STANDARD_SPEC.semantic_shocks["tariff"] == "taum"
-    source = (Path(__file__).parents[1] / "cge_core" / "modern_engine.py").read_text()
+    source = (Path(__file__).parents[1] / "cge_core" / "_engine.py").read_text()
     assert 'endswith("0")' not in source
     assert "endswith('0')" not in source
 

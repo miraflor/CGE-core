@@ -21,7 +21,8 @@ def test_pyproject_packages_only_runtime_namespaces_and_default_solver_support()
 
     package_data = data["tool"]["setuptools"]["package-data"]
     assert "cge_core" in package_data
-    assert "cam" in package_data
+    assert "models/camcge/data/*.csv" in package_data["cge_core"]
+    assert "cam" not in package_data
 
     assert any(dep.startswith("amplpy") for dep in data["project"]["dependencies"])
     assert data["project"]["optional-dependencies"]["solver"] == []

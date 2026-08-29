@@ -7,17 +7,15 @@ import logging
 import sys
 from pathlib import Path
 
-import dill
 from pyomo.environ import value
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-CAM_DIR = Path(__file__).resolve().parent
-DATA_DIR = CAM_DIR / "data"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = REPO_ROOT / "cge_core" / "models" / "camcge" / "data"
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from cge_core.engine import PyCGE  # noqa: E402
-from cam.cam_model_def import CamModelDef  # noqa: E402
+from cge_core.compat.pycge import PyCGE  # noqa: E402
+from cge_core.models.camcge.model import CamModelDef  # noqa: E402
 
 I = [
     "ag-subsist", "ag-exp+ind", "sylvicult", "ind-alim", "biens-cons",
@@ -160,11 +158,6 @@ def main(argv=None):
         default="cyipopt",
         help="Pyomo solver name (default: cyipopt; ipopt is also supported)",
     )
-    parser.add_argument(
-        "--no-save",
-        action="store_true",
-        help="Do not save cam/cge_base.dill after validation",
-    )
     args = parser.parse_args(argv)
 
     logging.disable(logging.CRITICAL)
@@ -179,11 +172,6 @@ def main(argv=None):
         for i in I
         if value(cge.base.cles[i]) > 0
     )
-    if not args.no_save:
-        output = CAM_DIR / "cge_base.dill"
-        with output.open("wb") as handle:
-            dill.dump(cge, handle)
-        print(f"calibrated engine state saved to {output.relative_to(REPO_ROOT)}.")
 
 
 if __name__ == "__main__":

@@ -1,41 +1,39 @@
-# Advanced Engine API
+# Advanced PyCGE compatibility API
 
-`PyCGE` is the supported lower-level workflow engine for the Hosoe-style
-models. It remains public for advanced inspection, debugging, validation, and
-existing code, but new ordinary user workflows should begin with
-{doc}`public`.
+`PyCGE` is the retained lower-level workflow implementation for advanced
+inspection, debugging, validation, and existing code. Its implementation lives
+under `cge_core.compat` so it is visibly separate from the normal practitioner
+workflow.
 
-The v0.6 façade is additive: `CGE.solve_benchmark()` creates and drives a fresh
-`PyCGE` backend, while `Equilibrium.scenario()` isolates counterfactual state
-before returning snapshot-oriented public results.
+Existing imports remain valid:
+
+```python
+from cge_core import PyCGE
+# older code also remains valid:
+from cge_core.engine import PyCGE
+```
 
 ```{eval-rst}
-.. autoclass:: cge_core.engine.PyCGE
+.. autoclass:: cge_core.compat.pycge.PyCGE
    :members:
    :show-inheritance:
 ```
 
-For the explicit engine state machine (`model_data`, `model_instance`,
-`model_calibrate`, `model_sim`, and related methods), see {doc}`../workflow`.
-
 ## Exceptions
 
-The same typed exceptions remain useful through both the façade and lower-level
-engine.
-
 ```{eval-rst}
-.. autoclass:: cge_core.engine.CGEError
+.. autoclass:: cge_core.compat.pycge.CGEError
    :show-inheritance:
 
-.. autoclass:: cge_core.engine.WorkflowError
+.. autoclass:: cge_core.compat.pycge.WorkflowError
    :show-inheritance:
 
-.. autoclass:: cge_core.engine.ComponentError
+.. autoclass:: cge_core.compat.pycge.ComponentError
    :show-inheritance:
 
-.. autoclass:: cge_core.engine.DataValidationError
+.. autoclass:: cge_core.compat.pycge.DataValidationError
    :show-inheritance:
 
-.. autoclass:: cge_core.engine.SolveError
+.. autoclass:: cge_core.compat.pycge.SolveError
    :show-inheritance:
 ```

@@ -14,7 +14,7 @@ historical results independent of the Hosoe and IFPRI benchmarks.
 
 ## Corrections made during review
 
-1. Fixed `make_data.py` so `python cam/make_data.py` writes to `cam/data` from
+1. Fixed `make_data.py` so `python validation/cam/make_data.py` writes to `cam/data` from
    the repository root. The supplied draft instead attempted to write to a
    nonexistent root-level `data/` directory.
 2. Refactored data generation so importing the module does not write files.
@@ -114,7 +114,8 @@ Cameroon benchmark within the documented tolerances.
 
 ## Repository status
 
-The CAMCGE benchmark is integrated into `main`. Generated artifacts such as
-`cam/cge_base.dill`, `__pycache__`, solver logs, and other runtime outputs must
-remain uncommitted. The provenance notice should accompany any redistribution
+The CAMCGE benchmark is integrated into `main`. Generated artifacts such as `__pycache__`, solver logs, and other runtime
+outputs must remain uncommitted. The calibrated CAMCGE engine is rebuilt from
+the committed model and benchmark data rather than stored as a serialized
+`.dill` fixture. The provenance notice should accompany any redistribution
 or publication derived from the model port and transcribed benchmark data.

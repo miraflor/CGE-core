@@ -7,13 +7,13 @@ import logging
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from pyomo.environ import value
 
-from cam.replicate_base import I, IT, LC, build_base
+from validation.cam.replicate_base import I, IT, LC, build_base
 
 
 def gv(instance, name, index=None):

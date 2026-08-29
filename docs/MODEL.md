@@ -1,6 +1,6 @@
 # The Standard CGE Model (`stdcge`)
 
-This document maps each equation in `cge_core/examples/stdcge_model_def.py` to
+This document maps each equation in `cge_core/models/standard/model.py` to
 Hosoe, Gasawa & Hashimoto (2010), Chapters 5–6, and to the GAMS Model Library
 file `stdcge.gms` (SEQ=276).
 

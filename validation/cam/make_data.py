@@ -58,7 +58,7 @@ zz = {
 "dst": [4.033,3.509,1.025,3.19,7.101,3.494,0,.433,0,0,0],
 "id":  [6.710,0,0,0,0,0,0,113.36,138.13,0,0],
 }
-DATA_DIR = Path(__file__).resolve().parent / "data"
+DATA_DIR = Path(__file__).resolve().parents[2] / "cge_core" / "models" / "camcge" / "data"
 
 
 def validate_source_tables():

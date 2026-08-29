@@ -68,7 +68,7 @@ def test_derive_sets_partitions_accounts():
 
 def test_derive_sets_rejects_unknown_account():
     from cge_core import samtools
-    from cge_core.engine import DataValidationError
+    from cge_core.compat.pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='not present'):
         samtools.derive_sets(
@@ -79,7 +79,7 @@ def test_derive_sets_rejects_unknown_account():
 
 def test_derive_sets_rejects_factor_institution_overlap():
     from cge_core import samtools
-    from cge_core.engine import DataValidationError
+    from cge_core.compat.pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='both factor and'):
         samtools.derive_sets(
@@ -90,7 +90,7 @@ def test_derive_sets_rejects_factor_institution_overlap():
 
 def test_build_dataset_writes_loadable_directory(tmp_path):
     from cge_core import PyCGE, samtools
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core.models.standard.model import StdModelDef
 
     out = samtools.build_dataset(
         STD_DATA_DIR + '/param-sam-.csv', tmp_path / 'data',
@@ -110,7 +110,7 @@ def test_build_dataset_writes_loadable_directory(tmp_path):
 
 def test_build_dataset_rejects_unbalanced_sam(tmp_path):
     from cge_core import samtools
-    from cge_core.engine import DataValidationError
+    from cge_core.compat.pycge import DataValidationError
 
     bad = tmp_path / 'bad.csv'
     bad.write_text('U,A,B\nA,0,1\nB,0,0\n')
@@ -123,7 +123,7 @@ def test_build_dataset_rejects_unbalanced_sam(tmp_path):
 # Configurable account labels on the model definitions
 # ----------------------------------------------------------------------
 def test_unknown_account_key_is_rejected():
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core.models.standard.model import StdModelDef
 
     with pytest.raises(ValueError, match='Unknown account keys'):
         StdModelDef(accounts={'household': 'HH'})
@@ -132,7 +132,7 @@ def test_unknown_account_key_is_rejected():
 def test_relabelled_accounts_build_and_calibrate_structurally(tmp_path):
     """A fully relabelled SAM must produce identical calibrated params."""
     from cge_core import PyCGE, samtools
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core.models.standard.model import StdModelDef
 
     sam = _renamed_sam(tmp_path)
     out = samtools.build_dataset(sam, tmp_path / 'data',
@@ -160,7 +160,7 @@ def test_relabelled_accounts_build_and_calibrate_structurally(tmp_path):
 def test_relabelled_accounts_reproduce_identical_equilibrium(tmp_path):
     """End to end: renamed institutions, same economy, same solution."""
     from cge_core import PyCGE, samtools
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core.models.standard.model import StdModelDef
 
     sam = _renamed_sam(tmp_path)
     out = samtools.build_dataset(sam, tmp_path / 'data',
@@ -182,7 +182,7 @@ def test_relabelled_accounts_reproduce_identical_equilibrium(tmp_path):
 
 def test_derive_sets_rejects_duplicate_role_labels():
     from cge_core import samtools
-    from cge_core.engine import DataValidationError
+    from cge_core.compat.pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='Factor account labels'):
         samtools.derive_sets(
@@ -199,8 +199,8 @@ def test_derive_sets_rejects_duplicate_role_labels():
 
 
 def test_account_roles_must_have_distinct_nonempty_labels():
-    from cge_core.examples.splcge_model_def import SplModelDef
-    from cge_core.examples.stdcge_model_def import StdModelDef
+    from cge_core.models.simple.model import SplModelDef
+    from cge_core.models.standard.model import StdModelDef
 
     with pytest.raises(ValueError, match='distinct'):
         StdModelDef(accounts={'hoh': 'GOV'})

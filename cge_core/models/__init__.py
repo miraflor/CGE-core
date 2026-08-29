@@ -1,9 +1,10 @@
-"""Validated model-definition imports plus canonical v0.7 model namespaces.
+"""Bundled CGE model families."""
+from .camcge import CamCGE, CamModelDef
+from .ifpri import IFPRICGE
+from .simple import SimpleCGE, SplCGE, SplModelDef
+from .standard import StandardCGE, StdCGE, StdModelDef
 
-SplCGE and StdCGE remain for v0.6 compatibility.  Ordinary v0.7 users import
-SimpleCGE/StandardCGE/CamCGE/IFPRICGE from the package root instead.
-"""
-from cge_core.examples.splcge_model_def import SplModelDef as SplCGE
-from cge_core.examples.stdcge_model_def import StdModelDef as StdCGE
-
-__all__ = ["SplCGE", "StdCGE"]
+__all__ = [
+    "SimpleCGE", "StandardCGE", "CamCGE", "IFPRICGE",
+    "SplCGE", "StdCGE", "SplModelDef", "StdModelDef", "CamModelDef",
+]

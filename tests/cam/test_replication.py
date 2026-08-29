@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from cam.replicate_base import base_metrics, build_base, validate_base
-from cam.replicate_experiments import (
+from validation.cam.replicate_base import base_metrics, build_base, validate_base
+from validation.cam.replicate_experiments import (
     experiment_1,
     experiment_2,
     experiment_3,

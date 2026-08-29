@@ -1,23 +1,44 @@
 """CGE-Core: practitioner-first computable general equilibrium modelling."""
-from importlib.metadata import PackageNotFoundError, version as _version
 
-from cge_core import samtools
-from cge_core.api import CGE, Equilibrium, Result, Scenario
+# Data helpers are cheap and available to model façades during package import.
+from cge_core import sam
 from cge_core.datasets import example_data
-from cge_core.engine import (
-    CGEError, ComponentError, DataValidationError, PyCGE, SolveError, WorkflowError,
-)
-from cge_core.practitioner import CamCGE, IFPRICGE, SimpleCGE, StandardCGE
+from cge_core._version import __version__
 
-try:
-    __version__ = _version("cge-core")
-except PackageNotFoundError:
-    __version__ = "0.7.0"
+# Primary practitioner API.
+from cge_core.models import CamCGE, IFPRICGE, SimpleCGE, StandardCGE
+from cge_core.workflow import CGE, Equilibrium, Result, Scenario
+
+# Retained lower-level compatibility API.
+from cge_core.compat import (
+    CGEError,
+    ComponentError,
+    DataValidationError,
+    PyCGE,
+    SolveError,
+    WorkflowError,
+)
+
+# Historical public alias retained for v0.7 compatibility.
+samtools = sam
 
 __all__ = [
-    "SimpleCGE", "StandardCGE", "CamCGE", "IFPRICGE",
-    "CGE", "Equilibrium", "Scenario", "Result",
-    "PyCGE", "CGEError", "WorkflowError", "ComponentError",
-    "DataValidationError", "SolveError", "example_data", "samtools",
+    "SimpleCGE",
+    "StandardCGE",
+    "CamCGE",
+    "IFPRICGE",
+    "CGE",
+    "Equilibrium",
+    "Scenario",
+    "Result",
+    "sam",
+    "example_data",
+    "PyCGE",
+    "CGEError",
+    "WorkflowError",
+    "ComponentError",
+    "DataValidationError",
+    "SolveError",
+    "samtools",
     "__version__",
 ]

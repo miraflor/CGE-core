@@ -7,13 +7,13 @@ from pathlib import Path
 
 
 def _doctor(_args):
-    from cge_core.solvers import solver_info
+    from cge_core.solver import solver_info
     print(json.dumps(solver_info().as_dict(), indent=2))
     return 0
 
 
 def _install_solver(_args):
-    from cge_core.solvers import install_solver
+    from cge_core.solver import install_solver
     selected = install_solver()
     print(f"Ready: {selected}")
     return 0
@@ -31,7 +31,7 @@ def _check(args):
 def _solve(args):
     from pyomo.environ import Var, SolverFactory, value
     from pyomo.opt import check_optimal_termination
-    from cge_core.solvers import resolve_solver
+    from cge_core.solver import resolve_solver
     from cge_core.spec import compile_document, parse_file
 
     path = Path(args.path)
@@ -39,7 +39,7 @@ def _solve(args):
     selected = resolve_solver(args.solver)
     result = SolverFactory(selected).solve(model)
     if not check_optimal_termination(result):
-        from cge_core.solvers import SolverResolutionError
+        from cge_core.solver import SolverResolutionError
         solver_meta = getattr(result, "solver", None)
         status = getattr(solver_meta, "status", "unknown")
         termination = getattr(solver_meta, "termination_condition", "unknown")
@@ -72,7 +72,7 @@ def main(argv=None):
     try:
         return args.func(args)
     except Exception as exc:
-        from cge_core.solvers import SolverResolutionError
+        from cge_core.solver import SolverResolutionError
         from cge_core.spec import CGESpecError
         if isinstance(exc, (SolverResolutionError, CGESpecError)):
             parser.exit(1, f"error: {exc}\n")

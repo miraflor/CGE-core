@@ -3,14 +3,19 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
+
 def read(path):
     return (ROOT / path).read_text(encoding="utf-8")
 
 
 def test_release_metadata_is_v070():
     assert 'version = "0.7.0"' in read("pyproject.toml")
-    assert re.search(r"(?m)^version:\s*[\"']?0\.7\.0[\"']?\s*$", read("CITATION.cff"))
-    assert '__version__ = "0.7.0"' in read("cge_core/__init__.py")
+    assert re.search(
+        r"(?m)^version:\s*[\"']?0\.7\.0[\"']?\s*$",
+        read("CITATION.cff"),
+    )
+    assert '__version__ = "0.7.0"' in read("cge_core/_version.py")
+    assert "from cge_core._version import __version__" in read("cge_core/__init__.py")
 
 
 def test_readme_is_practitioner_first_and_exposes_colab_control_room():

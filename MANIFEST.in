@@ -9,10 +9,15 @@ include CITATION.cff
 include CODE_OF_CONDUCT.md
 include CONTRIBUTING.md
 include GOVERNANCE.md
-recursive-include docs *.yml
-prune docs/_build
+
 recursive-include cge_core/data *.csv
-recursive-include cam *.py *.md *.csv
-recursive-include docs *.md
+recursive-include cge_core/models/camcge/data *.csv
+recursive-include cge_core/experimental/spec/examples *.cge.md
+recursive-include cge_core/spec/examples *.cge.md
+
+recursive-include docs *.yml *.md
 recursive-include tests *.py
+recursive-include validation *.py *.md
+
+prune docs/_build
 prune **/__pycache__

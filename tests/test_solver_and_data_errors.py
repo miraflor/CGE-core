@@ -1,10 +1,10 @@
 """Regression tests retained after the independent adversarial review."""
 import pytest
 
-import cge_core.solvers as solver_resolution
+import cge_core.solver as solver_resolution
 import tests._util as test_util
-from cge_core.engine import DataValidationError, PyCGE, SolveError
-from cge_core.examples.stdcge_model_def import StdModelDef
+from cge_core.compat.pycge import DataValidationError, PyCGE, SolveError
+from cge_core.models.standard.model import StdModelDef
 
 
 def test_model_instance_wraps_zero_division_as_data_error(monkeypatch):

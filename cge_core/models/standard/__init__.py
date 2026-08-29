@@ -1,3 +1,5 @@
-"""Canonical installed location for the validated Hosoe standard model."""
-from cge_core.examples.stdcge_model_def import StdModelDef
-__all__ = ["StdModelDef"]
+"""Hosoe Standard CGE model family."""
+from .api import StandardCGE
+from .model import StdModelDef
+StdCGE = StdModelDef
+__all__ = ["StandardCGE", "StdCGE", "StdModelDef"]
