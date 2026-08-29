@@ -9,6 +9,7 @@ on:
       - "notebooks/**"
       - "pyproject.toml"
       - ".github/workflows/notebooks.yml"
+      - ".github/workflows/release.yml"
   pull_request:
     branches: [main]
     paths:
@@ -17,17 +18,16 @@ on:
       - "notebooks/**"
       - "pyproject.toml"
       - ".github/workflows/notebooks.yml"
+      - ".github/workflows/release.yml"
   workflow_dispatch:
 
 jobs:
   notebooks:
-    name: all notebooks (py${{ matrix.python-version }})
+    name: all notebooks from wheel (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # 3.13 matches the current Google Colab runtime; 3.11 remains the
-        # project's established real-IPOPT validation lane.
         python-version: ["3.11", "3.13"]
 
     steps:
@@ -37,17 +37,20 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install checked-out CGE-Core and notebook runner
+      - name: Build and install CGE-Core wheel
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[test]"
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+          python -m pip install dist/*.whl
           python -m pip install nbclient nbformat ipykernel
 
-      - name: Execute every canonical notebook
+      - name: Execute every canonical notebook from installed wheel
         run: |
           python - <<'PY'
           from pathlib import Path
           import copy
+          import tempfile
+
           import nbformat
           from nbclient import NotebookClient
 
@@ -61,28 +64,29 @@ jobs:
               "90_internals.ipynb",
           ]
 
-          for name in names:
-              path = Path("notebooks") / name
-              nb = nbformat.read(path, as_version=4)
-              run = copy.deepcopy(nb)
+          with tempfile.TemporaryDirectory(prefix="cge-notebooks-") as workdir:
+              for name in names:
+                  path = Path("notebooks") / name
+                  nb = nbformat.read(path, as_version=4)
+                  run = copy.deepcopy(nb)
 
-              # CI already installed the checked-out package.  Replace only
-              # the notebook's distribution-install cell so execution tests
-              # the exact source in this commit rather than an older tag.
-              for cell in run.cells:
-                  if cell.cell_type == "code" and "%pip install" in cell.source:
-                      cell.source = "print('CGE-Core already installed from checked-out source')"
-                      break
+                  # CI has already installed the wheel built from this commit.
+                  # Remove only the network distribution step; all remaining
+                  # notebook cells run exactly as published.
+                  for cell in run.cells:
+                      if cell.cell_type == "code" and "%pip install" in cell.source:
+                          cell.source = "print('CGE-Core installed from the built wheel')"
+                          break
 
-              print(f"EXECUTING {name}")
-              client = NotebookClient(
-                  run,
-                  timeout=600,
-                  kernel_name="python3",
-                  allow_errors=False,
-              )
-              client.execute(cwd=str(Path.cwd()))
-              print(f"PASS {name}")
+                  print(f"EXECUTING {name}")
+                  client = NotebookClient(
+                      run,
+                      timeout=600,
+                      kernel_name="python3",
+                      allow_errors=False,
+                  )
+                  client.execute(cwd=workdir)
+                  print(f"PASS {name}")
 
-          print("ALL SEVEN CANONICAL NOTEBOOKS PASSED")
+          print("ALL SEVEN CANONICAL NOTEBOOKS PASSED FROM THE BUILT WHEEL")
           PY

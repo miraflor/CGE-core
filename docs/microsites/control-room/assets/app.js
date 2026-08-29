@@ -7,7 +7,7 @@
   }[ch]));
 
   const CGE_CORE_TARGET_VERSION = '0.7.0';
-  const INSTALL = 'pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"';
+  const INSTALL = 'pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"';
   const MODEL_ORDER = ['simple','standard','ifpri','camcge'];
 
   const MODELS = {

@@ -1,0 +1,101 @@
+name: release wheel
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wheel:
+    name: build and publish release wheel
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Build wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build --wheel
+
+      - name: Verify wheel boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          wheels = list(Path("dist").glob("cge_core-*.whl"))
+          assert len(wheels) == 1, wheels
+          wheel = wheels[0]
+
+          with ZipFile(wheel) as archive:
+              names = archive.namelist()
+
+          roots = {name.split("/", 1)[0] for name in names}
+          assert "cge_core" in roots
+          assert "cam" in roots
+          assert any(root.endswith(".dist-info") for root in roots)
+
+          forbidden_roots = {
+              "docs", "notebooks", "tests", "examples", ".github", "release",
+          }
+          unexpected = sorted(roots & forbidden_roots)
+          assert not unexpected, f"repository-only content leaked into wheel: {unexpected}"
+
+          print(f"WHEEL {wheel.name}")
+          print(f"SIZE_BYTES {wheel.stat().st_size}")
+          print("ROOTS", sorted(roots))
+          PY
+
+      - name: Smoke-install built wheel
+        run: |
+          python -m venv .wheel-smoke
+          .wheel-smoke/bin/python -m pip install --upgrade pip
+          .wheel-smoke/bin/python -m pip install dist/*.whl
+          .wheel-smoke/bin/python - <<'PY'
+          import cge_core
+          import cam
+          from cge_core import CamCGE, IFPRICGE, SimpleCGE, StandardCGE
+
+          assert cge_core.__version__ == "0.7.0"
+          assert all((SimpleCGE, StandardCGE, CamCGE, IFPRICGE))
+          print("wheel import smoke test passed")
+          PY
+
+      - name: Publish wheel and synchronize release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+            echo "workflow_dispatch without a tag ref: build verified, publish skipped"
+            exit 0
+          fi
+
+          NOTES=".github/release-notes/${TAG}.md"
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" dist/*.whl --clobber
+            if [[ -f "${NOTES}" ]]; then
+              gh release edit "${TAG}" --notes-file "${NOTES}"
+            fi
+          else
+            if [[ -f "${NOTES}" ]]; then
+              gh release create "${TAG}" dist/*.whl \
+                --title "CGE-Core ${TAG} — Practitioner-First Modelling" \
+                --notes-file "${NOTES}"
+            else
+              gh release create "${TAG}" dist/*.whl \
+                --title "CGE-Core ${TAG}" \
+                --generate-notes
+            fi
+          fi

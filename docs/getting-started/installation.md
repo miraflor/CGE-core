@@ -2,10 +2,10 @@
 
 ## CGE-Core v0.7.0
 
-Install the tagged release:
+Install the release wheel:
 
 ```bash
-pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
+pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
 ```
 
 Then solve:
@@ -16,11 +16,17 @@ from cge_core import StandardCGE
 base = StandardCGE.example().solve()
 ```
 
-No separate solver-installation command is part of ordinary setup. CGE-Core uses a supported backend already present in the environment or prepares its default open-source backend when `.solve()` first needs one.
+The normal install fetches the packaged runtime rather than the full GitHub repository.
+Dependencies are installed separately by pip as needed.
+
+No separate solver-installation command is part of ordinary setup. CGE-Core uses a supported
+backend already present in the environment or prepares its default open-source backend when
+`.solve()` first needs one.
 
 ## Google Colab
 
-Use the **Open in Colab** links in the notebook course. Each canonical notebook begins with one package-install cell and then moves directly to the CGE model.
+Use the **Open in Colab** links in the notebook course. Each canonical notebook begins with
+one wheel-install cell and then moves directly to the CGE model.
 
 ## Developer checkout
 

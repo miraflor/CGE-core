@@ -6,6 +6,7 @@ APP = CONTROL / "assets" / "app.js"
 CSS = CONTROL / "assets" / "styles.css"
 HTML = CONTROL / "index.html"
 FIXTURE = ROOT / "tests" / "fixtures" / "control_room_stdcge_tariff.py.txt"
+WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
 
 
 def test_control_room_retains_mature_six_step_surface():
@@ -49,7 +50,7 @@ def test_control_room_restores_persistent_state_and_rich_model_reading():
     assert "Published sector production quantity" in app
 
 
-def test_control_room_generates_practitioner_api_without_solver_bootstrap():
+def test_control_room_generates_practitioner_api_and_release_wheel():
     app = APP.read_text(encoding="utf-8")
     assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
     for item in (
@@ -58,6 +59,9 @@ def test_control_room_generates_practitioner_api_without_solver_bootstrap():
         "TARCUT1", "EXP1", "EXP2", "EXP3",
     ):
         assert item in app
+
+    assert WHEEL_URL in app
+    assert "archive/refs/tags/v0.7.0.zip" not in app
     assert "from cge_core import CGE, example_data" not in app
     assert "solve_benchmark(" not in app
     assert "numeraire=" not in app

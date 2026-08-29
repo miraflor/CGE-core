@@ -37,9 +37,9 @@ The recommended order is:
 In Colab, each canonical notebook begins with only:
 
 ```python
-%pip install -q "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
+%pip install -q "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
 ```
 
-After that, the notebooks stay at the modelling level. Solver discovery and default first-use setup are internal to CGE-Core.
+That cell downloads the compact v0.7.0 release wheel rather than the entire GitHub repository. After that, the notebooks stay at the modelling level. Solver discovery and default first-use setup are internal to CGE-Core.
 
 Earlier notebook filenames remain only as compatibility redirects for old links. They are not a second course.

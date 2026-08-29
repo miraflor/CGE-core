@@ -35,9 +35,15 @@ No Git checkout, repository-root change, `sys.path` edit, PATH injection, solver
 
 ## Install
 
+Install the **release wheel**, not the repository source archive:
+
 ```bash
-pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
+pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
 ```
+
+The wheel contains the installed CGE-Core runtime packages and required model data. The repository's documentation, notebooks, tests, GitHub workflows, and developer files stay in the source repository rather than being fetched as the CGE-Core package itself.
+
+Runtime dependencies such as Pyomo and solver support are still resolved separately by pip.
 
 Then model:
 
