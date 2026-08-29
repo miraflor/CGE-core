@@ -191,8 +191,8 @@
       <div class="section-heading">
         <div>
           <div class="step-label">Step 6</div>
-          <h2>Generated run script</h2>
-          <p>The scenario becomes concrete CGE-Core v0.7.0 practitioner-API code. Closure and solver plumbing stay out of ordinary model code.</p>
+          <h2>Run the experiment</h2>
+          <p>Your model, data choice, closure, and policy scenario are now a reproducible CGE-Core experiment. Copy the Python, download it, or carry the complete experiment into a Colab-ready notebook.</p>
         </div>
         <div id="readyStatus" class="status-pill"></div>
       </div>
@@ -202,10 +202,13 @@
             <div>
               <div class="mini-label">scenario.py</div>
               <strong id="scriptCaption">Generated from the controls above</strong>
+              <div id="colabHandoffStatus" class="help">The notebook handoff keeps the v0.7.0 install cell and this generated experiment together.</div>
             </div>
             <div class="toolbar-buttons">
               <button id="copyCodeBtn" class="button small ghost" type="button">Copy</button>
-              <button id="downloadPyBtn" class="button small" type="button">Download .py</button>
+              <button id="downloadPyBtn" class="button small ghost" type="button">Download .py</button>
+              <button id="downloadNotebookBtn" class="button small ghost" type="button">Download .ipynb</button>
+              <button id="openColabBtn" class="button small primary" type="button">Open Colab ↗</button>
               <button id="downloadJsonBtn" class="button small ghost" type="button">Export JSON</button>
             </div>
           </div>
@@ -213,7 +216,7 @@
         </div>
         <aside class="card panel run-card">
           <div class="mini-label">Run it</div>
-          <h3>No repository plumbing required</h3>
+          <h3>Run locally or continue in Colab</h3>
           <div id="runInstructions"></div>
           <div class="divider"></div>
           <div class="mini-label">What the solve returns</div>
@@ -261,5 +264,6 @@
     CGE-Core 0.7.0 Control Room · static GitHub Pages interface · explains and generates code; equilibrium solves run in Python/Colab.
   </footer>
   <script src="assets/app.js"></script>
+  <script src="assets/colab.js"></script>
 </body>
 </html>

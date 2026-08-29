@@ -47,6 +47,24 @@ code {
     line-height: 1.65;
 }
 
+/*
+ * Display math needs vertical breathing room.
+ *
+ * PyData/Jupyter Book makes long equations horizontally scrollable. On some
+ * browser/font combinations that scroll container can crop tall MathJax
+ * glyphs (superscripts, sums, fractions) at the top or bottom. Padding the
+ * math block keeps those glyphs inside the scroll box without changing the
+ * equation itself.
+ */
+.bd-article .math {
+    padding-block: 0.45rem;
+}
+
+.bd-article mjx-container[display="true"] {
+    margin-block: 0.45rem !important;
+    padding-block: 0.18rem;
+}
+
 /* Mermaid diagrams remain transparent and grayscale. sphinxcontrib-mermaid
    handles light/dark rendering, D3 zoom/pan, and fullscreen viewing. */
 .mermaid {

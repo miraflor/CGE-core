@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONTROL = ROOT / "docs" / "microsites" / "control-room"
 APP = CONTROL / "assets" / "app.js"
+COLAB = CONTROL / "assets" / "colab.js"
 CSS = CONTROL / "assets" / "styles.css"
 HTML = CONTROL / "index.html"
 FIXTURE = ROOT / "tests" / "fixtures" / "control_room_stdcge_tariff.py.txt"
@@ -17,6 +18,8 @@ def test_control_room_retains_mature_six_step_surface():
         'id="notationPrimer"', 'id="variableGlossary"', 'id="flowStory"',
         'id="scenarioStack"', 'id="codePreview"', 'id="outputsGrid"',
         'id="themeSelect"', 'id="downloadPyBtn"', 'id="downloadJsonBtn"',
+        'id="downloadNotebookBtn"', 'id="openColabBtn"',
+        'id="colabHandoffStatus"',
     ):
         assert item in html
     assert APP.stat().st_size > 50000
@@ -68,6 +71,30 @@ def test_control_room_generates_practitioner_api_and_release_wheel():
     assert "redundant=" not in app
     assert "cge install-solver" not in app
     assert "cge-core[solver]" not in app
+
+
+def test_control_room_builds_a_real_colab_notebook_handoff():
+    html = HTML.read_text(encoding="utf-8")
+    colab = COLAB.read_text(encoding="utf-8")
+
+    assert 'src="assets/colab.js"' in html
+    assert WHEEL_URL in colab
+    assert "%pip install -q" in colab
+    assert "nbformat: 4" in colab
+    assert "nbformat_minor: 5" in colab
+    assert "application/x-ipynb+json" in colab
+    assert "colab.research.google.com" in colab
+    assert "navigator.clipboard" in colab
+    assert "codePreview code" in colab
+    assert "eval(" not in colab
+    assert "new Function" not in colab
+
+
+def test_display_math_has_vertical_breathing_room():
+    css = (ROOT / "docs" / "_static" / "custom.css").read_text(encoding="utf-8")
+    assert ".bd-article .math" in css
+    assert 'mjx-container[display="true"]' in css
+    assert "padding-block" in css
 
 
 def test_canonical_tariff_fixture_is_embedded_as_regression_target():

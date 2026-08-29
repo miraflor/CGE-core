@@ -136,8 +136,10 @@ def main():
 
     html = (ROOT / "docs/microsites/control-room/index.html").read_text(encoding="utf-8")
     app_path = ROOT / "docs/microsites/control-room/assets/app.js"
+    colab_path = ROOT / "docs/microsites/control-room/assets/colab.js"
     css_path = ROOT / "docs/microsites/control-room/assets/styles.css"
     app = app_path.read_text(encoding="utf-8")
+    colab = colab_path.read_text(encoding="utf-8")
 
     for required_id in (
         'id="modelStep"',
@@ -152,6 +154,9 @@ def main():
         'id="scenarioStack"',
         'id="downloadPyBtn"',
         'id="downloadJsonBtn"',
+        'id="downloadNotebookBtn"',
+        'id="openColabBtn"',
+        'id="colabHandoffStatus"',
     ):
         assert required_id in html, required_id
 
@@ -173,6 +178,20 @@ def main():
         "StandardCGE.from_sam",
     ):
         assert required in app, required
+
+    assert 'src="assets/colab.js"' in html
+    assert WHEEL_URL in colab
+    assert "%pip install -q" in colab
+    assert "nbformat: 4" in colab
+    assert "application/x-ipynb+json" in colab
+    assert "colab.research.google.com" in colab
+    assert "eval(" not in colab
+    assert "new Function" not in colab
+
+    custom_css = (ROOT / "docs/_static/custom.css").read_text(encoding="utf-8")
+    assert ".bd-article .math" in custom_css
+    assert 'mjx-container[display="true"]' in custom_css
+    assert "padding-block" in custom_css
 
     architecture = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
     assert "cge-core-v070-public.mmd" in architecture
