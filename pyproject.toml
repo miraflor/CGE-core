@@ -40,10 +40,13 @@ dependencies = [
     "pyomo>=6.0; python_version >= '3.10'",
     "dill>=0.3",
     "pandas>=1.3",
+    "amplpy>=0.16,<1",
 ]
 
 [project.optional-dependencies]
-solver = ["amplpy>=0.16,<1"]
+# Backward-compatible alias for install commands that used cge-core[solver].
+# Solver support is now part of the normal CGE-Core installation.
+solver = []
 test = [
     "pytest>=7.0",
     "tomli>=2.0; python_version < '3.11'",

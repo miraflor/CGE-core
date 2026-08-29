@@ -8,7 +8,6 @@ from cge_core.engine import (
     CGEError, ComponentError, DataValidationError, PyCGE, SolveError, WorkflowError,
 )
 from cge_core.practitioner import CamCGE, IFPRICGE, SimpleCGE, StandardCGE
-from cge_core.solvers import install_solver, solver_info
 
 try:
     __version__ = _version("cge-core")
@@ -20,5 +19,5 @@ __all__ = [
     "CGE", "Equilibrium", "Scenario", "Result",
     "PyCGE", "CGEError", "WorkflowError", "ComponentError",
     "DataValidationError", "SolveError", "example_data", "samtools",
-    "install_solver", "solver_info", "__version__",
+    "__version__",
 ]

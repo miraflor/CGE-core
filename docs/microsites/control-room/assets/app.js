@@ -7,7 +7,7 @@
   }[ch]));
 
   const CGE_CORE_TARGET_VERSION = '0.7.0';
-  const INSTALL = 'pip install "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"';
+  const INSTALL = 'pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"';
   const MODEL_ORDER = ['simple','standard','ifpri','camcge'];
 
   const MODELS = {
@@ -458,7 +458,7 @@ print(result.compare(base))`;
 
   function renderDataSource(){
     const m=model();
-    $('dataSourcePanel').innerHTML=
+    $('dataSourcePanel').innerHTML =
       `<div class="data-choice">${m.dataChoices.map(([id,title,desc])=>
         `<button class="choice-card ${state.dataChoice===id?'active':''}" data-data="${id}">
           <strong>${esc(title)}</strong><span>${esc(desc)}</span></button>`).join('')}</div>
@@ -500,7 +500,7 @@ print(result.compare(base))`;
     const c=model().closure;
     setText('closureIntro','Closure determines which variables are exogenous and which variables adjust to clear the model. v0.7 hides routine closure plumbing without hiding its economic meaning.');
     setText('closureStatus','Model-owned');
-    $('closurePanel').innerHTML=
+    $('closurePanel').innerHTML =
       `<div class="mini-label">${esc(c.title)}</div>
        <div class="closure-map">
          <div class="closure-box"><strong>Fixed / exogenous side</strong><p class="help">${esc(c.anchor)}</p></div>
@@ -508,7 +508,7 @@ print(result.compare(base))`;
          <div class="closure-box"><strong>Endogenous adjustment</strong><p class="help">${esc(c.adjusts)}</p></div>
        </div>
        <div class="closure-summary">${esc(c.note)}</div>`;
-    $('preflightPanel').innerHTML=
+    $('preflightPanel').innerHTML =
       `<div class="mini-label">Preflight</div><h3>Before you solve</h3>
        <div class="check-list">
          <div class="check"><b>✓</b><span>Model family: ${esc(model().title)}</span></div>
@@ -526,9 +526,8 @@ print(result.compare(base))`;
 
   function renderControlEditor(control){
     const options=targetOptions(control);
-    const target = options[0] || '';
     $('controlEditor').classList.remove('hidden');
-    $('controlEditor').innerHTML=
+    $('controlEditor').innerHTML =
       `<div class="editor-head"><div><div class="mini-label">${esc(control.symbol)}</div><h3>${esc(control.name)}</h3></div>
        <button class="button small ghost" id="closeEditor">Close</button></div>
        <p class="help">${esc(control.description)}</p>
@@ -556,7 +555,7 @@ print(result.compare(base))`;
   function renderOperation(control,op){
     let prompt=op==='pct'?'Percent change':op==='level'?'New level / rate':'Set to zero';
     let defaultValue=op==='pct'?'10':control.id.includes('tax')||control.id==='tariff'?'0.05':'1.0';
-    $('operationDetail').innerHTML=
+    $('operationDetail').innerHTML =
       `<div class="form-grid">
         ${op!=='zero'?`<div class="form-field"><label>${prompt}</label><input id="operationValue" class="text-input" type="number" step="any" value="${defaultValue}"></div>`:''}
         <div class="form-field"><label>Action</label><button id="addShockBtn" class="button primary">Add to scenario</button></div>
@@ -710,12 +709,11 @@ print(result.compare(base))`;
   }
 
   function renderRunInstructions(){
-    $('runInstructions').innerHTML=
+    $('runInstructions').innerHTML =
       `<div class="run-steps">
         <div class="run-step"><div><strong>Install v0.7.0</strong><div class="command">${esc(INSTALL)}</div></div></div>
-        <div class="run-step"><div><strong>Set up a solver once if needed</strong><div class="command">cge install-solver</div></div></div>
         <div class="run-step"><div><strong>Run your script</strong><div class="command">python scenario.py</div></div></div>
-        <div class="run-step"><div><strong>Or use Colab</strong><p class="help">The canonical notebook performs installation in one cell.</p></div></div>
+        <div class="run-step"><div><strong>Or use Colab</strong><p class="help">The canonical notebook performs the package installation in one cell, then goes directly to modelling.</p></div></div>
        </div>`;
     $('resultFiles').innerHTML=[
       'base.summary() — benchmark solve metadata',

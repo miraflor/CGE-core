@@ -11,9 +11,15 @@ LEGACY = [
     "03_policy_experiments.ipynb", "04_bring_your_own_sam.ipynb",
     "05_ifpri_standard_cge.ipynb", "06_camcge_replication.ipynb", "07_under_the_hood.ipynb",
 ]
-FORBIDDEN = [
+FORBIDDEN_NOTEBOOK = [
     "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF", "sys.path.insert",
     "os.chdir(", 'os.environ["PATH"]', "amplpy.modules", "subprocess.run",
+    "install_solver", "cge-core[solver]",
+]
+PUBLIC_SOLVER_BOOTSTRAP = [
+    "install_solver()",
+    "cge install-solver",
+    "cge-core[solver]",
 ]
 
 def notebook_text(path):
@@ -23,24 +29,51 @@ def notebook_text(path):
 def main():
     nbdir = ROOT / "notebooks"
     docs_nb = ROOT / "docs" / "notebooks"
+
     for name in CANONICAL:
         a, b = nbdir / name, docs_nb / name
         assert a.is_file(), f"missing canonical notebook: {name}"
         assert b.is_file(), f"missing docs notebook copy: {name}"
         assert a.read_bytes() == b.read_bytes(), f"docs copy differs: {name}"
+
     for name in LEGACY:
         assert (nbdir / name).is_file(), f"missing legacy redirect: {name}"
+
     for path in sorted(nbdir.glob("*.ipynb")):
-        text = notebook_text(path)
-        for token in FORBIDDEN:
-            assert token not in text, (path.name, token)
+        body = notebook_text(path)
+        for token in FORBIDDEN_NOTEBOOK:
+            assert token not in body, (path.name, token)
 
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for required in ("StandardCGE.example().solve()", "CGE-Core Control Room", "01_first_cge.ipynb", "ifpri_cleanroom.md"):
+    for required in (
+        "StandardCGE.example().solve()", "CGE-Core Control Room",
+        "01_first_cge.ipynb", "ifpri_cleanroom.md",
+    ):
         assert required in readme, required
 
+    public_docs = [
+        ROOT / "README.md",
+        ROOT / "docs/install.md",
+        ROOT / "docs/getting-started/installation.md",
+        ROOT / "docs/tutorials/colab-notebooks.md",
+    ]
+    for path in public_docs:
+        text = path.read_text(encoding="utf-8")
+        for token in PUBLIC_SOLVER_BOOTSTRAP:
+            assert token not in text, (path, token)
+
+    notebook_page = (ROOT / "docs/tutorials/colab-notebooks.md").read_text(encoding="utf-8")
+    for name in CANONICAL:
+        stem = name[:-6]
+        assert f"../notebooks/{stem}" in notebook_page, name
+        assert f"notebooks/{name}" in notebook_page, name
+    assert notebook_page.count("colab.research.google.com") >= 7
+
     config = (ROOT / "docs/_config.yml").read_text(encoding="utf-8")
-    for required in ("sphinxcontrib.mermaid", 'mermaid_version: "11.12.1"', "mermaid_d3_zoom: true", "mermaid_fullscreen: true"):
+    for required in (
+        "sphinxcontrib.mermaid", 'mermaid_version: "11.12.1"',
+        "mermaid_d3_zoom: true", "mermaid_fullscreen: true",
+    ):
         assert required in config, required
 
     toc = (ROOT / "docs/_toc.yml").read_text(encoding="utf-8")
@@ -64,7 +97,6 @@ def main():
     css_path = ROOT / "docs/microsites/control-room/assets/styles.css"
     app = app_path.read_text(encoding="utf-8")
 
-    # Protect the mature six-step Control Room from being replaced by another tiny demo.
     for required_id in (
         'id="modelStep"', 'id="walkthroughStep"', 'id="economyStep"',
         'id="closureStep"', 'id="scenarioStep"', 'id="scriptStep"',
@@ -72,11 +104,14 @@ def main():
         'id="scenarioStack"', 'id="downloadPyBtn"', 'id="downloadJsonBtn"',
     ):
         assert required_id in html, required_id
+
     assert app_path.stat().st_size > 30000, "Control Room app was unexpectedly simplified"
     assert css_path.stat().st_size > 10000, "Control Room styling was unexpectedly simplified"
     assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
     assert "from cge_core import StandardCGE" in app
     assert "from cge_core import CGE, example_data" not in app
+    assert "cge install-solver" not in app
+    assert "cge-core[solver]" not in app
     for required in ("TARCUT1", "EXP1", "scenario.tariff", "scenario.endowment", "StandardCGE.from_sam"):
         assert required in app, required
 

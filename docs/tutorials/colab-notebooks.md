@@ -1,29 +1,64 @@
 # Colab notebooks
 
-The canonical v0.7.0 course contains seven notebooks.
+The complete v0.7.0 notebook course is available below. **Each notebook can be read directly in this documentation site or opened in Google Colab.**
 
-| Notebook | Purpose |
-| --- | --- |
-| `01_first_cge.ipynb` | Solve a benchmark and read model output |
-| `02_policy_experiments.ipynb` | Create and compare counterfactuals |
-| `03_your_own_sam.ipynb` | Inspect and load a SAM |
-| `04_camcge.ipynb` | Work with the Cameroon replication |
-| `05_ifpri.ipynb` | Use the public synthetic IFPRI path and understand the clean-room boundary |
-| `06_build_a_model.ipynb` | Functional Python authoring and experimental `.cge.md` |
-| `90_internals.ipynb` | Advanced Pyomo/PyCGE internals |
+## 01 — Your first CGE
 
-The first notebook opens directly in Colab from the repository README.
+Solve the bundled Standard CGE benchmark, inspect production, prices, trade, household demand, and understand the declared closure.
 
-Each canonical notebook uses a single installation cell:
+**{doc}`Read the notebook <../notebooks/01_first_cge>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)
+
+## 02 — Policy experiments
+
+Follow the core comparative-static workflow: benchmark → independent scenario → economic shock → new equilibrium → comparison.
+
+**{doc}`Read the notebook <../notebooks/02_policy_experiments>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/02_policy_experiments.ipynb)
+
+## 03 — Bring your own SAM
+
+Inspect a social accounting matrix, verify balance, construct `StandardCGE` from a SAM, and map country-specific institutional labels explicitly.
+
+**{doc}`Read the notebook <../notebooks/03_your_own_sam>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/03_your_own_sam.ipynb)
+
+## 04 — CAMCGE
+
+Use the published Cameroon 1987 replication as a first-class model and reproduce a model-specific counterfactual.
+
+**{doc}`Read the notebook <../notebooks/04_camcge>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/04_camcge.ipynb)
+
+## 05 — IFPRI Standard CGE
+
+Run the independently authored synthetic public economy, execute a named IFPRI scenario, and understand the clean-room boundary between public execution and official-source validation.
+
+**{doc}`Read the notebook <../notebooks/05_ifpri>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/05_ifpri.ipynb)
+
+## 06 — Build a model
+
+Explore functional Python authoring and the experimental deterministic `.cge.md` specification.
+
+**{doc}`Read the notebook <../notebooks/06_build_a_model>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/06_build_a_model.ipynb)
+
+## 90 — Internals and advanced access
+
+Inspect the retained Pyomo/PyCGE machinery after learning the practitioner interface. This notebook is deliberately last.
+
+**{doc}`Read the notebook <../notebooks/90_internals>`** ·
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/90_internals.ipynb)
+
+---
+
+In Colab, each canonical notebook begins with only:
 
 ```python
-%pip install -q "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
-from cge_core import install_solver
-install_solver()
+%pip install -q "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-After that cell, learners work with CGE models rather than Git, repository paths, or solver
-executables.
+After that, the notebooks stay at the modelling level. Solver discovery and default first-use setup are internal to CGE-Core.
 
-Earlier notebook filenames remain only as compatibility redirects for old links. They are
-not a second course.
+Earlier notebook filenames remain only as compatibility redirects for old links. They are not a second course.

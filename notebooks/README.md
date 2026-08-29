@@ -12,6 +12,6 @@ The canonical sequence is deliberately small and practitioner-first:
 | 06 | [Build a model](06_build_a_model.ipynb) | Functional Python and `.cge.md` | [Open](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/06_build_a_model.ipynb) |
 | 90 | [Internals](90_internals.ipynb) | Pyomo / PyCGE escape hatch | [Open](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/90_internals.ipynb) |
 
-Each canonical notebook is self-contained. In Colab there is one package/solver installation cell; after that the notebook stays at the modelling level.
+Each canonical notebook is self-contained. In Colab there is one package-install cell; after that the notebook stays at the modelling level. Solver setup is internal to the normal `.solve()` path.
 
 Legacy notebook filenames from v0.6 and earlier remain as tiny redirect notebooks only. They are not part of the v0.7.0 course and contain none of the old Git/PATH/bootstrap machinery.

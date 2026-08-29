@@ -24,27 +24,30 @@ result.summary()
 result.compare(base)
 ```
 
-No Git checkout, repository-root change, `sys.path` edit, PATH injection, solver executable lookup, numeraire choice, or Walras-equation bookkeeping appears in the ordinary modelling workflow.
+No Git checkout, repository-root change, `sys.path` edit, PATH injection, solver installation step, solver executable lookup, numeraire choice, or Walras-equation bookkeeping appears in the ordinary modelling workflow.
 
 ## Explore without installing
 
 - **[CGE-Core Control Room](https://miraflor.github.io/CGE-core/control-room/)** — choose a bundled model, inspect its economics, configure a policy experiment, and generate runnable v0.7.0 Python.
-- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)** — the notebook contains one installation cell and then only modelling code.
+- **[Open the notebook course](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)** — all seven notebooks have direct documentation and Colab links.
+- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)** — one package-install cell, then modelling code.
 - **[Read the documentation](https://miraflor.github.io/CGE-core/)** — practitioner tutorials, model guide, SAM workflow, clean-room boundary, validation, and internals.
 
 ## Install
 
 ```bash
-pip install "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
+pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-Then let CGE-Core set up or locate a supported open-source NLP solver once:
+Then model:
 
-```bash
-cge install-solver
+```python
+from cge_core import StandardCGE
+
+base = StandardCGE.example().solve()
 ```
 
-If IPOPT or cyipopt is already available, CGE-Core uses it. The normal modelling call remains simply `.solve()`.
+CGE-Core uses an existing supported NLP backend when one is available. Otherwise the normal `.solve()` path prepares the default open-source backend internally. Advanced users can request a particular backend explicitly with, for example, `.solve(solver="ipopt")`.
 
 ## Four model families
 

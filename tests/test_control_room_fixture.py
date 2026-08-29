@@ -20,7 +20,7 @@ def test_control_room_retains_mature_six_step_surface():
     assert APP.stat().st_size > 30000
     assert CSS.stat().st_size > 10000
 
-def test_control_room_generates_practitioner_api_not_engine_boilerplate():
+def test_control_room_generates_practitioner_api_without_solver_bootstrap():
     app = APP.read_text(encoding="utf-8")
     assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
     for item in (
@@ -33,9 +33,10 @@ def test_control_room_generates_practitioner_api_not_engine_boilerplate():
     assert "solve_benchmark(" not in app
     assert "numeraire=" not in app
     assert "redundant=" not in app
+    assert "cge install-solver" not in app
+    assert "cge-core[solver]" not in app
 
 def test_canonical_tariff_fixture_is_embedded_as_regression_target():
     fixture = FIXTURE.read_text(encoding="utf-8").strip()
     app = APP.read_text(encoding="utf-8")
-    # The JS template literal should contain the exact canonical script.
     assert fixture in app

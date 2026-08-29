@@ -1,20 +1,14 @@
 # Installation
 
-## Released v0.7.0 source
+## CGE-Core v0.7.0
 
-Until CGE-Core is distributed through a package index, install the tagged release directly:
-
-```bash
-pip install "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
-```
-
-Then, once per environment if an NLP solver is not already available:
+Install the tagged release:
 
 ```bash
-cge install-solver
+pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-Ordinary model code does not name the solver:
+Then solve:
 
 ```python
 from cge_core import StandardCGE
@@ -22,10 +16,11 @@ from cge_core import StandardCGE
 base = StandardCGE.example().solve()
 ```
 
+No separate solver-installation command is part of ordinary setup. CGE-Core uses a supported backend already present in the environment or prepares its default open-source backend when `.solve()` first needs one.
+
 ## Google Colab
 
-Use the **Open in Colab** badge in the repository README. The canonical notebooks contain
-one installation cell; the rest of the notebook is economics and model use.
+Use the **Open in Colab** links in the notebook course. Each canonical notebook begins with one package-install cell and then moves directly to the CGE model.
 
 ## Developer checkout
 
@@ -36,3 +31,11 @@ pip install -e ".[test,docs]"
 ```
 
 That developer workflow is intentionally separate from the practitioner notebooks.
+
+## Advanced solver override
+
+When a particular numerical backend matters to the experiment:
+
+```python
+base = StandardCGE.example().solve(solver="ipopt")
+```

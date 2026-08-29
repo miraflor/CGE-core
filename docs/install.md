@@ -2,36 +2,40 @@
 
 ## Local Python
 
-For the v0.7.0 release directly from GitHub:
+Install the v0.7.0 release directly from GitHub:
 
 ```bash
-pip install "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
+pip install "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-CGE-Core uses Pyomo and a nonlinear solver. The package centralizes solver selection so modelling code can simply call `.solve()`.
+Then use the model:
 
-Check the current environment:
+```python
+from cge_core import StandardCGE
 
-```bash
-cge doctor
+base = StandardCGE.example().solve()
 ```
 
-Install or activate the supported open-source IPOPT backend once:
-
-```bash
-cge install-solver
-```
-
-An existing IPOPT/cyipopt setup is used when available.
+That is the normal setup. CGE-Core uses an existing supported nonlinear solver when one is available and otherwise prepares its default open-source backend internally on first use.
 
 ## Google Colab
 
-Every canonical notebook uses one installation cell:
+Every canonical notebook has one installation cell:
 
 ```python
-%pip install -q "cge-core[solver] @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
-from cge_core import install_solver
-install_solver()
+%pip install -q "cge-core @ https://github.com/miraflor/CGE-core/archive/refs/tags/v0.7.0.zip"
 ```
 
-After that there is no Git clone/fetch/reset logic, no repository `chdir`, no `sys.path` manipulation, no PATH injection, and no solver-name plumbing in the modelling cells.
+The next cell is modelling code.
+
+There is no Git clone/fetch/reset logic, repository `chdir`, `sys.path` manipulation, PATH injection, solver-installation call, solver-name selection, numeraire choice, or Walras-equation bookkeeping in the beginner workflow.
+
+## Advanced solver choice
+
+Most users should ignore this section. For reproducibility or solver-specific work:
+
+```python
+base = StandardCGE.example().solve(solver="ipopt")
+```
+
+`cge doctor` reports the solver backends visible to CGE-Core.
