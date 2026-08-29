@@ -1,6 +1,6 @@
 from cge_core.spec import compile_document, parse_text, validate_document
 
-MODEL = r'''# Human explanation A
+MODEL = r"""# Human explanation A
 
 ```cge
 set goods = [FOOD, MFG]
@@ -22,12 +22,17 @@ fix p[FOOD] = 1
 drop market_food
 shockable endowment
 ```
-'''
+"""
 
 
 def test_prose_is_inert():
     a = validate_document(parse_text(MODEL, path="a.cge.md"))
-    b = validate_document(parse_text(MODEL.replace("Human explanation A", "Completely different prose"), path="b.cge.md"))
+    b = validate_document(
+        parse_text(
+            MODEL.replace("Human explanation A", "Completely different prose"),
+            path="b.cge.md",
+        )
+    )
     assert a.executable_blocks == b.executable_blocks
     assert [(x.name, x.lhs, x.rhs) for x in a.equations] == [
         (x.name, x.lhs, x.rhs) for x in b.equations
@@ -36,6 +41,7 @@ def test_prose_is_inert():
 
 def test_reference_spec_compiles_to_square_model():
     from pyomo.environ import Constraint, Var
+
     doc = validate_document(parse_text(MODEL, path="example.cge.md"))
     model = compile_document(doc)
     free = sum(1 for x in model.component_data_objects(Var, active=True) if not x.fixed)
@@ -49,8 +55,10 @@ def test_reference_spec_compiles_to_square_model():
 
 
 def test_multidimensional_parameter_compiles():
+    from pyomo.environ import value
+
     doc = parse_text(
-        r'''```cge
+        r"""```cge
 set rows = [A]
 set cols = [X]
 param a[A,X] = 1
@@ -59,15 +67,16 @@ equation e: y = a[A,X]
 fix y = 1
 drop e
 shockable a
-```''',
+```""",
         path="multi.cge.md",
     )
     model = compile_document(validate_document(doc))
-    assert float(model.a["A", "X"]) == 1.0
+    assert value(model.a["A", "X"]) == 1.0
 
 
 def test_hyphenated_component_name_is_rejected_at_parse_time():
     import pytest
+
     from cge_core.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Unsupported CGE statement"):
@@ -76,6 +85,7 @@ def test_hyphenated_component_name_is_rejected_at_parse_time():
 
 def test_comparison_operator_has_named_error():
     import pytest
+
     from cge_core.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Comparison operators"):
@@ -87,15 +97,16 @@ def test_comparison_operator_has_named_error():
 
 def test_parameter_only_equation_is_rejected():
     import pytest
+
     from cge_core.spec import CGESpecError
 
     doc = validate_document(
         parse_text(
-            r'''```cge
+            r"""```cge
 param a = 1
 param b = 1
 equation e: a = b
-```''',
+```""",
             path="param-only.cge.md",
         )
     )
@@ -105,13 +116,14 @@ equation e: a = b
 
 def test_set_member_component_collision_is_rejected():
     import pytest
+
     from cge_core.spec import CGESpecError
 
     doc = parse_text(
-        r'''```cge
+        r"""```cge
 set g = [FOOD]
 var FOOD >= 0
-```''',
+```""",
         path="collision.cge.md",
     )
     with pytest.raises(CGESpecError, match="collides with declared"):
