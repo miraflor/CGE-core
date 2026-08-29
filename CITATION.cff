@@ -3,16 +3,16 @@ message: >-
   If you use CGE-Core, please cite it as below. Also cite the original PyCGE
   (Fung & Burtwistle, NIST) and the relevant underlying model sources: Hosoe,
   Gasawa & Hashimoto (2010), the separately obtained IFPRI Standard CGE
-  documentation and source package, or Condon, Dahl & Devarajan (1987) for the
-  CAMCGE replication. See README.md ("Provenance and license") for details.
-title: "CGE-Core: a Pyomo-based computable general equilibrium framework"
+  documentation/source package where applicable, or Condon, Dahl & Devarajan
+  (1987) for the CAMCGE replication.
+title: "CGE-Core: a practitioner-first computable general equilibrium toolkit"
 type: software
 authors:
   - family-names: Miraflor
     given-names: James Matthew
     email: jbmiraflor@up.edu.ph
     affiliation: "Scientific Computing Laboratory, Department of Computer Science, University of the Philippines Diliman"
-version: 0.6.0
+version: 0.7.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
 keywords:
@@ -21,20 +21,24 @@ keywords:
   - pyomo
   - economics
   - policy-simulation
+  - social-accounting-matrix
+  - ifpri-standard-cge
+  - camcge
 abstract: >-
   CGE-Core is a corrected and substantially revised fork of PyCGE by Juan Fung
   and Charley Burtwistle (U.S. National Institute of Standards and Technology,
-  2017; public domain under 17 U.S.C. 105). The inherited PyCGE code and Hosoe
-  model ports are not James Matthew Miraflor's original work. He directed and
-  reviewed an AI-assisted process covering the fork's corrections, engine API,
-  testing, documentation, IFPRI implementation, CAMCGE replication benchmark,
-  and release workflow. He is cited as project lead and maintainer of this
-  revised software project, not as author of the underlying models or
-  inherited code. The official IFPRI source package and test data remain
-  external. Hosoe is checked
-  against GAMS Model Library references, IFPRI against full-precision external
-  reference runs, and CAMCGE against its published base equilibrium and three
-  policy experiments.
+  2017; public domain under 17 U.S.C. 105). Version 0.7.0 adds practitioner
+  façades for the bundled Hosoe, CAMCGE and IFPRI model families, semantic
+  policy shocks, isolated benchmark/scenario workflows, bring-your-own-SAM
+  support, solver setup helpers, public Colab tutorials, a practitioner Control
+  Room, functional model authoring, and an experimental deterministic .cge.md
+  specification. The inherited PyCGE code and underlying model specifications
+  are not James Matthew Miraflor's original work. He directed and reviewed an
+  AI-assisted process covering the fork's corrections, public API, testing,
+  documentation, IFPRI implementation, CAMCGE replication benchmark, and
+  release workflow. The official IFPRI source package and test data remain
+  external; the installed synthetic IFPRI-format economy is independently
+  authored and redistributable.
 references:
   - type: software
     title: "PyCGE: A Python Interface for Solving CGE Models"

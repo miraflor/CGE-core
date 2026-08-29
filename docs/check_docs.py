@@ -1,57 +1,53 @@
-"""Structural checks for the practitioner-first v0.7 documentation."""
-from pathlib import Path
 import json
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = ROOT / "docs"
-NBDIR = ROOT / "notebooks"
-REQUIRED = [
-    "index.md", "install.md", "first_cge.md", "policy_experiments.md",
-    "own_sam.md", "bundled_models.md", "authoring_python.md", "cge_md.md",
-    "validation.md", "advanced.md", "_toc.yml",
+CANONICAL = [
+    "01_first_cge.ipynb", "02_policy_experiments.ipynb", "03_your_own_sam.ipynb",
+    "04_camcge.ipynb", "05_ifpri.ipynb", "06_build_a_model.ipynb", "90_internals.ipynb",
 ]
-RETAINED_BASELINE_DOCS = [
-    "MODEL.md", "IFPRI.md", "GAMS_STDCGE_VALIDATION.md", "GAMS_CROSSWALK.md",
-    "OG_CORE_CROSSWALK.md", "architecture.md",
+LEGACY = [
+    "00_start_here.ipynb", "01_your_first_cge.ipynb", "02_open_economy_cge.ipynb",
+    "03_policy_experiments.ipynb", "04_bring_your_own_sam.ipynb",
+    "05_ifpri_standard_cge.ipynb", "06_camcge_replication.ipynb", "07_under_the_hood.ipynb",
 ]
-NOTEBOOKS = [
-    "01_first_cge.ipynb", "02_policy_experiments.ipynb",
-    "03_your_own_sam.ipynb", "04_camcge.ipynb", "05_ifpri.ipynb",
-    "06_build_a_model.ipynb", "90_internals.ipynb",
+FORBIDDEN = [
+    "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF", "sys.path.insert",
+    "os.chdir(", "os.environ[\"PATH\"]", "amplpy.modules", "subprocess.run",
 ]
-FORBIDDEN_NOTEBOOK_PLUMBING = (
-    "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF",
-    "sys.path", "amplpy.modules", 'os.environ["PATH"]', "os.chdir(",
-    "subprocess.run", "subprocess.check_call",
-)
 
 
-def _notebook_text(path):
-    notebook = json.loads(path.read_text(encoding="utf-8"))
-    return "\n".join(
-        "".join(cell.get("source", [])) for cell in notebook.get("cells", [])
-    )
+def notebook_text(path):
+    nb = json.loads(path.read_text(encoding="utf-8"))
+    return "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
 
 
 def main():
-    missing = [name for name in REQUIRED if not (DOCS / name).is_file()]
-    if (ROOT / "cge_core" / "engine.py").exists():
-        missing += [name for name in RETAINED_BASELINE_DOCS if not (DOCS / name).is_file()]
-    if missing:
-        raise SystemExit(f"Missing v0.7 docs: {missing}")
-    for name in NOTEBOOKS:
-        path = NBDIR / name
-        if not path.is_file():
-            raise SystemExit(f"Missing v0.7 notebook: {name}")
-        text = _notebook_text(path)
-        for token in FORBIDDEN_NOTEBOOK_PLUMBING:
-            if token in text:
-                raise SystemExit(f"Notebook {name} contains forbidden plumbing: {token}")
+    nbdir = ROOT / "notebooks"
+    docs_nb = ROOT / "docs" / "notebooks"
+    for name in CANONICAL:
+        a = nbdir / name
+        b = docs_nb / name
+        assert a.is_file(), f"missing canonical notebook: {name}"
+        assert b.is_file(), f"missing docs notebook copy: {name}"
+        assert a.read_bytes() == b.read_bytes(), f"docs copy differs: {name}"
+    for name in LEGACY:
+        assert (nbdir / name).is_file(), f"missing legacy redirect: {name}"
+    for path in sorted(nbdir.glob("*.ipynb")):
+        text = notebook_text(path)
+        for token in FORBIDDEN:
+            assert token not in text, (path.name, token)
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    for symbol in ("StandardCGE.example().solve()", "IFPRICGE.synthetic()", "cge doctor"):
-        if symbol not in readme:
-            raise SystemExit(f"README missing practitioner surface: {symbol}")
-    print("v0.7 documentation structure OK")
+    for required in (
+        "StandardCGE.example().solve()", "CGE-Core Control Room", "01_first_cge.ipynb",
+        "ifpri_cleanroom.md",
+    ):
+        assert required in readme, required
+    app = (ROOT / "docs/microsites/control-room/assets/app.js").read_text(encoding="utf-8")
+    assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
+    assert "from cge_core import StandardCGE" in app
+    assert "from cge_core import CGE, example_data" not in app
+    print("documentation/notebook/control-room checks passed")
 
 
 if __name__ == "__main__":

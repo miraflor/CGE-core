@@ -1,6 +1,13 @@
-# Bundled models
+# Choose a bundled model
 
-CGE-Core 0.7 uses one lifecycle while preserving distinct model economics.
+CGE-Core 0.7.0 gives four model families a similar lifecycle while preserving their different economics.
+
+| Model | Best used for | Important boundary |
+|---|---|---|
+| `SimpleCGE` | learning factor/commodity equilibrium | no government, trade, intermediates |
+| `StandardCGE` | static sectoral tax, tariff, world-price and endowment experiments | representative household, static model |
+| `CamCGE` | reproduction of the published Cameroon model and its experiments | historical replication, not a generic country template |
+| `IFPRICGE` | richer institutions and explicit macro-closure scenarios | public synthetic data and official-source evidence remain separate |
 
 ## SimpleCGE
 
@@ -9,8 +16,6 @@ from cge_core import SimpleCGE
 base = SimpleCGE.example().solve()
 ```
 
-Small Hosoe teaching model. Useful for learning, smoke tests, and future model-spec equivalence work.
-
 ## StandardCGE
 
 ```python
@@ -18,7 +23,7 @@ from cge_core import StandardCGE
 base = StandardCGE.example().solve()
 ```
 
-Open-economy Hosoe standard model with production, intermediate demand, Armington imports, CET exports, household/government/investment demand, factor markets, taxes, and saving-investment closure.
+The Hosoe Standard model includes intermediate inputs, factor demand, a representative household, government, production taxes, tariffs, Armington imports, CET exports, saving and investment.
 
 ## CamCGE
 
@@ -27,7 +32,7 @@ from cge_core import CamCGE
 base = CamCGE.example().solve()
 ```
 
-The validated Cameroon model is packaged as a first-class installed model. It keeps its own savings-driven closure: `mps` is fixed and `caeq` is the redundant current-account equation. It is not forced into Hosoe's factor-price closure.
+CAMCGE keeps its own savings-driven closure (`mps` fixed, `caeq` redundant). It is not silently converted to the Hosoe closure simply to fit the same façade.
 
 ## IFPRICGE
 
@@ -36,12 +41,4 @@ from cge_core import IFPRICGE
 base = IFPRICGE.synthetic().solve()
 ```
 
-The installed synthetic economy is a redistributable demonstration of the IFPRI-format code path.
-
-Named model-specific scenarios are available:
-
-```python
-result = base.scenario("TARCUT1").solve()
-```
-
-The official-source path remains separate because the official benchmark source has its own licensing/provenance boundary.
+Named scenarios include `TARCUT1`, `TARCUT2`, `FSAVINCR`, `PWMINCR`, and `DEVAL`. Their meaning depends on the IFPRI macro closure, so they are intentionally model-specific rather than generic policy toggles.

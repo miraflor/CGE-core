@@ -1,45 +1,43 @@
 # Advanced and internals
 
-Most users should stop before this page.
+Most policy users should not need this page.
 
-## Raw Pyomo
+## Raw Pyomo access
 
-High-level states expose a raw model:
+High-level states expose their underlying model for inspection:
 
 ```python
 base.raw
 result.raw
 ```
 
-Snapshot-based `value()` and `compare()` remain stable even if an advanced user later inspects or mutates a raw object.
+Use `value()`, `summary()` and `compare()` for stable downstream reads; use `raw` when you intentionally need model-level inspection.
 
-## v0.6 compatibility
-
-The lower-level lifecycle remains available:
+## Retained lower-level API
 
 ```python
 from cge_core import CGE, PyCGE, example_data
 from cge_core.models import StdCGE
-
-model = CGE(model=StdCGE(), data=example_data("stdcge"))
-base = model.solve_benchmark(
-    numeraire=("pf", "LAB"),
-    redundant=("eqpf", "LAB"),
-)
 ```
 
-The direct `PyCGE` engine remains the escape hatch for framework development and older code.
+The lower-level PyCGE lifecycle remains an escape hatch for compatibility, debugging and engine development. New tutorials use the model façades instead.
 
 ## Solver override
 
-Ordinary use is `.solve()`. For reproducibility experiments:
+Ordinary use is simply:
+
+```python
+base = StandardCGE.example().solve()
+```
+
+An advanced reproducibility run may request a backend explicitly:
 
 ```python
 base = StandardCGE.example().solve(solver="ipopt")
 ```
 
-Use `cge doctor` to inspect the detected backend.
+Use `cge doctor` to inspect what CGE-Core detects.
 
-## Why two engine layers?
+## Why the public layer exists
 
-v0.7 deliberately does not rewrite the validated lower-level engine in one risky diff. The new public engine adapter adds explicit metadata and centralized solver selection while preserving the v0.6 `PyCGE` surface. This allows gradual deprecation/refactoring without mixing software architecture changes with economic equation changes.
+The public API encodes recurring software decisions—model construction, canonical closure, scenario isolation, result snapshots and solver selection—so practitioner code can expose the economic decisions instead of repeating framework plumbing.

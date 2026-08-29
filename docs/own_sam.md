@@ -2,21 +2,21 @@
 
 A **social accounting matrix (SAM)** is a square accounting table. Rows record receipts and columns record expenditures. For every account, total receipts and total expenditures must balance.
 
-`StandardCGE.from_sam()` turns one balanced SAM into the internal data representation required by the validated Hosoe standard model.
+`StandardCGE.from_sam()` converts one balanced SAM into the internal dataset expected by the validated Hosoe Standard model.
 
-## Canonical labels
+## Canonical account labels
 
-If your SAM uses the bundled model's account labels:
+The bundled economy uses:
 
 - factors: `CAP`, `LAB`
 - household: `HOH`
 - government: `GOV`
 - saving/investment: `INV`
-- external/rest of world: `EXT`
-- indirect tax: `IDT`
+- rest of world: `EXT`
+- indirect/production tax: `IDT`
 - tariff: `TRF`
 
-then:
+With those labels:
 
 ```python
 from cge_core import StandardCGE
@@ -25,9 +25,9 @@ economy = StandardCGE.from_sam("sam.csv")
 base = economy.solve()
 ```
 
-## Real-country labels
+## Country-specific labels
 
-Do not rely on clever spelling inference. State the economic roles:
+State economic roles explicitly instead of relying on naming heuristics:
 
 ```python
 economy = StandardCGE.from_sam(
@@ -42,6 +42,6 @@ economy = StandardCGE.from_sam(
 )
 ```
 
-CGE-Core checks square structure, numeric/finite entries, unique labels, and accounting balance. It then derives the goods set as the accounts that are neither declared factors nor declared institutions.
+CGE-Core checks square structure, numeric/finite entries, unique labels, and accounting balance, then derives the goods set from accounts that are neither declared factors nor institutions.
 
-`from_sam()` does **not** imply that any arbitrary SAM is economically compatible with the Hosoe model. Benchmark flows must still satisfy the model's calibration assumptions, including required positive/nonzero flows.
+A balanced SAM is not automatically a valid benchmark for every CGE specification. The flows must also satisfy the calibration assumptions and positivity/nonzero requirements of the Hosoe Standard model.

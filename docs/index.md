@@ -1,28 +1,30 @@
-# CGE-Core 0.7
+# CGE-Core 0.7.0
 
-CGE-Core is a computable general equilibrium modelling system built around a simple product rule:
+> **You specify economics; CGE-Core handles routine computational plumbing.**
 
-> **You specify economics; CGE-Core handles computational plumbing.**
-
-The first public path is intentionally short:
+CGE-Core 0.7.0 puts a practitioner-facing layer around validated model implementations while keeping the underlying equations, closures, and provenance inspectable.
 
 ```python
 from cge_core import StandardCGE
 
 base = StandardCGE.example().solve()
-policy = base.scenario("Tariff reform")
-policy.tariff("BRD", change=-0.50)
-result = policy.solve()
+reform = base.scenario("Tariff reform")
+reform.tariff("BRD", change=-0.50)
+result = reform.solve()
 result.compare(base)
 ```
 
-This convenience does not remove economic transparency. The model's closure, shocks, raw Pyomo representation, solver status, and validation provenance remain inspectable.
+## Start here
 
-## Choose your path
+- **Interactive:** [CGE-Core Control Room](control-room/)
+- **Notebook:** [01 — Your first CGE](notebooks/01_first_cge.ipynb)
+- **Tutorial:** [Your first CGE](first_cge.md)
+- **Policy experiments:** [Run a policy experiment](policy_experiments.md)
+- **Own data:** [Bring your own SAM](own_sam.md)
+- **Bundled models:** [Choose a bundled model](bundled_models.md)
+- **IFPRI clean-room boundary:** [Public vs official-source evidence](ifpri_cleanroom.md)
+- **Model authoring:** [Functional Python](authoring_python.md) and [experimental `.cge.md`](cge_md.md)
+- **Scientific claims:** [Validation and provenance](validation.md)
+- **Advanced:** [Internals and lower-level API](advanced.md)
 
-- **New practitioner or learner:** read [Your first CGE](first_cge.md), then [Policy experiments](policy_experiments.md).
-- **Using your own data:** read [Bring your own SAM](own_sam.md).
-- **Choosing a bundled model:** read [Bundled models](bundled_models.md).
-- **Building a model:** read [Build a model in Python](authoring_python.md) or [Experimental `.cge.md`](cge_md.md).
-- **Framework/advanced work:** read [Advanced and internals](advanced.md).
-- **Scientific claims:** read [Validation and provenance](validation.md).
+The convenience layer does not make closure or model structure disappear; it moves routine software setup out of the policy notebook so users can focus on what is exogenous, what is endogenous, what closure is being used, and what the counterfactual means.

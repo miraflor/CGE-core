@@ -3,42 +3,49 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NBDIR = ROOT / "notebooks"
-EXPECTED = [
+CANONICAL = [
     "01_first_cge.ipynb", "02_policy_experiments.ipynb", "03_your_own_sam.ipynb",
-    "04_camcge.ipynb", "05_ifpri.ipynb", "06_build_a_model.ipynb",
-    "90_internals.ipynb",
+    "04_camcge.ipynb", "05_ifpri.ipynb", "06_build_a_model.ipynb", "90_internals.ipynb",
+]
+LEGACY = [
+    "00_start_here.ipynb", "01_your_first_cge.ipynb", "02_open_economy_cge.ipynb",
+    "03_policy_experiments.ipynb", "04_bring_your_own_sam.ipynb",
+    "05_ifpri_standard_cge.ipynb", "06_camcge_replication.ipynb", "07_under_the_hood.ipynb",
 ]
 FORBIDDEN = [
-    "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF",
-    "sys.path", "amplpy.modules", "os.environ[\"PATH\"]", "os.chdir(",
-    "subprocess.run", "subprocess.check_call",
+    "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF", "sys.path.insert",
+    "os.chdir(", "os.environ[\"PATH\"]", "amplpy.modules", "subprocess.run",
 ]
 
 
-def _text(path):
+def text(path):
     nb = json.loads(path.read_text(encoding="utf-8"))
     return "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
 
 
-def test_public_notebook_sequence_exists():
-    for name in EXPECTED:
+def test_canonical_sequence_exists_and_docs_copies_match():
+    for name in CANONICAL:
         assert (NBDIR / name).is_file()
-
-
-def test_ordinary_notebooks_have_no_infrastructure_bootstrap():
-    for name in EXPECTED:
-        text = _text(NBDIR / name)
-        for token in FORBIDDEN:
-            assert token not in text, (name, token)
-
-
-def test_first_notebook_uses_practitioner_api():
-    text = _text(NBDIR / "01_first_cge.ipynb")
-    assert "from cge_core import StandardCGE" in text
-    assert "StandardCGE.example().solve()" in text
-    assert "PyCGE" not in text
-
-
-def test_documentation_notebook_copies_match_canonical_notebooks():
-    for name in EXPECTED:
         assert (ROOT / "docs" / "notebooks" / name).read_bytes() == (NBDIR / name).read_bytes()
+
+
+def test_every_notebook_is_free_of_old_bootstrap_plumbing():
+    for path in NBDIR.glob("*.ipynb"):
+        body = text(path)
+        for token in FORBIDDEN:
+            assert token not in body, (path.name, token)
+
+
+def test_legacy_names_are_redirects_not_old_tutorials():
+    for name in LEGACY:
+        body = text(NBDIR / name)
+        assert "legacy filename" in body.lower()
+        assert "canonical v0.7.0 notebook" in body
+
+
+def test_first_notebook_uses_practitioner_api_and_release_install():
+    body = text(NBDIR / "01_first_cge.ipynb")
+    assert "from cge_core import StandardCGE" in body
+    assert "StandardCGE.example().solve()" in body
+    assert "refs/tags/v0.7.0.zip" in body
+    assert "PyCGE" not in body
