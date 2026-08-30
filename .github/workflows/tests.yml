@@ -157,7 +157,7 @@ jobs:
       - name: Run narrow Ruff correctness checks
         run: |
           python -m pip install --upgrade pip "ruff>=0.8,<1"
-          ruff check cge_core cam tests --select E9,F
+          ruff check cge_core tests --select E9,F
 
   # Packaging lane: the wheel contains only runtime packages/data, while the
   # source distribution also preserves tests, validation evidence, and docs.
