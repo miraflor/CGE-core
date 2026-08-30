@@ -65,7 +65,7 @@ class IFPRIScenario:
         raise NotImplementedError(
             "The bundled IFPRI implementation uses named, model-specific policy "
             "scenarios and macro closures. Use scenario('TARCUT1'), etc., or the "
-            "advanced cge_core.ifpri API for custom closure work."
+            "advanced cge_core.models.ifpri API for custom closure work."
         )
 
 @dataclass(frozen=True)

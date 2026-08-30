@@ -7,7 +7,7 @@ import operator
 import re
 from pathlib import Path
 
-from .errors import CGESpecError
+from .errors import TARGET_PATTERN, CGESpecError
 from .validation import validate_document
 
 _ALLOWED_BINOPS = {
@@ -15,7 +15,8 @@ _ALLOWED_BINOPS = {
     ast.Div: operator.truediv, ast.Pow: operator.pow,
 }
 _ALLOWED_UNARY = {ast.UAdd: operator.pos, ast.USub: operator.neg}
-_TARGET = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[([^\]]+)\])?$")
+# Shared with the validator; see errors.py.
+_TARGET = re.compile(TARGET_PATTERN)
 
 
 def _matching_paren(text, start):
@@ -108,6 +109,25 @@ def _safe_eval(expr, env):
     return _eval_node(tree, env)
 
 
+def _read_index(raw_index, env):
+    """Turn the text inside square brackets into an index Pyomo can use.
+
+    A model document writes an index as text, for example ``[BRD]`` or
+    ``[CAP, BRD]``.  Two things have to happen to it.  First, a comma-separated
+    list becomes a tuple, while a single entry stays a bare value, because that
+    is the shape Pyomo expects in each case.  Second, each part is looked up in
+    the document's environment: a part that names something already declared is
+    replaced by that thing, and anything else is taken literally as a set member.
+
+    This was written out twice, once for reading a parameter's index and once
+    for reading the target of a closure statement.  The two copies happened to
+    agree; nothing was making sure they would stay in agreement.
+    """
+    parts = tuple(part.strip() for part in raw_index.strip().split(","))
+    resolved = tuple(env.get(part, part) for part in parts)
+    return resolved if len(resolved) > 1 else resolved[0]
+
+
 def _resolve_target(model, text, env):
     match = _TARGET.match(text.strip())
     if not match:
@@ -116,13 +136,7 @@ def _resolve_target(model, text, env):
     component = getattr(model, name)
     if raw_index is None:
         return component
-    index_text = raw_index.strip()
-    if "," in index_text:
-        parts = tuple(x.strip() for x in index_text.split(","))
-        index = tuple(env.get(x, x) for x in parts)
-    else:
-        index = env.get(index_text, index_text)
-    return component[index]
+    return component[_read_index(raw_index, env)]
 
 
 def compile_document(doc, *, base_dir=None):
@@ -174,16 +188,12 @@ def compile_document(doc, *, base_dir=None):
                 )
             values = {}
             for item in declarations:
-                parts = [x.strip() for x in item.index.strip().split(",")]
-                if not all(parts):
+                if not all(x.strip() for x in item.index.strip().split(",")):
                     raise CGESpecError(
                         f"Parameter `{name}` has an empty index position.",
                         path=item.location.path, line=item.location.line,
                     )
-                key = (
-                    tuple(env.get(x, x) for x in parts)
-                    if len(parts) > 1 else env.get(parts[0], parts[0])
-                )
+                key = _read_index(item.index, env)
                 values[key] = float(_safe_eval(item.expression, env))
             component = Param(list(values), initialize=values, mutable=True)
         setattr(model, name, component)
@@ -203,9 +213,12 @@ def compile_document(doc, *, base_dir=None):
         setattr(model, decl.name, component)
         env[decl.name] = component
 
+    # Imported once here rather than inside the loop below: repeating an import
+    # per equation makes Python re-check its module table every time for no gain.
+    from pyomo.core.expr.visitor import identify_variables
+
     for decl in doc.equations:
         try:
-            from pyomo.core.expr.visitor import identify_variables
             lhs = _safe_eval(decl.lhs, env)
             rhs = _safe_eval(decl.rhs, env)
             residual = lhs - rhs

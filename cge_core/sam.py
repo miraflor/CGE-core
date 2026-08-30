@@ -20,12 +20,12 @@ reference model's nonzero/positivity assumptions.
 
 Example::
 
-    from cge_core import CGE, samtools
+    from cge_core import CGE, sam
     from cge_core.models import StdCGE
 
     accounts = dict(hoh='HH', gov='GOVT', inv='SAV-INV',
                     ext='ROW', idt='ITAX', trf='TARIFF')
-    samtools.build_dataset('ph_sam.csv', 'ph_data_dir',
+    sam.build_dataset('ph_sam.csv', 'ph_data_dir',
                            factors=['CAP', 'LAB'],
                            institutions=accounts.values())
     model = CGE(model=StdCGE(accounts=accounts), data='ph_data_dir')
@@ -41,7 +41,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple, Union
 
-from cge_core.engine import DataValidationError, PyCGE
+from cge_core._pycge import DataValidationError, PyCGE
 
 PathLike = Union[str, "Path"]
 

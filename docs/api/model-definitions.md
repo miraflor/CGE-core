@@ -1,6 +1,6 @@
 # Model Definition API
 
-The model-definition classes contain the economic algebra. The v0.6 public
+The model-definition classes contain the economic algebra. The lower-level public
 namespace gives them scientific model names while preserving the validated
 underlying implementations.
 
@@ -27,7 +27,7 @@ definition.
 
 `StdCGE` is the public alias for the Hosoe standard open-economy model
 definition. Its `accounts=` argument remains available for relabelled
-institutional accounts when using `samtools`.
+institutional accounts when using `cge_core.sam`.
 
 ```{eval-rst}
 .. autoclass:: cge_core.models.StdCGE

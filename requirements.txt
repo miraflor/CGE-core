@@ -5,8 +5,8 @@ pyomo>=6.0,<6.10; python_version < "3.10"
 pyomo>=6.0; python_version >= "3.10"
 dill>=0.3
 pandas>=1.3
+amplpy>=0.16,<1
 
-# A local NLP solver is also required. Choose ONE:
-#   (a) pip install "cge-core[solver]"     -> cyipopt + scipy (needs IPOPT
-#       system library and a PyNumero ASL build), or
-#   (b) conda install -c conda-forge ipopt -> 'ipopt' executable on PATH.
+# CGE-Core resolves a supported nonlinear backend through its normal solver
+# layer. Advanced users may still provide a local IPOPT/cyipopt installation
+# and request it explicitly with solve(solver="...").

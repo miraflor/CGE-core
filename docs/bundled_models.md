@@ -1,6 +1,6 @@
 # Choose a bundled model
 
-CGE-Core 0.7.0 gives four model families a similar lifecycle while preserving their different economics.
+CGE-Core 0.8.0 gives four model families a similar lifecycle while preserving their different economics.
 
 | Model | Best used for | Important boundary |
 |---|---|---|

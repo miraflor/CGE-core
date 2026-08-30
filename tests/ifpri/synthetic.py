@@ -11,7 +11,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Mapping, TypeVar
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IfpriCalibrationInputs,
     IfpriDataset,
     IfpriElasticities,

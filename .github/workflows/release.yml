@@ -41,7 +41,7 @@ jobs:
 
           roots = {name.split("/", 1)[0] for name in names}
           assert "cge_core" in roots
-          assert "cam" in roots
+          assert "cam" not in roots, "legacy cam package returned to wheel"
           assert any(root.endswith(".dist-info") for root in roots)
 
           forbidden_roots = {
@@ -62,10 +62,9 @@ jobs:
           .wheel-smoke/bin/python -m pip install dist/*.whl
           .wheel-smoke/bin/python - <<'PY'
           import cge_core
-          import cam
           from cge_core import CamCGE, IFPRICGE, SimpleCGE, StandardCGE
 
-          assert cge_core.__version__ == "0.7.0"
+          assert cge_core.__version__ == "0.8.0"
           assert all((SimpleCGE, StandardCGE, CamCGE, IFPRICGE))
           print("wheel import smoke test passed")
           PY

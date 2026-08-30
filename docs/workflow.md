@@ -42,7 +42,7 @@ state against which a counterfactual is interpreted.
 
 ## Why is a scenario a clone?
 
-A policy experiment must not mutate the benchmark or another policy experiment. v0.7 creates
+A policy experiment must not mutate the benchmark or another policy experiment. v0.8 creates
 one independent concrete model clone per scenario. Multiple counterfactuals can therefore
 coexist.
 

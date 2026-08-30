@@ -2,7 +2,7 @@
   'use strict';
 
   const WHEEL_URL =
-    'https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl';
+    'https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl';
   const COLAB_HOME = 'https://colab.research.google.com/';
 
   const $ = id => document.getElementById(id);
@@ -43,7 +43,7 @@
           source: sourceLines(
             `# CGE-Core Control Room experiment\n\n` +
             `**Model:** ${model}\n\n` +
-            `Generated from the CGE-Core v0.7.0 Control Room. ` +
+            `Generated from the CGE-Core v0.8.0 Control Room. ` +
             `Review the model, data choice, closure, and policy scenario before running.\n`
           )
         },
@@ -76,7 +76,7 @@
           name: 'python'
         },
         cge_core: {
-          version: '0.7.0',
+          version: '0.8.0',
           generated_by: 'CGE-Core Control Room',
           source_page: window.location.href
         }

@@ -2,7 +2,7 @@
 """
 Simple CGE Example (Hosoe Ch. 3-4) -- closed economy benchmark solve.
 
-Demonstrates the canonical CGE-Core v0.6 workflow:
+Demonstrates the lower-level CGE-Core workflow:
     configure -> solve benchmark -> inspect values
 
 Requires a local NLP solver ('ipopt' executable or 'cyipopt'); the

@@ -14,12 +14,12 @@ way to work:
   runnable code, and outputs.
 - **{doc}`getting-started/quickstart`** — the shortest complete Standard CGE experiment.
 - **{doc}`tutorials/colab-notebooks`** — the browser-based course.
-- **{doc}`architecture`** — the public v0.7 architecture and the lower-level PyCGE engine.
+- **{doc}`architecture`** — the public v0.8 architecture and the lower-level PyCGE engine.
 - **{doc}`theory/overview`** — the economic structure and interactive Mermaid diagrams.
 - **{doc}`validation/overview`** — Hosoe/GAMS, IFPRI, and CAMCGE evidence.
 - **{doc}`api/index`** — Python API reference.
 
-## The v0.7 practitioner workflow
+## The v0.8 practitioner workflow
 
 ```python
 from cge_core import StandardCGE
@@ -53,10 +53,10 @@ equilibrium conditions are satisfied.
 
 The shared surface is a workflow, not a claim that these models have the same equations.
 
-## Advanced compatibility
+## Advanced lower-level API
 
-The v0.6 `CGE → Equilibrium → Scenario → Result` lifecycle and the lower-level `PyCGE`
-engine remain available for advanced or downstream code. They are compatibility and
+The `CGE → Equilibrium → Scenario → Result` lifecycle and lower-level `PyCGE`
+engine remain available for advanced or downstream code. They are intentional advanced
 inspection paths; new practitioner material should start with the four model-specific
 entry points above.
 

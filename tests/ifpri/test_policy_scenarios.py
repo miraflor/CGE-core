@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pyomo.environ import value
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IFPRI_POLICY_SCENARIOS,
     IfpriScenario,
     build_ifpri_scenario_model,

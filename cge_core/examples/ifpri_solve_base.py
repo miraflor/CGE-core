@@ -2,7 +2,7 @@
 """Solve the IFPRI BASE benchmark and compare it with full-precision GAMS."""
 from pathlib import Path
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     build_ifpri_base_solve_model,
     compare_ifpri_model_to_reference,
     load_ifpri_reference_targets,

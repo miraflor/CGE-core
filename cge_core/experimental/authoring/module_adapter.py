@@ -16,11 +16,14 @@ from pathlib import Path
 from types import ModuleType
 from typing import Optional
 
+import math
+
 import pandas as pd
 
-from cge_core.api import _Snapshot
-from cge_core.engine import ComponentError, SolveError, WorkflowError
-from cge_core.solvers import resolve_solver
+from cge_core._shared import comparison_frame, objective_comparison
+from cge_core.workflow import _Snapshot
+from cge_core._pycge import ComponentError, SolveError, WorkflowError
+from cge_core.solver import resolve_solver
 
 
 def _load_module(module_or_path) -> ModuleType:
@@ -54,7 +57,7 @@ def _solve(model, solver=None):
 
 
 def _dof(model):
-    from cge_core.engine import PyCGE
+    from cge_core._pycge import PyCGE
     return PyCGE.degrees_of_freedom(model)
 
 
@@ -196,35 +199,33 @@ class FunctionalResult:
         }])
 
     def compare(self, reference):
+        """Return a table of this state against another, value by value.
+
+        This is the same comparison the main interface performs, and it now
+        uses the same builder (see cge_core/_shared.py).  The two used to be
+        written out separately and had already drifted apart in small ways.
+        """
         if not isinstance(reference, (FunctionalEquilibrium, FunctionalResult)):
             raise TypeError("reference must be a FunctionalEquilibrium or FunctionalResult.")
         other = reference._snapshot
+
+        # Comparing results from different models, or from models with
+        # different variables, would give a table that looks valid and is not.
         if self._snapshot.model_id != other.model_id:
             raise WorkflowError("Cannot compare results from different model definitions.")
         if set(self._snapshot.variables) != set(other.variables):
             raise WorkflowError("Cannot compare structurally incompatible model results.")
-        keys = sorted(self._snapshot.variables, key=lambda item: (item[0], repr(item[1])))
-        max_dims = max((len(index) for _, index in keys), default=0)
-        rows = []
-        for component, index in keys:
-            current = self._snapshot.variables[(component, index)]
-            base = other.variables[(component, index)]
-            difference = pct = None
-            if current is not None and base is not None:
-                difference = current - base
-                pct = float("nan") if base == 0 else difference / base * 100
-            row = {"component": component}
-            for dimension in range(max_dims):
-                row[f"index_{dimension + 1}"] = index[dimension] if dimension < len(index) else ""
-            row.update({"reference_value": base, "value": current, "difference": difference, "pct_change": pct})
-            rows.append(row)
-        columns = (["component"] + [f"index_{n + 1}" for n in range(max_dims)] + ["reference_value", "value", "difference", "pct_change"])
-        frame = pd.DataFrame(rows, columns=columns)
-        objective_difference = objective_pct = None
-        if self.objective is not None and other.objective is not None:
-            objective_difference = self.objective - other.objective
-            objective_pct = float("nan") if other.objective == 0 else objective_difference / other.objective * 100
-        frame.attrs["objective"] = {"reference": other.objective, "reference_value": other.objective, "value": self.objective, "difference": objective_difference, "pct_change": objective_pct}
+
+        frame = comparison_frame(
+            self._snapshot.variables,
+            other.variables,
+            reference_column="reference_value",
+            value_column="value",
+            zero_reference=math.nan,
+        )
+        frame.attrs["objective"] = objective_comparison(
+            self.objective, other.objective, zero_reference=math.nan,
+        )
         return frame
 
 

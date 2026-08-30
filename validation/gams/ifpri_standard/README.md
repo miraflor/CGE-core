@@ -3,13 +3,13 @@
 This directory contains a compact validation record for the official IFPRI/TMD
 Standard CGE Model, Version 1.01. It does **not** redistribute the official
 source package or `test.dat`; the independently written CGE-Core/Pyomo
-implementation lives under `cge_core/ifpri/`.
+implementation lives under `cge_core/models/ifpri/`.
 
 ## Status
 
 - Official benchmark model (`mod101.gms`, `TEST.DAT`): reproduced in GAMS 54.2.1.
 - Official six simulations: reproduced as MCP/PATH and NLP/CONOPT.
-- CGE-Core implementation: completed under `cge_core/ifpri/`.
+- CGE-Core implementation: completed under `cge_core/models/ifpri/`.
 - CGE-Core replication: BASE and five policy simulations reproduced the
   full-precision NLP reference targets in the maintainer's external-data run.
 - Third-party rerun: requires a separately obtained official `test.dat` and

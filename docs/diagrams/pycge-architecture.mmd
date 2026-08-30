@@ -4,7 +4,7 @@ flowchart TB
 
     subgraph INPUT["Data layer"]
         SAM["SAM / model CSV files"]
-        SAMTOOLS["samtools.build_dataset()"]
+        SAMTOOLS["sam.build_dataset()"]
         EXAMPLE["example_data()"]
         DATA["Pyomo DataPortal"]
     end

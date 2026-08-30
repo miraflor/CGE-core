@@ -1,4 +1,4 @@
-"""Contract tests for downstream use of the v0.6 public CGE facade."""
+"""Contract tests for downstream use of the public CGE workflow."""
 from pathlib import Path
 
 import pandas as pd
@@ -26,7 +26,7 @@ def test_extension_contract_is_documented_as_public_boundary():
         assert public_name in text
 
     for excluded in (
-        "cge_core.engine.PyCGE",
+        "cge_core._pycge.PyCGE",
         "Equilibrium._engine",
         "Result._snapshot",
         "universal `Closure` object",

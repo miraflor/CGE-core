@@ -7,6 +7,7 @@ parts:
       - file: getting-started/overview
       - file: architecture
       - file: getting-started/installation
+      - file: migration-v0.8
       - file: getting-started/quickstart
       - file: getting-started/first-simulation
 
@@ -69,7 +70,7 @@ parts:
       - file: api/index
       - file: api/public
       - file: api/model-definitions
-      - file: api/samtools
+      - file: api/sam
       - file: api/datasets
       - file: api/ifpri
       - file: api/engine

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cge_core.ifpri import IfpriDataError, load_ifpri_test_data
+from cge_core.models.ifpri import IfpriDataError, load_ifpri_test_data
 
 
 def test_loads_external_test_dataset(ifpri_source_dir):

@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IFPRI_SCENARIO_DESCRIPTIONS,
     IfpriDataError,
     IfpriScenario,

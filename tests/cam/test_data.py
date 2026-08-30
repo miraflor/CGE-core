@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from cge_core.compat.pycge import PyCGE
+from cge_core._pycge import PyCGE
 
 from cge_core.models.camcge.model import CamModelDef
 from validation.cam.make_data import DATA_DIR, I, LC, validate_source_tables, write_data

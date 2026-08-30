@@ -5,12 +5,12 @@ import pytest
 def test_version_and_public_entry_points():
     import cge_core
 
-    assert cge_core.__version__ == "0.7.0"
+    assert cge_core.__version__ == "0.8.0"
     for name in ("SimpleCGE", "StandardCGE", "CamCGE", "IFPRICGE"):
         assert hasattr(cge_core, name)
 
 def test_default_solver_resolution_provisions_internally(monkeypatch):
-    from cge_core import solvers
+    from cge_core import solver as solvers
 
     monkeypatch.setattr(solvers, "_probe", lambda _name: False)
     monkeypatch.setattr(solvers, "_activate_ampl_ipopt", lambda: False)
@@ -19,7 +19,7 @@ def test_default_solver_resolution_provisions_internally(monkeypatch):
     assert solvers.resolve_solver() == "ipopt"
 
 def test_explicit_solver_choice_does_not_silently_install_or_substitute(monkeypatch):
-    from cge_core import solvers
+    from cge_core import solver as solvers
 
     installed = {"called": False}
 

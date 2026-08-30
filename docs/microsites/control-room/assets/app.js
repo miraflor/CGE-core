@@ -6,8 +6,8 @@
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[ch]));
 
-  const CGE_CORE_TARGET_VERSION = '0.7.0';
-  const INSTALL = 'pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"';
+  const CGE_CORE_TARGET_VERSION = '0.8.0';
+  const INSTALL = 'pip install "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"';
   const MODEL_ORDER = ['simple','standard','ifpri','camcge'];
 
   const MODELS = {
@@ -28,7 +28,7 @@
         title:'Canonical Simple CGE closure',
         anchor:'The bundled model fixes its price anchor and removes the corresponding redundant equilibrium condition.',
         adjusts:'Relative goods prices, factor returns, production, factor allocation, consumption, and welfare adjust endogenously.',
-        note:'v0.7 applies this canonical closure automatically. Ordinary users do not choose the numeraire or Walras equation.'
+        note:'v0.8 applies this canonical closure automatically. Ordinary users do not choose the numeraire or Walras equation.'
       },
       glossary:[
         ['Z[i]','Production','Gross output of good/sector i.'],
@@ -85,7 +85,7 @@
         title:'Canonical Standard CGE closure',
         anchor:'The bundled Standard CGE uses its model-owned price anchor and independent equilibrium conditions.',
         adjusts:'Domestic/import/export prices, the exchange rate, production, trade, factor allocation, household demand, government revenue, saving and investment adjust together.',
-        note:'v0.7 applies the canonical closure automatically. Closure remains economically important; it is simply no longer routine user-interface plumbing.'
+        note:'v0.8 applies the canonical closure automatically. Closure remains economically important; it is simply no longer routine user-interface plumbing.'
       },
       glossary:[
         ['Z[i], Y[i]','Output / value added','Sector gross output and value added.'],
@@ -225,7 +225,7 @@
       title:'CAMCGE',
       badge:'Cameroon 1987 replication',
       card:'11 sectors · 3 labor groups · 3 published experiments',
-      description:'The Cameroon replication is a first-class installed model in v0.7 while retaining its own equations, data and closure. Its central role is independent historical validation against the published benchmark and policy experiments.',
+      description:'The Cameroon replication is a first-class installed model in v0.8 while retaining its own equations, data and closure. Its central role is independent historical validation against the published benchmark and policy experiments.',
       useWhen:'Use it to reproduce and inspect the published Cameroon benchmark and three policy experiments.',
       avoidWhen:'Do not treat it as a generic country template unless you intentionally adapt its economics, data and closure.',
       facts:['11 sectors','3 labor groups','3 experiments','Published replication'],
@@ -238,7 +238,7 @@
         title:'CAMCGE-specific canonical closure',
         anchor:'The historical model retains its own savings, external-account, price-anchor, and market-clearing closure.',
         adjusts:'Sector output, domestic/composite prices, trade, labor returns, investment and other modeled quantities respond according to CAMCGE.',
-        note:'v0.7 makes CAMCGE easier to call; it does not rewrite the model into the Hosoe Standard CGE.'
+        note:'v0.8 keeps CAMCGE as a first-class model; it does not rewrite the model into the Hosoe Standard CGE.'
       },
       glossary:[
         ['xd[i]','Domestic output','Sector output used in the published experiment tables.'],
@@ -275,7 +275,7 @@
     }
   };
 
-  // Preserve the mature model-reading layer from the pre-v0.7 Control Room.
+  // Preserve the mature model-reading layer of the Control Room.
   MODELS.simple.glossary = [
     ['X[i]','Household consumption','How much of good i the representative household buys.'],
     ['Z[i]','Sector output','How much good i firms produce.'],
@@ -399,13 +399,13 @@
 
   function saveLocal(){
     try{
-      localStorage.setItem('cge-control-room-state-v070', JSON.stringify(state));
+      localStorage.setItem('cge-control-room-state-v080', JSON.stringify(state));
     }catch(_){}
   }
 
   function loadLocal(){
     try{
-      const saved=JSON.parse(localStorage.getItem('cge-control-room-state-v070') || 'null');
+      const saved=JSON.parse(localStorage.getItem('cge-control-room-state-v080') || 'null');
       if(!saved || !MODELS[saved.model]) return;
       state.model=saved.model;
       if(saved.labels && Array.isArray(saved.labels.goods) && Array.isArray(saved.labels.factors)) state.labels=saved.labels;
@@ -893,7 +893,7 @@ print(result.compare(base))`;
   function renderRunInstructions(){
     $('runInstructions').innerHTML=
       `<div class="run-steps">
-        <div class="run-step"><div><strong>Install v0.7.0</strong><div class="command">${esc(INSTALL)}</div></div></div>
+        <div class="run-step"><div><strong>Install v0.8.0</strong><div class="command">${esc(INSTALL)}</div></div></div>
         <div class="run-step"><div><strong>Run your script</strong><div class="command">python scenario.py</div></div></div>
         <div class="run-step"><div><strong>Or use Colab</strong><p class="help">The canonical notebook performs package installation in one cell, then goes directly to modelling.</p></div></div>
        </div>`;

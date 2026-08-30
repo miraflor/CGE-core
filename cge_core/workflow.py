@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Public scientific lifecycle for CGE-Core v0.7.
+"""Public scientific lifecycle for CGE-Core v0.8.
 
 The public path is intentionally small:
     configure -> solve -> scenario -> shock -> solve -> inspect
@@ -17,28 +17,23 @@ from typing import Any, Dict, Mapping, Optional, Set, Tuple
 import pandas as pd
 from pyomo.environ import Objective, Param, Var, value
 
-from cge_core.compat.pycge import ComponentError, WorkflowError
+from cge_core._shared import (
+    component_key,
+    comparison_frame,
+    index_tuple as _index_tuple,
+    objective_comparison,
+)
+from cge_core._pycge import ComponentError, WorkflowError
 from cge_core.model_spec import ModelSpec
 from cge_core._engine import CoreEngine
 
 _ComponentKey = Tuple[str, Tuple[Any, ...]]
 
 
-def _index_tuple(index: Any) -> Tuple[Any, ...]:
-    if index is None:
-        return ()
-    if isinstance(index, tuple):
-        return index
-    return (index,)
-
-
-def _scenario_key(name: str, index: Any) -> Tuple[str, Any]:
-    try:
-        hash(index)
-        safe = index
-    except TypeError:
-        safe = repr(index)
-    return name, safe
+# ``_index_tuple`` and ``_scenario_key`` used to be defined here, character for
+# character the same as helpers in the engine module.  They now come from
+# cge_core/_shared.py so there is one version of each.
+_scenario_key = component_key
 
 
 def _number(item: Any) -> Optional[float]:
@@ -147,7 +142,7 @@ def _summary_frame(snapshot: _Snapshot, spec: Optional[ModelSpec]) -> pd.DataFra
 class CGE:
     """Configured static-CGE blueprint.
 
-    The v0.6 constructor remains valid.  v0.7 additionally accepts a ModelSpec
+    The lower-level constructor remains valid. Bundled model façades additionally pass a ModelSpec
     so model-owned default closure and semantic metadata can be used.
     """
 
@@ -377,54 +372,34 @@ class Result:
         return _summary_frame(self._snapshot, self._spec)
 
     def compare(self, reference) -> pd.DataFrame:
-        if isinstance(reference, Equilibrium):
-            other = reference._snapshot
-        elif isinstance(reference, Result):
-            other = reference._snapshot
-        else:
+        """Return a table of this state against another, value by value.
+
+        Differences are reported as this result minus the reference, so a
+        positive number always means larger than the thing being compared
+        against.  The table itself is laid out by cge_core/_shared.py, which is
+        also what the experimental authoring interface uses, so the two cannot
+        drift into producing differently shaped answers.
+        """
+        if not isinstance(reference, (Equilibrium, Result)):
             raise TypeError("reference must be an Equilibrium or Result.")
+        other = reference._snapshot
+
+        # Two results can only be compared if they came from the same model and
+        # describe the same set of variables.  Comparing across models would
+        # produce a table that looks perfectly fine and means nothing.
         if self._snapshot.model_id != other.model_id:
             raise WorkflowError("Cannot compare results from different model definitions.")
         if set(self._snapshot.variables) != set(other.variables):
             raise WorkflowError("Cannot compare structurally incompatible model results.")
 
-        keys = sorted(self._snapshot.variables, key=lambda item: (item[0], repr(item[1])))
-        max_dims = max((len(index) for _, index in keys), default=0)
-        rows = []
-        for component, index in keys:
-            current = self._snapshot.variables[(component, index)]
-            base = other.variables[(component, index)]
-            difference = pct_change = None
-            if current is not None and base is not None:
-                difference = current - base
-                pct_change = math.nan if base == 0 else difference / base * 100.0
-            row = {"component": component}
-            for dimension in range(max_dims):
-                row[f"index_{dimension + 1}"] = index[dimension] if dimension < len(index) else ""
-            row.update({
-                "reference_value": base,
-                "value": current,
-                "difference": difference,
-                "pct_change": pct_change,
-            })
-            rows.append(row)
-        columns = (["component"] + [f"index_{n + 1}" for n in range(max_dims)]
-                   + ["reference_value", "value", "difference", "pct_change"])
-        frame = pd.DataFrame(rows, columns=columns)
-        objective_difference = None
-        objective_pct = None
-        if self.objective is not None and other.objective is not None:
-            objective_difference = self.objective - other.objective
-            objective_pct = (
-                math.nan if other.objective == 0
-                else objective_difference / other.objective * 100.0
-            )
-        frame.attrs["objective"] = {
-            # ``reference`` is the v0.6 public key; retain it.
-            "reference": other.objective,
-            "reference_value": other.objective,
-            "value": self.objective,
-            "difference": objective_difference,
-            "pct_change": objective_pct,
-        }
+        frame = comparison_frame(
+            self._snapshot.variables,
+            other.variables,
+            reference_column="reference_value",
+            value_column="value",
+            zero_reference=math.nan,
+        )
+        frame.attrs["objective"] = objective_comparison(
+            self.objective, other.objective, zero_reference=math.nan,
+        )
         return frame

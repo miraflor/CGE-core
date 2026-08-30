@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cge-core"
-version = "0.7.0"
+version = "0.8.0"
 description = "A practitioner-first, Pyomo-based CGE modelling system with validated Hosoe, IFPRI, and CAMCGE implementations"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
@@ -44,9 +44,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Backward-compatible alias for install commands that used cge-core[solver].
-# Solver support is now part of the normal CGE-Core installation.
-solver = []
 test = [
     "pytest>=7.0",
     "tomli>=2.0; python_version < '3.11'",
@@ -75,14 +72,13 @@ Changelog = "https://github.com/miraflor/CGE-core/blob/main/CHANGELOG.md"
 Issues = "https://github.com/miraflor/CGE-core/issues"
 
 [tool.setuptools.packages.find]
-include = ["cge_core*", "cam*"]
+include = ["cge_core*"]
 
 [tool.setuptools.package-data]
 cge_core = [
     "data/*/*.csv",
     "models/camcge/data/*.csv",
     "experimental/spec/examples/*.cge.md",
-    "spec/examples/*.cge.md",
 ]
 
 [tool.pytest.ini_options]

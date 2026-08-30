@@ -16,5 +16,5 @@ def test_source_version_matches_project_metadata():
     assert cge_core.__version__ == project["project"]["version"]
 
 
-def test_v070_source_version():
-    assert cge_core.__version__ == "0.7.0"
+def test_v080_source_version():
+    assert cge_core.__version__ == "0.8.0"

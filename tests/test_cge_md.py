@@ -1,4 +1,4 @@
-from cge_core.spec import compile_document, parse_text, validate_document
+from cge_core.experimental.spec import compile_document, parse_text, validate_document
 
 MODEL = r"""# Human explanation A
 
@@ -72,14 +72,14 @@ shockable a
 
 def test_hyphenated_component_name_is_rejected_at_parse_time():
     import pytest
-    from cge_core.spec import CGESpecError
+    from cge_core.experimental.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Unsupported CGE statement"):
         parse_text("```cge\nvar x-y >= 0\n```", path="bad-name.cge.md")
 
 def test_comparison_operator_has_named_error():
     import pytest
-    from cge_core.spec import CGESpecError
+    from cge_core.experimental.spec import CGESpecError
 
     with pytest.raises(CGESpecError, match="Comparison operators"):
         parse_text(
@@ -89,7 +89,7 @@ def test_comparison_operator_has_named_error():
 
 def test_parameter_only_equation_is_rejected():
     import pytest
-    from cge_core.spec import CGESpecError
+    from cge_core.experimental.spec import CGESpecError
 
     doc = validate_document(
         parse_text(
@@ -106,7 +106,7 @@ equation e: a = b
 
 def test_set_member_component_collision_is_rejected():
     import pytest
-    from cge_core.spec import CGESpecError
+    from cge_core.experimental.spec import CGESpecError
 
     doc = parse_text(
         r"""```cge

@@ -1,4 +1,4 @@
-"""Central solver policy for CGE-Core v0.7.
+"""Central solver policy for CGE-Core v0.8.
 
 Ordinary users call ``.solve()``. Solver discovery and first-use setup remain
 below the practitioner API. Advanced users may still request a backend
@@ -7,6 +7,7 @@ explicitly with ``.solve(solver="ipopt")``.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 import importlib.util
 from pathlib import Path
 import platform
@@ -32,13 +33,30 @@ class SolverInfo:
         return asdict(self)
 
 
+@lru_cache(maxsize=None)
 def _probe(name: str) -> bool:
+    """Return whether Pyomo can actually run the named solver on this machine.
+
+    Answering this is not free.  Pyomo has to search the system path for an
+    executable, and for some backends it also has to import libraries and ask
+    them whether their own supporting pieces are present.  The answer was being
+    asked for several times during a single solve, and again every time the
+    package reported on its own solver situation.
+
+    The answer is therefore remembered.  It can only change when something is
+    installed or registered, and the two functions below that do that both
+    clear the memory afterwards, so a stale "no" cannot survive an install.
+    """
     try:
         from pyomo.environ import SolverFactory
 
         if not SolverFactory(name).available(exception_flag=False):
             return False
         if name == "cyipopt":
+            # Pyomo can report cyipopt as present when it is not really usable:
+            # the route through it needs SciPy at run time and needs the
+            # PyNumero bridge to the AMPL solver library.  Both are checked
+            # here so that a solve does not fail later with a confusing error.
             if importlib.util.find_spec("scipy") is None:
                 return False
             from pyomo.contrib.pynumero.asl import AmplInterface
@@ -48,6 +66,19 @@ def _probe(name: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def _forget_probe_results() -> None:
+    """Discard remembered solver-availability answers.
+
+    Call this after anything that could change which solvers work: installing a
+    solver bundle, or registering a solver executable with Pyomo.  It is
+    written defensively because the test suite replaces ``_probe`` with a plain
+    stand-in function, and a plain function has nothing to forget.
+    """
+    clear = getattr(_probe, "cache_clear", None)
+    if clear is not None:
+        clear()
 
 
 def _ampl_ipopt_path() -> Optional[Path]:
@@ -79,6 +110,9 @@ def _activate_ampl_ipopt() -> bool:
     except Exception:
         return False
 
+    # Registering an executable changes what is available, so any earlier
+    # answer about this backend is now out of date.
+    _forget_probe_results()
     return _probe("ipoptnl")
 
 
@@ -106,6 +140,9 @@ def _install_default_solver() -> str:
             "Check network access or choose an already installed solver."
         ) from exc
 
+    # Something was just installed, so previously remembered answers about what
+    # is available no longer describe this machine.
+    _forget_probe_results()
     if _activate_ampl_ipopt():
         return "ipoptnl"
 
@@ -147,11 +184,6 @@ def resolve_solver(preferred: Optional[str] = None) -> str:
     if _activate_ampl_ipopt():
         return "ipoptnl"
     return _install_default_solver()
-
-
-def install_solver() -> str:
-    """Compatibility helper; ordinary users should simply call ``.solve()``."""
-    return resolve_solver()
 
 
 def solver_info(preferred: Optional[str] = None) -> SolverInfo:

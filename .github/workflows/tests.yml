@@ -206,6 +206,20 @@ jobs:
           if missing:
               errors.append("runtime files missing from wheel: " + ", ".join(missing))
 
+          obsolete = sorted({
+              "cge_core/_alias.py",
+              "cge_core/engine.py",
+              "cge_core/api.py",
+              "cge_core/modern_engine.py",
+              "cge_core/solvers.py",
+              "cge_core/samtools.py",
+              "cge_core/practitioner.py",
+              "cam/__init__.py",
+              "cam/cam_model_def.py",
+          } & names)
+          if obsolete:
+              errors.append("obsolete v0.7 runtime paths returned: " + ", ".join(obsolete))
+
           csvs = sorted(name for name in names if name.endswith(".csv"))
           if len(csvs) < 16:
               errors.append(f"expected at least 16 bundled CSVs, found {len(csvs)}")
@@ -257,9 +271,6 @@ jobs:
           }
 
           required = {
-              # Historical compatibility package.
-              "cam/__init__.py",
-              "cam/cam_model_def.py",
               # Canonical CAMCGE runtime.
               "cge_core/models/camcge/model.py",
               "cge_core/models/camcge/data/set-i-.csv",
@@ -279,9 +290,15 @@ jobs:
               sys.exit(1)
 
           stale = sorted({
+              "cam/__init__.py",
+              "cam/cam_model_def.py",
               "cam/data/set-i-.csv",
               "cam/replicate_base.py",
               "cam/replicate_experiments.py",
+              "cge_core/engine.py",
+              "cge_core/api.py",
+              "cge_core/solvers.py",
+              "cge_core/samtools.py",
           } & names)
           if stale:
               print(
@@ -306,10 +323,10 @@ jobs:
 
           assert standard.data.is_dir(), "packaged StandardCGE data missing"
           assert cam.data.is_dir(), "packaged CAMCGE data missing"
-          assert cge_core.__version__ == "0.7.0"
+          assert cge_core.__version__ == "0.8.0"
 
-          # Historical import path remains supported by the compatibility shim.
-          from cge_core.examples.stdcge_model_def import StdModelDef
+          # Canonical advanced model-definition path.
+          from cge_core.models.standard.model import StdModelDef
           assert StdModelDef is not None
 
           print("wheel import/data smoke test OK, version", cge_core.__version__)

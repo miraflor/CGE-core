@@ -2,7 +2,7 @@
 """Solve all five IFPRI policy simulations and compare with GAMS NLP targets."""
 from pathlib import Path
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IFPRI_POLICY_SCENARIOS,
     build_and_solve_ifpri_scenarios,
     compare_ifpri_model_to_reference,

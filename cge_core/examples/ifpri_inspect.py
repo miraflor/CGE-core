@@ -2,7 +2,7 @@
 """Inspect the external IFPRI test dataset without solving a model."""
 from __future__ import annotations
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IfpriDataError,
     build_ifpri_benchmark_model,
     calibrate_ifpri_benchmark,

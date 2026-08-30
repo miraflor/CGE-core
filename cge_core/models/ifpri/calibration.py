@@ -2,7 +2,7 @@
 """Algebraically calibrate the IFPRI benchmark without building a solver model.
 
 This module reconstructs the normalized benchmark prices and quantities from
-an :class:`~cge_core.ifpri.schema.IfpriDataset`, then computes the share,
+an :class:`~cge_core.models.ifpri.schema.IfpriDataset`, then computes the share,
 scale, tax, institutional, LES, and savings-investment parameters that make
 that benchmark satisfy the model identities.  No Pyomo objects are created and
 no nonlinear solver is called.
@@ -259,18 +259,42 @@ def calibrate_ifpri_benchmark(dataset: IfpriDataset) -> IfpriBenchmarkCalibratio
             for ct in C
         }
 
+    def transaction_margins(shares, transaction_accounts, quantity):
+        """Trade and transport margin needed per unit of a commodity.
+
+        Getting a good from producer to buyer costs something: transport, trade
+        services, and so on.  In a SAM those costs appear as payments to
+        transaction accounts.  This works out how much of each such service is
+        needed per unit of the good moved.
+
+        The same calculation applies to goods sold at home, goods imported, and
+        goods exported.  It was written out three times, once per direction,
+        which is how three copies of one formula ended up in this file.
+
+        Where either the price or the quantity is zero, the margin is reported
+        as zero: there is no flow to carry, so there is nothing to charge for.
+        """
+        # How much is paid to these transaction accounts depends only on which
+        # commodity is being moved, not on which service is doing the moving,
+        # so it is worked out once per commodity.  Computing it inside both
+        # loops instead would repeat the same addition once per pair.
+        totals = {c: sum(sam.value(account, c) for account in transaction_accounts)
+                  for c in C}
+
+        margin = {}
+        for ct in C:
+            for c in C:
+                movable = pq[ct] and quantity[c]
+                margin[(ct, c)] = (shares[ct] * totals[c] / pq[ct] / quantity[c]
+                                   if movable else 0.0)
+        return margin
+
     sh_d = transaction_shares(CTD)
     sh_m = transaction_shares(CTM)
     sh_e = transaction_shares(CTE)
-    icd = {(ct, c): (sh_d[ct] * sum(sam.value(account, c) for account in CTD)
-                       / pq[ct] / qd[c] if pq[ct] and qd[c] else 0.0)
-           for ct in C for c in C}
-    icm = {(ct, c): (sh_m[ct] * sum(sam.value(account, c) for account in CTM)
-                       / pq[ct] / qm[c] if pq[ct] and qm[c] else 0.0)
-           for ct in C for c in C}
-    ice = {(ct, c): (sh_e[ct] * sum(sam.value(account, c) for account in CTE)
-                       / pq[ct] / qe[c] if pq[ct] and qe[c] else 0.0)
-           for ct in C for c in C}
+    icd = transaction_margins(sh_d, CTD, qd)   # on goods sold domestically
+    icm = transaction_margins(sh_m, CTM, qm)   # on goods imported
+    ice = transaction_margins(sh_e, CTE, qe)   # on goods exported
 
     qt = {
         ct: (sum(sam.value(ct, account) for account in CTD)
@@ -321,9 +345,20 @@ def calibrate_ifpri_benchmark(dataset: IfpriDataset) -> IfpriBenchmarkCalibratio
     }
     eh = {h: sum(sam.value(c, h) for c in C) + sum(sam.value(a, h) for a in A)
           for h in H}
+    def deflate(column):
+        """Convert a column of spending into physical quantities.
+
+        A SAM records values — how much money changed hands.  A model needs
+        quantities — how many units were bought.  Dividing a value by the price
+        of the composite good gives the quantity.  Where a commodity has no
+        price, because nothing of it exists in this economy, the quantity is
+        zero rather than an error.
+        """
+        return {c: (sam.value(c, column) / pq[c] if pq[c] else 0.0) for c in C}
+
     qh = {(c, h): (sam.value(c, h) / pq[c] if pq[c] else 0.0)
           for c in C for h in H}
-    qg = {c: (sam.value(c, "GOV") / pq[c] if pq[c] else 0.0) for c in C}
+    qg = deflate("GOV")
     yg = sam.column_total("GOV")
     gsav = sam.value("S-I", "GOV")
     eg = yg - gsav
@@ -410,10 +445,14 @@ def calibrate_ifpri_benchmark(dataset: IfpriDataset) -> IfpriBenchmarkCalibratio
     cpi = sum(cwts[c] * pq[c] for c in C)
     dpi = sum(dwts[c] * pds[c] for c in C if qd[c])
 
-    qinv = {c: (sam.value(c, "S-I") / pq[c] if pq[c] else 0.0) for c in C}
-    qdst = {c: (sam.value(c, "DSTK") / pq[c] if pq[c] else 0.0) for c in C}
+    qinv = deflate("S-I")    # goods bought as investment
+    qdst = deflate("DSTK")   # goods added to or taken from stocks
     fsav = sam.value("S-I", "ROW") / exr
-    tabs = (sum(sam.value(c, h) for c in C for h in H)
+    # Total absorption: everything the economy uses, however it is used.  The
+    # first term is household purchases of marketed goods, which was already
+    # needed above as `market_hh_total` and is reused here rather than summed
+    # a second time.
+    tabs = (market_hh_total
             + sum(sam.value(a, h) for a in A for h in H)
             + sum(sam.value(c, "GOV") for c in C)
             + sum(sam.value(c, "S-I") for c in C)

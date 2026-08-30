@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cge_core.ifpri import load_ifpri_test_data, validate_inputs
+from cge_core.models.ifpri import load_ifpri_test_data, validate_inputs
 
 
 def test_trade_and_production_elasticities(ifpri_source_dir):

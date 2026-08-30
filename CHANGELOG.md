@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.8.0 (2026) — One architecture, one namespace, one course
+
+CGE-Core 0.8.0 consolidates the v0.7 practitioner architecture without changing
+the validated economic model equations.
+
+- Re-home the inherited PyCGE engine as `cge_core._pycge` while retaining
+  top-level `PyCGE` for intentional advanced use.
+- Remove historical redirect modules and parallel namespaces from the active
+  package (`engine`, `api`, `solvers`, `samtools`, `ifpri`, `spec`, `authoring`,
+  old model-definition paths, and the legacy `cam` package).
+- Make `cge_core.models.ifpri` the canonical IFPRI implementation namespace.
+- Make `cge_core.experimental.authoring` and `cge_core.experimental.spec` the
+  only homes of experimental authoring interfaces.
+- Keep exactly one seven-notebook course in `notebooks/`; historical filenames
+  remain available through earlier Git tags rather than redirect notebooks.
+- Consolidate shared mutation, comparison, account-mapping, and model helper
+  logic introduced by the v0.8 reengineering.
+- Add regression tests that prevent obsolete redirect surfaces and duplicate
+  notebook sequences from returning.
+- Add a v0.8 migration guide and align packaging, solver documentation, CI,
+  Control Room metadata, and release-wheel links with 0.8.0.
+
 ## v0.7.0 (2026) — Practitioner-first modelling architecture
 
 CGE-Core 0.7.0 makes the ordinary workflow about economics rather than repository, solver,

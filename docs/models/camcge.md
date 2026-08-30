@@ -3,7 +3,7 @@
 CAMCGE is the published Cameroon model replication used as an independent historical
 validation benchmark.
 
-v0.7 makes it a first-class installed model:
+v0.8 keeps it as a first-class installed model:
 
 ```python
 from cge_core import CamCGE

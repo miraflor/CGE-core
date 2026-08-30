@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import re
 
-from .errors import CGESpecError
+from .errors import NAME_PATTERN, TARGET_PATTERN, CGESpecError
 
-_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-_TARGET_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[([^\]]+)\])?$")
+# Both patterns are defined once, in errors.py, and shared with the parser and
+# the compiler so all three agree on what a valid name looks like.
+_NAME_RE = re.compile("^%s$" % NAME_PATTERN)
+_TARGET_RE = re.compile(TARGET_PATTERN)
 
 
 def validate_document(doc):

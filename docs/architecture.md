@@ -1,6 +1,6 @@
 # Architecture
 
-CGE-Core v0.7 separates five concerns:
+CGE-Core v0.8 separates five concerns:
 
 1. **economic model definitions**;
 2. **benchmark data and calibration**;
@@ -12,18 +12,18 @@ The public interface is deliberately smaller than the implementation.
 
 ## Practitioner-first public architecture
 
-```{mermaid} diagrams/cge-core-v070-public.mmd
-:name: cge-core-v070-public-architecture
-:alt: CGE-Core v0.7 architecture showing practitioner model facades, benchmark and scenario workflow, model-specific economics, lower-level compatibility, Pyomo, and the nonlinear solver.
+```{mermaid} diagrams/cge-core-v080-public.mmd
+:name: cge-core-v080-public-architecture
+:alt: CGE-Core v0.8 architecture showing practitioner model facades, benchmark and scenario workflow, model-specific economics, the lower-level engine, Pyomo, and the nonlinear solver.
 ```
 
 Use the mouse wheel or a trackpad pinch gesture to **zoom**, drag to **pan**, or select
 **⛶** to inspect the diagram in full screen.
 
 ````{dropdown} Mermaid source
-{download}`Download the .mmd source </diagrams/cge-core-v070-public.mmd>`
+{download}`Download the .mmd source </diagrams/cge-core-v080-public.mmd>`
 
-```{literalinclude} /diagrams/cge-core-v070-public.mmd
+```{literalinclude} /diagrams/cge-core-v080-public.mmd
 :language: text
 ```
 ````
@@ -54,8 +54,8 @@ need to traverse mutable Pyomo objects.
 
 ## Underlying PyCGE architecture
 
-The mature lower-level engine remains part of v0.7 and is still useful for implementation,
-validation, and compatibility work.
+The mature lower-level engine remains part of v0.8 and is useful for implementation,
+validation, and advanced engine-level work.
 
 ```{mermaid} diagrams/pycge-architecture.mmd
 :name: pycge-software-architecture
@@ -75,7 +75,7 @@ and call the model-specific implementation while hiding routine framework plumbi
 
 ## Model-family boundaries
 
-| Family | v0.7 role | Closure |
+| Family | v0.8 role | Closure |
 | --- | --- | --- |
 | Hosoe Simple | Teaching / closed-economy benchmark | Model-owned canonical closure |
 | Hosoe Standard | Generic open-economy policy model | Model-owned canonical closure |
