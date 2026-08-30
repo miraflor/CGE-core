@@ -1,11 +1,11 @@
 # Getting started
 
-CGE-Core v0.7 has two levels of use.
+CGE-Core v0.8 has two levels of use.
 
 **Practitioner path:** start with `SimpleCGE`, `StandardCGE`, `CamCGE`, or `IFPRICGE`.
 The bundled model owns routine closure and solver plumbing.
 
-**Advanced compatibility path:** use `CGE`, `PyCGE`, model definitions, and `.raw` when
+**Advanced lower-level path:** use `CGE`, `PyCGE`, model definitions, and `.raw` when
 you need implementation-level control or inspection.
 
 Recommended order:

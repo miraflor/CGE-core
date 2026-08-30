@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     calibrate_ifpri_benchmark,
     load_ifpri_test_data,
     validate_ifpri_calibration,

@@ -1,35 +1,29 @@
 # -*- coding: utf-8 -*-
-"""Local NLP solver detection shared by the bundled examples."""
-from pyomo.environ import SolverFactory
+"""Solver lookup for the bundled lower-level example scripts.
 
-_CANDIDATES = ('ipopt', 'cyipopt')
+Examples use the same central solver policy as the practitioner API; they do
+not maintain a second discovery or installation path.
+"""
+from cge_core.solver import SolverResolutionError, resolve_solver
 
 
 def detect_solver(preferred=None):
-    """Return the name of an available local NLP solver.
+    """Return the name of a solver this machine can actually run.
 
     Parameters
     ----------
     preferred : str, optional
-        Try this solver first (e.g. 'cyipopt'). Falls back to the standard
-        candidates if it is not available.
+        Ask for this solver by name, for example ``"ipopt"``.  If it is not
+        usable directly, an equivalent backend may be substituted.
 
     Raises
     ------
     RuntimeError
-        If no local NLP solver can be found, with installation guidance.
+        If no solver can be found or prepared.  The message comes from the
+        solver policy itself, so it describes the actual reason rather than a
+        generic guess.
     """
-    names = ([preferred] if preferred else []) + list(_CANDIDATES)
-    for name in names:
-        try:
-            if SolverFactory(name).available(exception_flag=False):
-                return name
-        except Exception:
-            continue
-    raise RuntimeError(
-        "No local NLP solver found. CGE-Core needs one of:\n"
-        "  * an 'ipopt' executable on PATH "
-        "(conda install -c conda-forge ipopt), or\n"
-        "  * cyipopt (pip install 'cge-core[solver]'; requires the IPOPT "
-        "system library and a PyNumero ASL build)."
-    )
+    try:
+        return resolve_solver(preferred)
+    except SolverResolutionError as exc:
+        raise RuntimeError(str(exc)) from exc

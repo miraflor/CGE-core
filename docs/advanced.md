@@ -20,7 +20,7 @@ from cge_core import CGE, PyCGE, example_data
 from cge_core.models import StdCGE
 ```
 
-The lower-level PyCGE lifecycle remains an escape hatch for compatibility, debugging and engine development. New tutorials use the model façades instead.
+The lower-level PyCGE lifecycle remains an escape hatch for debugging, validation, and engine development. New tutorials use the model façades instead.
 
 ## Solver override
 

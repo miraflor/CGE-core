@@ -36,7 +36,7 @@ one price is chosen as numeraire.
 | Counterfactual solution | `SS.run_SS(...)` or transition machinery | `Scenario.solve()` |
 | Read outputs | dictionaries / output utilities | `Equilibrium.value(...)`, `Result.value(...)`, `Result.objective` |
 | Compare reform with reference | output tables / plots | `Result.compare(benchmark)` |
-| Data helpers | `utils.py` and calibration inputs | `cge_core.datasets`, `cge_core.samtools` |
+| Data helpers | `utils.py` and calibration inputs | `cge_core.datasets`, `cge_core.sam` |
 
 ## Workflow correspondence
 
@@ -86,7 +86,7 @@ OG-Core output.
 
 The public lifecycle above is implemented by the supported lower-level
 `PyCGE`/Pyomo engine. Advanced users can still work directly with
-`cge_core.engine.PyCGE`, including its explicit benchmark/simulation state
+`cge_core._pycge.PyCGE`, including its explicit benchmark/simulation state
 machine. That engine API is documented separately and is not the recommended
 interface for ordinary Hosoe-model policy experiments.
 

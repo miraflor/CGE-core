@@ -4,7 +4,7 @@ pytestmark = pytest.mark.public_ifpri
 
 
 def test_synthetic_ifpri_is_installed_and_valid():
-    from cge_core.ifpri.synthetic import build_synthetic_ifpri_dataset
+    from cge_core.models.ifpri.synthetic import build_synthetic_ifpri_dataset
     dataset = build_synthetic_ifpri_dataset()
     assert dataset.sam.table_name == "SYNTHETIC_SAM"
     assert "ROW" in dataset.sets.accounts

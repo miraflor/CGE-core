@@ -1,11 +1,11 @@
 # Installation
 
-## CGE-Core v0.7.0
+## CGE-Core v0.8.0
 
 Install the release wheel:
 
 ```bash
-pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
+pip install "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
 ```
 
 Then solve:

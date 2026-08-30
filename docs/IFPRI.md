@@ -36,7 +36,7 @@ skipping. Correct or unset the environment variable before rerunning them.
 ## Load and calibrate the benchmark
 
 ```python
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     calibrate_ifpri_benchmark,
     load_ifpri_test_data,
     validate_ifpri_calibration,
@@ -55,7 +55,7 @@ benchmark prices and quantities before any nonlinear solve is attempted.
 ## Solve BASE
 
 ```python
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     build_ifpri_base_solve_model,
     perturb_ifpri_start,
     solve_ifpri_base,
@@ -77,7 +77,7 @@ The solve is accepted only after an optimal or locally optimal termination.
 ## Run the policy simulations
 
 ```python
-from cge_core.ifpri import build_and_solve_ifpri_scenarios
+from cge_core.models.ifpri import build_and_solve_ifpri_scenarios
 
 results = build_and_solve_ifpri_scenarios(dataset)
 ```
@@ -100,7 +100,7 @@ internals:
 ```python
 from pathlib import Path
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     compare_ifpri_scenarios,
     extract_ifpri_solution,
     summarize_ifpri_results,
@@ -143,7 +143,7 @@ an explicit comparison:
 ```python
 from pathlib import Path
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     compare_ifpri_model_to_reference,
     load_ifpri_reference_targets,
 )

@@ -34,7 +34,7 @@ from ._util import SOLVER, calibrated, quiet, requires_solver, std_instance
 # ----------------------------------------------------------------------
 def test_fresh_object_has_initialised_state():
     """__init__ must define every attribute the guards test against."""
-    from cge_core.compat.pycge import PyCGE
+    from cge_core._pycge import PyCGE
     from cge_core.models.standard.model import StdModelDef
 
     cge = PyCGE(StdModelDef())
@@ -46,7 +46,7 @@ def test_fresh_object_has_initialised_state():
 
 def test_drop_redundant_before_instance_raises_workflow_error():
     """Must raise guidance rather than AttributeError."""
-    from cge_core.compat.pycge import PyCGE, WorkflowError
+    from cge_core._pycge import PyCGE, WorkflowError
     from cge_core.models.standard.model import StdModelDef
 
     cge = PyCGE(StdModelDef())
@@ -55,7 +55,7 @@ def test_drop_redundant_before_instance_raises_workflow_error():
 
 
 def test_sim_before_calibrate_raises_workflow_error():
-    from cge_core.compat.pycge import WorkflowError
+    from cge_core._pycge import WorkflowError
 
     cge = std_instance()
     with pytest.raises(WorkflowError, match='calibrate'):
@@ -64,7 +64,7 @@ def test_sim_before_calibrate_raises_workflow_error():
 
 
 def test_solve_before_calibrate_raises_workflow_error():
-    from cge_core.compat.pycge import WorkflowError
+    from cge_core._pycge import WorkflowError
 
     cge = std_instance()
     with pytest.raises(WorkflowError, match='calibrate'):
@@ -72,7 +72,7 @@ def test_solve_before_calibrate_raises_workflow_error():
 
 
 def test_drop_redundant_unknown_constraint_raises_component_error():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance(drop_redundant=False)
     with pytest.raises(ComponentError, match='does not exist'):
@@ -80,7 +80,7 @@ def test_drop_redundant_unknown_constraint_raises_component_error():
 
 
 def test_drop_redundant_bad_index_raises_component_error():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance(drop_redundant=False)
     with pytest.raises(ComponentError, match='does not exist'):
@@ -88,7 +88,7 @@ def test_drop_redundant_bad_index_raises_component_error():
 
 
 def test_model_instance_unknown_variable_raises_component_error():
-    from cge_core.compat.pycge import ComponentError, PyCGE
+    from cge_core._pycge import ComponentError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 
@@ -99,7 +99,7 @@ def test_model_instance_unknown_variable_raises_component_error():
 
 
 def test_compare_before_instances_raises_workflow_error():
-    from cge_core.compat.pycge import PyCGE, WorkflowError
+    from cge_core._pycge import PyCGE, WorkflowError
     from cge_core.models.standard.model import StdModelDef
 
     cge = PyCGE(StdModelDef())
@@ -308,7 +308,7 @@ def test_modify_sim_clears_solved_flag():
 
 
 def test_modify_sim_unknown_component_raises_component_error():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance()
     cge.base_calibrated = True      # bypass solve; testing the guard only
@@ -318,7 +318,7 @@ def test_modify_sim_unknown_component_raises_component_error():
 
 
 def test_modify_sim_bad_index_raises_component_error():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance()
     cge.base_calibrated = True
@@ -341,7 +341,7 @@ def test_modify_sim_out_of_bounds_value_raises_value_error():
 # Data loading
 # ----------------------------------------------------------------------
 def test_model_data_rejects_missing_directory():
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
 
     cge = PyCGE(StdModelDef())
@@ -351,7 +351,7 @@ def test_model_data_rejects_missing_directory():
 
 
 def test_model_data_requires_a_directory_argument():
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
 
     cge = PyCGE(StdModelDef())
@@ -363,7 +363,7 @@ def test_model_data_requires_a_directory_argument():
 # v0.2.2 correctness hardening (contract preserved under v0.3.0 API)
 # ----------------------------------------------------------------------
 def test_invalid_numeraire_does_not_leave_half_created_base():
-    from cge_core.compat.pycge import ComponentError, PyCGE
+    from cge_core._pycge import ComponentError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 
@@ -375,7 +375,7 @@ def test_invalid_numeraire_does_not_leave_half_created_base():
 
 
 def test_drop_redundant_rejects_entire_indexed_block():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance(drop_redundant=False)
     with pytest.raises(ComponentError, match='indexed'):
@@ -384,7 +384,7 @@ def test_drop_redundant_rejects_entire_indexed_block():
 
 
 def test_drop_redundant_rejects_nonconstraint():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance(drop_redundant=False)
     with pytest.raises(ComponentError, match='not a Constraint'):
@@ -398,7 +398,7 @@ def test_second_redundant_drop_is_rolled_back():
     it square; dropping a second would leave DOF = +1, and the
     transactional guard must reactivate it.
     """
-    from cge_core.compat.pycge import WorkflowError
+    from cge_core._pycge import WorkflowError
 
     cge = std_instance(drop_redundant=False)
     assert cge.model_drop_redundant('eqpf', 'LAB') is True
@@ -454,7 +454,7 @@ def test_base_change_invalidates_existing_simulation():
 
 
 def test_calibration_data_cannot_be_modified_in_place():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance()
     original = value(cge.base.Z0['BRD'])
@@ -492,7 +492,7 @@ def test_postprocess_invalid_object_name_raises():
 
 
 def test_unbalanced_sam_is_rejected(tmp_path):
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
 
     path = tmp_path / 'param-sam-.csv'
     path.write_text('U,A,B\nA,0,1\nB,0,0\n')
@@ -501,7 +501,7 @@ def test_unbalanced_sam_is_rejected(tmp_path):
 
 
 def test_failed_calibration_does_not_set_success_flag(monkeypatch):
-    from cge_core.compat.pycge import SolveError
+    from cge_core._pycge import SolveError
 
     cge = std_instance()
 
@@ -540,7 +540,7 @@ def test_engine_progress_goes_through_logging(caplog):
 # ----------------------------------------------------------------------
 def test_sam_balance_tolerance_is_account_relative(tmp_path):
     """A huge account must not hide a 100% imbalance in a small account."""
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
 
     path = tmp_path / 'param-sam-.csv'
     path.write_text('U,BIG,SMALL\nBIG,1000000000000,0\nSMALL,1,0\n')
@@ -563,7 +563,7 @@ def test_compare_solved_note_uses_success_flags_not_failed_results():
 
 
 def test_sim_benchmark_only_parameter_is_rejected():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance()
     cge.base_calibrated = True
@@ -598,8 +598,8 @@ def test_modify_rejects_nonfinite_or_nonnumeric_values(bad):
 
 
 def test_failed_modification_rolls_back_value_fixed_state_and_history(monkeypatch):
-    import cge_core.engine as engine
-    from cge_core.compat.pycge import PyCGE
+    import cge_core._pycge as engine
+    from cge_core._pycge import PyCGE
     from pyomo.environ import Var
 
     class FakeItem:
@@ -666,7 +666,7 @@ def test_failed_modification_rolls_back_value_fixed_state_and_history(monkeypatc
 
 
 def test_drop_redundant_rejects_nonmarket_equation_even_if_square():
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance(drop_redundant=False)
     with pytest.raises(ComponentError, match='Walras-law candidate'):
@@ -688,7 +688,7 @@ def test_successful_structural_drop_invalidates_stale_solution_state():
 
 @pytest.mark.parametrize('target', ['base', 'sim'])
 def test_numeraire_cannot_be_unfixed_through_modify_api(target):
-    from cge_core.compat.pycge import ComponentError
+    from cge_core._pycge import ComponentError
 
     cge = std_instance()
     if target == 'sim':
@@ -703,8 +703,8 @@ def test_numeraire_cannot_be_unfixed_through_modify_api(target):
 
 
 def test_solver_execution_exception_is_wrapped_as_solve_error(monkeypatch):
-    import cge_core.engine as engine
-    from cge_core.compat.pycge import SolveError
+    import cge_core._pycge as engine
+    from cge_core._pycge import SolveError
 
     class BrokenSolver:
         def available(self, exception_flag=False):
@@ -714,6 +714,10 @@ def test_solver_execution_exception_is_wrapped_as_solve_error(monkeypatch):
             raise RuntimeError('synthetic solver crash')
 
     monkeypatch.setattr(engine, 'SolverFactory', lambda name: BrokenSolver())
+    # Solver *discovery* now lives in cge_core.solver, so the fake solver has
+    # to be discoverable there as well as callable in the engine.
+    import cge_core.solver as solver_policy
+    monkeypatch.setattr(solver_policy, '_probe', lambda name: name == 'broken')
     cge = std_instance()
     with pytest.raises(SolveError, match='Solver execution failed'):
         cge.model_calibrate('broken')
@@ -722,7 +726,7 @@ def test_solver_execution_exception_is_wrapped_as_solve_error(monkeypatch):
 
 
 def test_bundled_models_require_complete_data_directory(tmp_path):
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
 
     (tmp_path / 'set-i-.csv').write_text('i\nBRD\n')
@@ -731,7 +735,7 @@ def test_bundled_models_require_complete_data_directory(tmp_path):
 
 
 def test_quantity_variable_cannot_be_chosen_as_numeraire():
-    from cge_core.compat.pycge import ComponentError, PyCGE
+    from cge_core._pycge import ComponentError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 
@@ -745,7 +749,7 @@ def test_quantity_variable_cannot_be_chosen_as_numeraire():
 def test_dataset_sets_must_match_and_partition_sam_accounts(tmp_path):
     import shutil
 
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 
@@ -761,7 +765,7 @@ def test_dataset_sets_must_match_and_partition_sam_accounts(tmp_path):
 def test_configured_institution_must_exist_in_sam(tmp_path):
     import shutil
 
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 
@@ -774,7 +778,7 @@ def test_configured_institution_must_exist_in_sam(tmp_path):
 def test_unknown_component_data_file_is_rejected(tmp_path):
     import shutil
 
-    from cge_core.compat.pycge import DataValidationError, PyCGE
+    from cge_core._pycge import DataValidationError, PyCGE
     from cge_core.models.standard.model import StdModelDef
     from ._util import STD_DATA_DIR
 

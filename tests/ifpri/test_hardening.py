@@ -9,8 +9,8 @@ import pytest
 from pyomo.environ import ConcreteModel, Constraint, Var, inequality
 from pyomo.opt import SolverStatus, TerminationCondition
 
-from cge_core.ifpri import IfpriDataError, validate_inputs, validate_sam
-from cge_core.ifpri.solve import (
+from cge_core.models.ifpri import IfpriDataError, validate_inputs, validate_sam
+from cge_core.models.ifpri.solve import (
     _constraint_residual,
     _is_successful_termination,
 )

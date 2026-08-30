@@ -49,6 +49,8 @@ from pyomo.environ import (
     prod,
 )
 
+from cge_core.models._accounts import merge_accounts
+
 logger = logging.getLogger(__name__)
 
 # Numerical guard reproduced from the reference implementation; the
@@ -65,7 +67,7 @@ class SplModelDef:
     r"""Builder for the Hosoe simple CGE model as a Pyomo AbstractModel.
 
     Exposes a single method, :meth:`model`, matching the ``model_def``
-    protocol expected by :class:`cge_core.engine.PyCGE`.
+    protocol expected by :class:`cge_core._pycge.PyCGE`.
 
     Args:
         accounts (dict, optional): overrides for the institutional
@@ -80,19 +82,10 @@ class SplModelDef:
     numeraire_variables = frozenset({'pf', 'px', 'pz'})
 
     def __init__(self, accounts=None):
-        merged = dict(SPLCGE_ACCOUNTS)
-        if accounts:
-            unknown = sorted(set(accounts) - set(merged))
-            if unknown:
-                raise ValueError(
-                    "Unknown account keys %s; valid keys are %s."
-                    % (unknown, sorted(merged)))
-            merged.update(accounts)
-        if any(not isinstance(label, str) or not label.strip()
-               for label in merged.values()):
-            raise ValueError("Account labels must be non-empty strings.")
-        merged = {key: label.strip() for key, label in merged.items()}
-        self.accounts = merged
+        # Shared with the standard model; see cge_core/models/_accounts.py.
+        # This model names only the household account, so there is nothing for
+        # a distinctness check to compare against.
+        self.accounts = merge_accounts(SPLCGE_ACCOUNTS, accounts)
 
     def model(self):
         r"""Declare and return the simple-model AbstractModel.

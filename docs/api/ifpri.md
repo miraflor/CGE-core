@@ -1,11 +1,11 @@
 # IFPRI API
 
-The `cge_core.ifpri` package exposes the public interface for loading,
+The `cge_core.models.ifpri` package exposes the public interface for loading,
 calibrating, solving, validating and reporting the IFPRI Standard CGE
 benchmark and policy scenarios.
 
 ```{eval-rst}
-.. automodule:: cge_core.ifpri
+.. automodule:: cge_core.models.ifpri
    :members:
    :show-inheritance:
 ```

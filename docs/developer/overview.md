@@ -6,15 +6,16 @@ needs to understand.
 ```text
 cge_core/
 ├── workflow.py          benchmark → scenario → result lifecycle
-├── solver.py            hidden numerical-backend resolution
+├── _engine.py           model-declared engine policy
+├── _pycge.py            inherited lower-level PyCGE engine
+├── solver.py            numerical-backend resolution
 ├── sam.py               social-accounting-matrix tools
 ├── models/              bundled economic model families
 │   ├── simple/
 │   ├── standard/
 │   ├── camcge/
 │   └── ifpri/
-├── experimental/        optional authoring and .cge.md work
-└── compat/              retained lower-level PyCGE implementation
+└── experimental/        optional authoring and .cge.md work
 ```
 
 ## Where to make a change
@@ -24,10 +25,10 @@ cge_core/
 - **Solver detection and automatic setup:** `cge_core/solver.py`.
 - **SAM conversion and validation:** `cge_core/sam.py`.
 - **Function-based or `.cge.md` authoring:** `cge_core/experimental/`.
-- **Historical PyCGE compatibility:** `cge_core/compat/`.
+- **Lower-level PyCGE engine:** `cge_core/_pycge.py`.
 
-Compatibility modules remain intentionally tiny so existing v0.6/v0.7 imports
-do not break. They are not parallel implementations.
+Historical redirect modules are intentionally absent in v0.8. Migration paths are
+documented in `migration-v0.8.md` rather than duplicated as executable modules.
 
 The model families share a home and a public lifecycle, not ceremonial file
 symmetry. Simple CGE stays simple; IFPRI keeps the extra modules its economics

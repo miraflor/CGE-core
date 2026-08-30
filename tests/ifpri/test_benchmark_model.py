@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pyomo.environ import Constraint, Var, value
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IfpriDataError,
     build_ifpri_benchmark_model,
     calibrate_ifpri_benchmark,

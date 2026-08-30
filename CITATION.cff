@@ -12,7 +12,7 @@ authors:
     given-names: James Matthew
     email: jbmiraflor@up.edu.ph
     affiliation: "Scientific Computing Laboratory, Department of Computer Science, University of the Philippines Diliman"
-version: 0.7.0
+version: 0.8.0
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
 keywords:
@@ -27,11 +27,12 @@ keywords:
 abstract: >-
   CGE-Core is a corrected and substantially revised fork of PyCGE by Juan Fung
   and Charley Burtwistle (U.S. National Institute of Standards and Technology,
-  2017; public domain under 17 U.S.C. 105). Version 0.7.0 adds practitioner
-  façades for the bundled Hosoe, CAMCGE and IFPRI model families, semantic
-  policy shocks, isolated benchmark/scenario workflows, bring-your-own-SAM
-  support, solver setup helpers, public Colab tutorials, a practitioner Control
-  Room, functional model authoring, and an experimental deterministic .cge.md
+  2017; public domain under 17 U.S.C. 105). Version 0.8.0 consolidates the
+  practitioner architecture around one canonical namespace and one notebook
+  course, re-homes the inherited PyCGE engine, removes historical redirect
+  modules, and preserves the bundled Hosoe, CAMCGE and IFPRI model families,
+  semantic policy shocks, SAM support, public Colab tutorials, Control Room,
+  functional model authoring, and experimental deterministic .cge.md
   specification. The inherited PyCGE code and underlying model specifications
   are not James Matthew Miraflor's original work. He directed and reviewed an
   AI-assisted process covering the fork's corrections, public API, testing,

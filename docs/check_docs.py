@@ -11,18 +11,8 @@ CANONICAL = [
     "06_build_a_model.ipynb",
     "90_internals.ipynb",
 ]
-LEGACY = [
-    "00_start_here.ipynb",
-    "01_your_first_cge.ipynb",
-    "02_open_economy_cge.ipynb",
-    "03_policy_experiments.ipynb",
-    "04_bring_your_own_sam.ipynb",
-    "05_ifpri_standard_cge.ipynb",
-    "06_camcge_replication.ipynb",
-    "07_under_the_hood.ipynb",
-]
-WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
-SOURCE_ARCHIVE = "archive/refs/tags/v0.7.0.zip"
+WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
+SOURCE_ARCHIVE = "archive/refs/tags/v0.8.0.zip"
 FORBIDDEN_NOTEBOOK = [
     "git clone",
     "git fetch",
@@ -61,8 +51,8 @@ def main():
         assert a.read_bytes() == b.read_bytes(), f"docs copy differs: {name}"
         assert notebook_text(a).count(WHEEL_URL) == 1, f"wrong wheel install in {name}"
 
-    for name in LEGACY:
-        assert (nbdir / name).is_file(), f"missing legacy redirect: {name}"
+    actual = sorted(p.name for p in nbdir.glob("*.ipynb"))
+    assert actual == CANONICAL, actual
 
     for path in sorted(nbdir.glob("*.ipynb")):
         body = notebook_text(path)
@@ -129,7 +119,7 @@ def main():
     for diagram in (
         ROOT / "docs/diagrams/pycge-architecture.mmd",
         ROOT / "docs/diagrams/standard-cge-theory.mmd",
-        ROOT / "docs/diagrams/cge-core-v070-public.mmd",
+        ROOT / "docs/diagrams/cge-core-v080-public.mmd",
     ):
         assert diagram.is_file(), f"missing Mermaid source: {diagram.name}"
         assert diagram.stat().st_size > 200, f"Mermaid source unexpectedly tiny: {diagram.name}"
@@ -162,7 +152,7 @@ def main():
 
     assert app_path.stat().st_size > 50000, "Control Room app was unexpectedly simplified"
     assert css_path.stat().st_size > 10000, "Control Room styling was unexpectedly simplified"
-    assert "CGE_CORE_TARGET_VERSION = '0.7.0'" in app
+    assert "CGE_CORE_TARGET_VERSION = '0.8.0'" in app
     assert "from cge_core import StandardCGE" in app
     assert WHEEL_URL in app
     assert SOURCE_ARCHIVE not in app
@@ -194,7 +184,7 @@ def main():
     assert "padding-block" in custom_css
 
     architecture = (ROOT / "docs/architecture.md").read_text(encoding="utf-8")
-    assert "cge-core-v070-public.mmd" in architecture
+    assert "cge-core-v080-public.mmd" in architecture
     assert "pycge-architecture.mmd" in architecture
 
     theory = (ROOT / "docs/theory/overview.md").read_text(encoding="utf-8")

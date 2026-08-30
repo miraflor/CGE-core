@@ -20,6 +20,8 @@ from pyomo.environ import (
 )
 from pyomo.opt import SolverStatus, TerminationCondition
 
+from cge_core.solver import SolverResolutionError, resolve_solver
+
 from .model import build_ifpri_benchmark_model, validate_ifpri_benchmark_model
 from .schema import IfpriBenchmarkCalibration, IfpriDataset
 from .validation import IfpriDataError
@@ -205,17 +207,20 @@ def perturb_ifpri_start(model, factor: float = 1.02) -> None:
 
 
 def _choose_solver(name: Optional[str]) -> str:
-    candidates = (name,) if name else ("ipopt", "cyipopt")
-    for candidate in candidates:
-        if not candidate:
-            continue
-        try:
-            if SolverFactory(candidate).available(exception_flag=False):
-                return candidate
-        except Exception:
-            pass
-    requested = name or "ipopt/cyipopt"
-    raise IfpriDataError(f"No usable local NLP solver was found ({requested}).")
+    """Return the name of a solver this machine can actually run.
+
+    This used to search for a solver on its own, and it knew about only two of
+    the four backends CGE-Core supports.  The practical effect was that the
+    direct IFPRI functions failed on exactly the kind of fresh environment —
+    a new notebook server with no solver preinstalled — that the package's
+    solver policy exists to handle, while the same model solved fine through
+    the ``IFPRICGE`` entry point.  It now asks that one policy, and only
+    translates the error into the exception type IFPRI callers already catch.
+    """
+    try:
+        return resolve_solver(name)
+    except SolverResolutionError as exc:
+        raise IfpriDataError(str(exc)) from exc
 
 
 def _solve_label(model) -> str:

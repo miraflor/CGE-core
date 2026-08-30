@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Behavioral contract tests for the additive CGE-Core v0.6 facade.
+"""Behavioral contract tests for the CGE-Core public workflow.
 
-These tests sit beside, rather than replace, the legacy PyCGE suite.  The old
-workflow remains the numerical oracle for interface-translation parity while
+These tests sit beside the lower-level PyCGE suite. The inherited
+workflow remains a numerical oracle for interface-translation parity while
 the published benchmark tests remain the oracle for the shared engine itself.
 """
 import copy
@@ -238,7 +238,7 @@ def test_incomplete_closure_fails_before_solver():
 
 
 @requires_solver
-def test_new_facade_tariff_abolition_matches_legacy_numerically():
+def test_public_tariff_abolition_matches_lower_level_engine_numerically():
     legacy = calibrated()
     with quiet():
         legacy.model_sim()
@@ -270,7 +270,7 @@ def test_new_facade_tariff_abolition_matches_legacy_numerically():
 
 
 @requires_solver
-def test_compare_preserves_legacy_direction_and_objective_sign():
+def test_compare_preserves_documented_direction_and_objective_sign():
     benchmark = _std_benchmark()
     scenario = benchmark.scenario("tariff abolition")
     scenario.set("taum", "BRD", 0)

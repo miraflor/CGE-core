@@ -7,13 +7,8 @@ CANONICAL = [
     "01_first_cge.ipynb", "02_policy_experiments.ipynb", "03_your_own_sam.ipynb",
     "04_camcge.ipynb", "05_ifpri.ipynb", "06_build_a_model.ipynb", "90_internals.ipynb",
 ]
-LEGACY = [
-    "00_start_here.ipynb", "01_your_first_cge.ipynb", "02_open_economy_cge.ipynb",
-    "03_policy_experiments.ipynb", "04_bring_your_own_sam.ipynb",
-    "05_ifpri_standard_cge.ipynb", "06_camcge_replication.ipynb", "07_under_the_hood.ipynb",
-]
-WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
-SOURCE_ARCHIVE = "archive/refs/tags/v0.7.0.zip"
+WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
+SOURCE_ARCHIVE = "archive/refs/tags/v0.8.0.zip"
 FORBIDDEN = [
     "git clone", "git fetch", "git reset --hard", "CGE_CORE_REF", "sys.path.insert",
     "os.chdir(", 'os.environ["PATH"]', "amplpy.modules", "subprocess.run",
@@ -26,9 +21,15 @@ def text(path):
     return "\n".join("".join(cell.get("source", [])) for cell in nb["cells"])
 
 
+def test_notebook_directory_is_one_unambiguous_course():
+    actual = sorted(p.name for p in NBDIR.glob("*.ipynb"))
+    assert actual == CANONICAL
+    prefixes = [name.split("_", 1)[0] for name in CANONICAL]
+    assert len(prefixes) == len(set(prefixes))
+
+
 def test_canonical_sequence_exists_and_docs_copies_match():
     for name in CANONICAL:
-        assert (NBDIR / name).is_file()
         assert (ROOT / "docs" / "notebooks" / name).read_bytes() == (NBDIR / name).read_bytes()
 
 
@@ -41,15 +42,7 @@ def test_every_notebook_is_free_of_bootstrap_plumbing_and_source_archive_install
 
 def test_every_canonical_notebook_installs_exact_release_wheel_once():
     for name in CANONICAL:
-        body = text(NBDIR / name)
-        assert body.count(WHEEL_URL) == 1, name
-
-
-def test_legacy_names_are_redirects_not_old_tutorials():
-    for name in LEGACY:
-        body = text(NBDIR / name)
-        assert "legacy filename" in body.lower()
-        assert "canonical v0.7.0 notebook" in body
+        assert text(NBDIR / name).count(WHEEL_URL) == 1, name
 
 
 def test_first_notebook_is_one_install_line_then_practitioner_api():

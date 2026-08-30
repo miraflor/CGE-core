@@ -13,7 +13,6 @@ include GOVERNANCE.md
 recursive-include cge_core/data *.csv
 recursive-include cge_core/models/camcge/data *.csv
 recursive-include cge_core/experimental/spec/examples *.cge.md
-recursive-include cge_core/spec/examples *.cge.md
 
 recursive-include docs *.yml *.md
 recursive-include tests *.py

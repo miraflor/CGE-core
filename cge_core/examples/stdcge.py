@@ -2,7 +2,7 @@
 """
 Standard CGE Example (Hosoe Ch. 6) -- tariff and tax abolition experiments.
 
-Demonstrates the canonical CGE-Core v0.6 lifecycle:
+Demonstrates the lower-level CGE-Core lifecycle:
     configure -> solve benchmark -> create isolated scenarios -> set shocks
     -> solve -> compare
 

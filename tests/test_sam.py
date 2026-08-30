@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Tests for cge_core.samtools and the configurable account labels.
+Tests for cge_core.sam and the configurable account labels.
 
 The point of the pair is loading a real-country SAM without editing model
-code: samtools derives the set files from the SAM itself, and the
+code: the `sam` module derives the set files from the SAM itself, and the
 ``accounts=`` mapping on the model definitions relabels the institutional
 accounts the equations read. Both are verified against the bundled
 stdcge SAM -- once as-is, and once with every institutional account
@@ -53,10 +53,10 @@ def _renamed_sam(tmp_path):
 
 
 # ----------------------------------------------------------------------
-# samtools: deriving sets from a SAM
+# SAM helpers: deriving sets from a SAM
 # ----------------------------------------------------------------------
 def test_derive_sets_partitions_accounts():
-    from cge_core import samtools
+    from cge_core import sam as samtools
 
     goods, factors = samtools.derive_sets(
         STD_DATA_DIR + '/param-sam-.csv',
@@ -67,8 +67,8 @@ def test_derive_sets_partitions_accounts():
 
 
 def test_derive_sets_rejects_unknown_account():
-    from cge_core import samtools
-    from cge_core.compat.pycge import DataValidationError
+    from cge_core import sam as samtools
+    from cge_core._pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='not present'):
         samtools.derive_sets(
@@ -78,8 +78,8 @@ def test_derive_sets_rejects_unknown_account():
 
 
 def test_derive_sets_rejects_factor_institution_overlap():
-    from cge_core import samtools
-    from cge_core.compat.pycge import DataValidationError
+    from cge_core import sam as samtools
+    from cge_core._pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='both factor and'):
         samtools.derive_sets(
@@ -89,7 +89,8 @@ def test_derive_sets_rejects_factor_institution_overlap():
 
 
 def test_build_dataset_writes_loadable_directory(tmp_path):
-    from cge_core import PyCGE, samtools
+    from cge_core import PyCGE
+    from cge_core import sam as samtools
     from cge_core.models.standard.model import StdModelDef
 
     out = samtools.build_dataset(
@@ -109,8 +110,8 @@ def test_build_dataset_writes_loadable_directory(tmp_path):
 
 
 def test_build_dataset_rejects_unbalanced_sam(tmp_path):
-    from cge_core import samtools
-    from cge_core.compat.pycge import DataValidationError
+    from cge_core import sam as samtools
+    from cge_core._pycge import DataValidationError
 
     bad = tmp_path / 'bad.csv'
     bad.write_text('U,A,B\nA,0,1\nB,0,0\n')
@@ -131,7 +132,8 @@ def test_unknown_account_key_is_rejected():
 
 def test_relabelled_accounts_build_and_calibrate_structurally(tmp_path):
     """A fully relabelled SAM must produce identical calibrated params."""
-    from cge_core import PyCGE, samtools
+    from cge_core import PyCGE
+    from cge_core import sam as samtools
     from cge_core.models.standard.model import StdModelDef
 
     sam = _renamed_sam(tmp_path)
@@ -159,7 +161,8 @@ def test_relabelled_accounts_build_and_calibrate_structurally(tmp_path):
 @requires_solver
 def test_relabelled_accounts_reproduce_identical_equilibrium(tmp_path):
     """End to end: renamed institutions, same economy, same solution."""
-    from cge_core import PyCGE, samtools
+    from cge_core import PyCGE
+    from cge_core import sam as samtools
     from cge_core.models.standard.model import StdModelDef
 
     sam = _renamed_sam(tmp_path)
@@ -181,8 +184,8 @@ def test_relabelled_accounts_reproduce_identical_equilibrium(tmp_path):
 
 
 def test_derive_sets_rejects_duplicate_role_labels():
-    from cge_core import samtools
-    from cge_core.compat.pycge import DataValidationError
+    from cge_core import sam as samtools
+    from cge_core._pycge import DataValidationError
 
     with pytest.raises(DataValidationError, match='Factor account labels'):
         samtools.derive_sets(

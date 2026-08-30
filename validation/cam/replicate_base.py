@@ -9,12 +9,21 @@ from pathlib import Path
 
 from pyomo.environ import value
 
+# This script is meant to be run directly from a source checkout, as
+# `python validation/cam/replicate_base.py`, so the replication evidence can be
+# regenerated without installing anything first.  Run that way, Python does not
+# know where the repository root is, so it is added below.
+#
+# The project forbids this same adjustment inside the notebooks, and rightly so:
+# a notebook opened from a link has no checkout to point at, and doing it there
+# produced exactly the confusing failures the rule was written to prevent.  A
+# checked-out script is the case where it is the correct thing to do.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "cge_core" / "models" / "camcge" / "data"
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from cge_core.compat.pycge import PyCGE  # noqa: E402
+from cge_core._pycge import PyCGE  # noqa: E402
 from cge_core.models.camcge.model import CamModelDef  # noqa: E402
 
 I = [

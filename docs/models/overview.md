@@ -1,6 +1,6 @@
 # Bundled models
 
-CGE-Core v0.7 exposes four model families through model-specific façades.
+CGE-Core v0.8 exposes four model families through model-specific façades.
 
 | Model | Entry point | Primary role |
 | --- | --- | --- |

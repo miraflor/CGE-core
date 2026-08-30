@@ -6,18 +6,18 @@ except ModuleNotFoundError:  # Python 3.9-3.10
     import tomli as tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
-SOURCE_ARCHIVE = "archive/refs/tags/v0.7.0.zip"
+WHEEL_URL = "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
+SOURCE_ARCHIVE = "archive/refs/tags/v0.8.0.zip"
 
 
 def test_pyproject_packages_only_runtime_namespaces_and_default_solver_support():
     data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
-    assert data["project"]["version"] == "0.7.0"
+    assert data["project"]["version"] == "0.8.0"
     assert data["project"]["scripts"]["cge"] == "cge_core.cli:main"
 
     include = set(data["tool"]["setuptools"]["packages"]["find"]["include"])
-    assert include == {"cge_core*", "cam*"}
+    assert include == {"cge_core*"}
 
     package_data = data["tool"]["setuptools"]["package-data"]
     assert "cge_core" in package_data
@@ -25,7 +25,7 @@ def test_pyproject_packages_only_runtime_namespaces_and_default_solver_support()
     assert "cam" not in package_data
 
     assert any(dep.startswith("amplpy") for dep in data["project"]["dependencies"])
-    assert data["project"]["optional-dependencies"]["solver"] == []
+    assert "solver" not in data["project"]["optional-dependencies"]
 
 
 def test_practitioner_readme_uses_release_wheel_not_repository_archive():
@@ -50,6 +50,7 @@ def test_release_workflow_builds_checks_and_publishes_wheel():
     assert "python -m build --wheel" in text
     assert "forbidden_roots" in text
     assert "repository-only content leaked into wheel" in text
+    assert 'assert "cam" not in roots' in text
     assert 'gh release upload "${TAG}" dist/*.whl --clobber' in text
     assert "gh release edit" in text
 

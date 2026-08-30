@@ -78,7 +78,7 @@ A solved result supports:
 Ordinary numerical reads come from the result snapshot, not from later mutation of a live
 Pyomo object.
 
-## v0.6 compatibility lifecycle
+## Lower-level lifecycle
 
 The lower-level public lifecycle remains available:
 
@@ -87,5 +87,5 @@ from cge_core import CGE
 ```
 
 `CGE → Equilibrium → Scenario → Result` is retained for downstream and advanced code.
-The v0.7 façades configure this lifecycle for bundled models so ordinary users do not have
+The v0.8 façades configure this lifecycle for bundled models so ordinary users do not have
 to supply closure and solver plumbing themselves.

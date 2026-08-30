@@ -28,7 +28,7 @@ base.value("pf", "LAB")     # labor-factor price / numeraire
 
 ## Closure is part of the model
 
-A CGE needs a numeraire price and, because of Walras' law, one redundant market-clearing condition is omitted. In v0.7.0 the bundled model declares its canonical closure, so the learner does not have to remember engine calls simply to get started.
+A CGE needs a numeraire price and, because of Walras' law, one redundant market-clearing condition is omitted. In v0.8.0 the bundled model declares its canonical closure, so the learner does not have to remember engine calls simply to get started.
 
 ```python
 base.closure

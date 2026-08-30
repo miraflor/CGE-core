@@ -2,7 +2,7 @@ r"""Core workflow for calibrating and simulating Pyomo CGE models.
 
 This module is the CGE analogue of OG-Core's ``SS.py``/``execute.py``: it
 holds no economics of its own. The model algebra lives in the model
-definition classes (see ``cge_core/examples/*_model_def.py`` and
+definition classes under ``cge_core.models`` (see also
 ``docs/OG_CORE_CROSSWALK.md``); this engine loads data, imposes the closure
 (numeraire + Walras'-law equation drop), solves the baseline, applies
 reforms, solves counterfactuals, and compares.
@@ -14,7 +14,7 @@ Error and reporting contract (v0.3.0):
       :class:`SolveError` for solver failures -- rather than printing and
       returning ``None``.
     * Progress is reported through the standard :mod:`logging` module on
-      the ``cge_core.engine`` logger. Scripts that want the classic
+      the ``cge_core._pycge`` logger. Scripts that want the classic
       chatter should call ``logging.basicConfig(level=logging.INFO)``
       (the bundled examples do). Only explicitly requested displays
       (``model_compare('print')``, ``model_postprocess(..., 'print')``)
@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import copy
 import csv
-import importlib.util
 import logging
 import math
 import os
@@ -52,7 +51,17 @@ from pyomo.environ import (
 )
 from pyomo.opt import check_optimal_termination
 
-logger = logging.getLogger("cge_core.engine")
+from cge_core._shared import (
+    component_key,
+    finite_float,
+    index_tuple,
+    rectangular_frame,
+    restore_item,
+    set_fixed,
+)
+from cge_core.solver import SolverResolutionError, resolve_solver
+
+logger = logging.getLogger("cge_core._pycge")
 
 
 class CGEError(RuntimeError):
@@ -89,22 +98,8 @@ class SolveError(CGEError):
         self.results = results
 
 
-def _component_key(name: str, index: Any) -> Tuple[str, Any]:
-    """Return an unambiguous key for modification history."""
-    try:
-        hash(index)
-        safe_index = index
-    except TypeError:
-        safe_index = repr(index)
-    return name, safe_index
-
-
-def _normalise_index(index: Any) -> Tuple[Any, ...]:
-    if index is None:
-        return ()
-    if isinstance(index, tuple):
-        return index
-    return (index,)
+# Generic helpers live in cge_core/_shared.py so the inherited engine and
+# the public workflow use the same normalization and comparison rules.
 
 
 class PyCGE:
@@ -358,7 +353,7 @@ class PyCGE:
         Args:
             data_dir (str or PathLike): directory containing the CSVs,
                 e.g. from :func:`cge_core.example_data` or built by
-                :func:`cge_core.samtools.build_dataset`.
+                :func:`cge_core.sam.build_dataset`.
 
         Returns:
             data (pyomo DataPortal): the loaded data.
@@ -502,7 +497,7 @@ class PyCGE:
 
         var_data.fix()
         self.base = candidate
-        self.numeraire = _component_key(NAME, INDEX)
+        self.numeraire = component_key(NAME, INDEX)
         self.base_results = None
         self.base_calibrated = False
         self.dict_base = {}
@@ -642,7 +637,54 @@ class PyCGE:
             raise KeyError(index)
         return component
 
+    # ------------------------------------------------------------------ #
+    # Which components may be changed after the model is built
+    # ------------------------------------------------------------------ #
+    # This is the one part of the change machinery that differs between the
+    # inherited engine here and the policy adapter in cge_core/_engine.py.  Isolating
+    # it in its own small method means the several hundred lines of shared
+    # machinery below exist once instead of twice.
+
+    def _protection_error(self, name, base: bool):
+        """Return an error message if this component must not be changed, else None.
+
+        Some numbers in a built model are inputs to the calibration rather than
+        things the model solves for.  The SAM itself is one; so is every
+        benchmark magnitude, which this engine recognises by its trailing zero
+        (``Z0``, ``Q0``, and so on).  Changing them after the model is built
+        does not do what a user would expect: on the benchmark instance the
+        parameters computed from them are left stale, and on the policy
+        instance they do not appear in the behavioural equations at all, so the
+        change silently has no effect.  Either way the honest answer is to
+        refuse and ask the user to edit the input data and rebuild.
+
+        Factor endowments are protected only on the benchmark instance.  On the
+        policy instance, changing an endowment is a perfectly ordinary
+        counterfactual experiment.
+        """
+        if name == "sam" or name.endswith("0") or (base and name == "FF"):
+            scope = "BASE" if base else "SIM"
+            return (
+                f"{scope} component '{name}' is benchmark calibration data "
+                "and cannot be modified in-place. Change the input CSV and "
+                "rebuild the instance instead.")
+        return None
+
     def _modify(self, *, base: bool, name, index, new_value, fix=True, undo=False):
+        """Change one number in the model, or put back a number changed earlier.
+
+        This single method serves both instances and both directions, because
+        the checks that have to happen are the same in every case: does the
+        component exist, is it something that can be changed at all, is the
+        index valid, is the model allowed to have this changed, and is the new
+        number usable.  Splitting it into four near-identical methods was how
+        the duplication started.
+
+        Every change is recorded before it is applied, so it can be undone.  If
+        anything raises partway through, the previous state is restored before
+        the error travels onwards, so a rejected change never leaves the model
+        half-modified.
+        """
         instance = self.base if base else self.sim
         history = self.dict_base if base else self.dict_sim
         label = "BASE" if base else "SIM"
@@ -664,107 +706,79 @@ class PyCGE:
 
         try:
             item = self._data_item(component, index)
-        except (KeyError, TypeError):
-            raise ComponentError(f"'{index}' is not an index of '{name}'.")
-
-        # The SAM and *0 magnitudes are benchmark-only inputs: changing them
-        # after construction either leaves derived calibration parameters
-        # stale (BASE) or silently has no effect on the behavioural equations
-        # (SIM). Factor endowments are protected only on BASE; they are a
-        # legitimate counterfactual shock on SIM.
-        if name == "sam" or name.endswith("0") or (base and name == "FF"):
-            scope = "BASE" if base else "SIM"
+        except (KeyError, TypeError) as exc:
             raise ComponentError(
-                f"{scope} component '{name}' is benchmark calibration data "
-                "and cannot be modified in-place. Change the input CSV and "
-                "rebuild the instance instead.")
+                f"'{index}' is not an index of '{name}'.") from exc
 
-        key = _component_key(name, index)
+        protection = self._protection_error(name, base)
+        if protection is not None:
+            raise ComponentError(protection)
+
+        is_variable = component.ctype is Var
+        key = component_key(name, index)
+
+        # The state we would have to put back if something goes wrong below.
+        prior_value = value(item, exception=False)
+        prior_fixed = bool(item.fixed) if is_variable else None
+
         if undo:
             original = history.get(key)
             if original is None:
                 raise ComponentError(
                     f"No stored original value for {name}[{index}].")
-            prior_value = value(item, exception=False)
-            prior_fixed = (
-                bool(item.fixed) if component.ctype is Var else None
-            )
             try:
                 item.set_value(original["value"])
-                if component.ctype is Var:
-                    if original["fixed"]:
-                        item.fix()
-                    else:
-                        item.unfix()
+                if is_variable:
+                    set_fixed(item, original["fixed"])
             except Exception:
-                try:
-                    item.set_value(prior_value)
-                    if component.ctype is Var:
-                        item.fix() if prior_fixed else item.unfix()
-                except Exception:
-                    logger.exception(
-                        "Failed to roll back undo for %s[%s].", name, index
-                    )
+                restore_item(item, is_variable, prior_value, prior_fixed,
+                             logger, "undo", name, index)
                 raise
             del history[key]
             logger.info("%s is restored to %s", item, item.value)
         else:
-            if component.ctype is Var and not fix and key == self.numeraire:
+            if is_variable and not fix and key == self.numeraire:
                 raise ComponentError(
                     f"{name}[{index}] is the numeraire and cannot be unfixed. "
                     "Create a new instance to choose a different numeraire.")
-            try:
-                numeric = float(new_value)
-            except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"VALUE for {name}[{index}] must be a finite numeric "
-                    "scalar.") from exc
-            if not math.isfinite(numeric):
-                raise ValueError(
-                    f"VALUE for {name}[{index}] must be a finite numeric "
-                    "scalar.")
+            numeric = finite_float(new_value, name, index)
 
-            prior_value = value(item, exception=False)
-            prior_fixed = (
-                bool(item.fixed) if component.ctype is Var else None
-            )
             added_history = key not in history
             try:
-                if component.ctype is Var:
-                    lb = value(item.lb, exception=False)
-                    ub = value(item.ub, exception=False)
-                    if lb is not None and numeric < lb:
+                if is_variable:
+                    # A variable may carry bounds that keep the solver inside a
+                    # sensible region.  Setting a starting value outside those
+                    # bounds is a contradiction, so it is refused here rather
+                    # than left for the solver to complain about later.
+                    lower = value(item.lb, exception=False)
+                    upper = value(item.ub, exception=False)
+                    if lower is not None and numeric < lower:
                         raise ValueError(
-                            f"value {numeric} is below lower bound {lb}")
-                    if ub is not None and numeric > ub:
+                            f"value {numeric} is below lower bound {lower}")
+                    if upper is not None and numeric > upper:
                         raise ValueError(
-                            f"value {numeric} is above upper bound {ub}")
+                            f"value {numeric} is above upper bound {upper}")
                 if added_history:
                     history[key] = {
                         "value": prior_value,
                         "fixed": prior_fixed,
                     }
                 item.set_value(numeric)
-                if component.ctype is Var:
-                    item.fix() if fix else item.unfix()
+                if is_variable:
+                    set_fixed(item, fix)
             except Exception:
-                try:
-                    item.set_value(prior_value)
-                    if component.ctype is Var:
-                        item.fix() if prior_fixed else item.unfix()
-                except Exception:
-                    logger.exception(
-                        "Failed to roll back %s[%s] after a rejected "
-                        "modification.", name, index
-                    )
+                restore_item(item, is_variable, prior_value, prior_fixed,
+                             logger, "a rejected modification", name, index)
                 if added_history:
                     history.pop(key, None)
                 raise
             logger.info("%s is now set to %s", item, item.value)
-            if component.ctype is Var:
+            if is_variable:
                 logger.info("Note, %s is now %s", item,
                             "fixed" if item.fixed else "NOT fixed")
 
+        # Any change invalidates whatever was previously solved, because the
+        # stored results describe a model that no longer exists.
         if base:
             self._invalidate_base_solution()
         else:
@@ -842,29 +856,20 @@ class PyCGE:
     # ------------------------------------------------------------------
     @staticmethod
     def _available_solver(preferred: Optional[str] = None) -> str:
-        candidates = [preferred] if preferred else ["ipopt", "cyipopt"]
-        for name in candidates:
-            if not name:
-                continue
-            try:
-                if not SolverFactory(name).available(exception_flag=False):
-                    continue
-                if name == "cyipopt":
-                    # Pyomo's cyipopt route imports SciPy at runtime and
-                    # requires the PyNumero ASL bridge. SolverFactory can
-                    # report cyipopt as available even when either piece is
-                    # missing, so probe both before selecting it.
-                    if importlib.util.find_spec("scipy") is None:
-                        continue
-                    from pyomo.contrib.pynumero.asl import AmplInterface
+        """Return the name of a solver this machine can actually run.
 
-                    if not AmplInterface.available():
-                        continue
-                return name
-            except Exception:
-                continue
-        requested = preferred or "ipopt/cyipopt"
-        raise SolveError(f"No available local solver found ({requested}).")
+        Choosing a solver is a single question with a single right answer, so
+        it is answered in one place: cge_core/solver.py.  This method used to
+        carry its own shorter search that knew about only two of the four
+        backends CGE-Core supports, which meant this engine could report "no
+        solver" on a machine where the package as a whole works fine.  It now
+        delegates, and only translates the resulting error into the exception
+        type that callers of this older interface already catch.
+        """
+        try:
+            return resolve_solver(preferred)
+        except SolverResolutionError as exc:
+            raise SolveError(str(exc)) from exc
 
     def _solve(self, instance, solver=None, mgr=""):
         try:
@@ -1013,30 +1018,25 @@ class PyCGE:
 
     @staticmethod
     def _comparison_frame(records) -> pd.DataFrame:
-        """Return the comparison records as a tidy pandas DataFrame.
+        """Return the comparison records as a tidy pandas table.
 
-        The variable index is expanded into ``index_1..index_N`` columns
-        (N = the largest dimensionality present), so the frame is valid
-        rectangular data with one row per variable element.
+        Each record already carries its own difference and percentage change;
+        all that remains is to spread the variable index across as many columns
+        as the widest variable needs, so the result is a proper rectangle with
+        one row per variable element.  That layout step is shared with the
+        newer public interface — see cge_core/_shared.py — because getting two
+        slightly different rectangles out of one package helps nobody.
+
+        The column names here (``base_value`` and ``sim_value``) are the older
+        public names and are deliberately left unchanged.
         """
-        max_dims = max((len(_normalise_index(r["index"])) for r in records),
-                       default=0)
-        rows = []
-        for r in records:
-            indexes = list(_normalise_index(r["index"]))
-            indexes.extend([""] * (max_dims - len(indexes)))
-            row = {"component": r["component"]}
-            for n, part in enumerate(indexes):
-                row[f"index_{n + 1}"] = part
-            row["base_value"] = r["base_value"]
-            row["sim_value"] = r["sim_value"]
-            row["difference"] = r["difference"]
-            row["pct_change"] = r["pct_change"]
-            rows.append(row)
-        columns = (["component"]
-                   + [f"index_{n + 1}" for n in range(max_dims)]
-                   + ["base_value", "sim_value", "difference", "pct_change"])
-        return pd.DataFrame(rows, columns=columns)
+        return rectangular_frame(
+            records,
+            index_field="index",
+            leading_column="component",
+            trailing_columns=("base_value", "sim_value",
+                              "difference", "pct_change"),
+        )
 
     def model_compare(self, verbose=None):
         r"""Compare SIM against BASE variable by variable.
@@ -1113,7 +1113,7 @@ class PyCGE:
         for component in instance.component_objects(Var, active=True):
             destination = Path(f"{prefix}{component}_{moment}.csv")
             indexes = list(component)
-            dimensions = max((len(_normalise_index(i)) for i in indexes), default=0)
+            dimensions = max((len(index_tuple(i)) for i in indexes), default=0)
             with destination.open("w", newline="", encoding="utf-8") as handle:
                 writer = csv.writer(handle)
                 if dimensions <= 1:
@@ -1123,7 +1123,7 @@ class PyCGE:
                 else:
                     writer.writerow([*(f"index_{i + 1}" for i in range(dimensions)), "value"])
                     for index in indexes:
-                        parts = list(_normalise_index(index))
+                        parts = list(index_tuple(index))
                         parts.extend([""] * (dimensions - len(parts)))
                         writer.writerow([*parts, value(component[index], exception=False)])
             logger.info("Vars saved to: %s", destination)

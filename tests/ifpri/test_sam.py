@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cge_core.ifpri import load_ifpri_test_data, validate_dataset
+from cge_core.models.ifpri import load_ifpri_test_data, validate_dataset
 
 
 def test_sam_is_square_and_has_expected_size(ifpri_source_dir):

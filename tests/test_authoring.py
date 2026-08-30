@@ -3,9 +3,9 @@ from types import ModuleType
 import pytest
 from pyomo.environ import ConcreteModel, Constraint, Param, Var
 
-from cge_core.authoring.module_adapter import FunctionalEconomy, FunctionalEquilibrium
+from cge_core.experimental.authoring.module_adapter import FunctionalEconomy, FunctionalEquilibrium
 from cge_core.workflow import _Snapshot
-from cge_core.compat.pycge import ComponentError
+from cge_core._pycge import ComponentError
 
 
 def _module(*, shockable_marker="absent", immutable=False):

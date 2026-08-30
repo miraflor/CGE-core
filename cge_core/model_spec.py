@@ -1,6 +1,6 @@
 """Explicit economic metadata for CGE-Core model families.
 
-v0.7.0 keeps economic meaning out of spelling conventions.  Public model
+v0.8.0 keeps economic meaning out of spelling conventions.  Public model
 families carry an explicit ModelSpec describing closure, benchmark-only data,
 base-protected quantities, semantic shocks, and required data.
 """

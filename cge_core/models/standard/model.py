@@ -76,6 +76,8 @@ from pyomo.environ import (
     prod,
 )
 
+from cge_core.models._accounts import merge_accounts
+
 logger = logging.getLogger(__name__)
 
 # Numerical guard reproduced from the reference implementation: keeps
@@ -99,11 +101,44 @@ STDCGE_ACCOUNTS = {
 }
 
 
+
+def _sam_cell_initializer(address, index_names):
+    """Build the function Pyomo calls to read one cell of the SAM.
+
+    Pyomo asks for a parameter's value one entry at a time, telling us which
+    entry it wants.  This turns a row of the table above into a function of
+    exactly the shape Pyomo expects for that number of index positions — Pyomo
+    inspects the function's arguments to work out how to call it, so the shape
+    has to be right rather than merely permissive.
+
+    ``address`` is a pair such as ``('i', 'HOH')``.  A position that matches one
+    of ``index_names`` is replaced by the actual good or factor being asked
+    about; every other position is a fixed account label and passes through
+    unchanged.  Matching by name, rather than by position, is what lets the
+    intermediate-input table name its two goods positions 'i' and 'j' and have
+    them resolved correctly.
+    """
+    def resolve(index_values):
+        substitution = dict(zip(index_names, index_values))
+        return tuple(substitution.get(part, part) for part in address)
+
+    if len(index_names) == 0:
+        def initializer(model):
+            return model.sam[resolve(())]
+    elif len(index_names) == 1:
+        def initializer(model, first):
+            return model.sam[resolve((first,))]
+    else:
+        def initializer(model, first, second):
+            return model.sam[resolve((first, second))]
+    return initializer
+
+
 class StdModelDef:
     r"""Builder for the Hosoe standard CGE model as a Pyomo AbstractModel.
 
     The class exposes a single method, :meth:`model`, matching the
-    ``model_def`` protocol expected by :class:`cge_core.engine.PyCGE`
+    ``model_def`` protocol expected by :class:`cge_core._pycge.PyCGE`
     (analogous to how an OG-Core ``Specifications`` object is passed
     into ``SS.run_SS``). All sets, parameters, variables, constraints,
     and the objective are declared inside :meth:`model` so that a fresh
@@ -116,7 +151,7 @@ class StdModelDef:
             need to be supplied, e.g. ``{'hoh': 'HH'}``. Unknown keys
             raise ValueError. The goods and factor accounts come from
             the ``set-i-.csv`` / ``set-h-.csv`` files (or
-            :func:`cge_core.samtools.build_dataset`), so they need no
+            :func:`cge_core.sam.build_dataset`), so they need no
             mapping.
 
     Notes:
@@ -139,23 +174,13 @@ class StdModelDef:
     })
 
     def __init__(self, accounts=None):
-        merged = dict(STDCGE_ACCOUNTS)
-        if accounts:
-            unknown = sorted(set(accounts) - set(merged))
-            if unknown:
-                raise ValueError(
-                    "Unknown account keys %s; valid keys are %s."
-                    % (unknown, sorted(merged)))
-            merged.update(accounts)
-        if any(not isinstance(label, str) or not label.strip()
-               for label in merged.values()):
-            raise ValueError("Account labels must be non-empty strings.")
-        merged = {key: label.strip() for key, label in merged.items()}
-        if len(set(merged.values())) != len(merged):
-            raise ValueError(
-                "Institutional account labels must be distinct; one SAM "
-                "account cannot fill multiple economic roles.")
-        self.accounts = merged
+        # The checking of user-supplied account labels is shared with the
+        # simple model; see cge_core/models/_accounts.py for what it checks and
+        # why.  This model additionally requires the six institutional labels
+        # to be distinct from each other, because each fills a different
+        # economic role in the equations below.
+        self.accounts = merge_accounts(STDCGE_ACCOUNTS, accounts,
+                                       require_distinct=True)
 
     def model(self):
         r"""Declare and return the standard-model AbstractModel.
@@ -193,6 +218,66 @@ class StdModelDef:
         self.m.sam = Param(self.m.u, self.m.u,
                            doc='social accounting matrix')
 
+
+        # ------------------------------------------------------------------ #
+        # BENCHMARK MAGNITUDES READ DIRECTLY FROM THE SAM
+        # ------------------------------------------------------------------ #
+        # The fourteen quantities below are the ones the model simply reads out
+        # of the social accounting matrix: each is one cell, one row, or one
+        # column of that table, with no arithmetic applied.  They are the
+        # observed base-year economy the model is calibrated to reproduce.
+        #
+        # They used to be written as fourteen separate functions, each with its
+        # own docstring restating "this returns that cell of the SAM" in about
+        # fourteen lines.  The table below says the same thing in one line
+        # each, and has the advantage that the whole set can be read at once:
+        # you can see every value the model takes from the SAM without
+        # scrolling through four hundred lines.
+        #
+        # How to read a row:
+        #   name       the symbol used in the equations, following Hosoe
+        #   over       which sets it varies across ('i' goods, 'h' factors);
+        #              an empty tuple means it is a single number
+        #   index names what to call each index position inside the address.
+        #              Usually the same as `over`, but the intermediate-input
+        #              table X0 varies across goods twice, so its two positions
+        #              are named 'i' (the good supplied) and 'j' (the sector
+        #              using it) to tell them apart
+        #   address    which (row, column) of the SAM holds it, written with
+        #              those names in place of the actual good or factor
+        #   meaning    a plain description, also shown in Pyomo's own docs
+        #
+        # The trailing zero in a name marks a benchmark magnitude, matching the
+        # ``*0`` convention of the original GAMS source.  `FF` and `Sf` carry no
+        # zero for the same reason they do not in Hosoe: they stay fixed in the
+        # standard closure rather than being re-solved.
+        benchmark_cells = (
+            # name,  over,        index names,  address,      meaning
+            ('Td0',  (),          (),           (GOV, HOH),   'benchmark direct tax'),
+            ('Tz0',  ('i',),      ('i',),       (IDT, 'i'),   'benchmark production tax'),
+            ('Tm0',  ('i',),      ('i',),       (TRF, 'i'),   'benchmark import tariff'),
+            ('F0',   ('h', 'i'),  ('h', 'i'),   ('h', 'i'),   'benchmark factor input by the j-th firm'),
+            ('X0',   ('i', 'i'),  ('i', 'j'),   ('i', 'j'),   'benchmark intermediate input'),
+            ('M0',   ('i',),      ('i',),       (EXT, 'i'),   'benchmark import'),
+            ('Xp0',  ('i',),      ('i',),       ('i', HOH),   'benchmark household consumption'),
+            ('FF',   ('h',),      ('h',),       (HOH, 'h'),   'factor endowment of the h-th factor'),
+            ('Xg0',  ('i',),      ('i',),       ('i', GOV),   'benchmark government consumption'),
+            ('Xv0',  ('i',),      ('i',),       ('i', INV),   'benchmark investment demand'),
+            ('E0',   ('i',),      ('i',),       ('i', EXT),   'benchmark export'),
+            ('Sp0',  (),          (),           (INV, HOH),   'benchmark private saving'),
+            ('Sg0',  (),          (),           (INV, GOV),   'benchmark government saving'),
+            ('Sf',   (),          (),           (INV, EXT),   'foreign saving in US dollars'),
+        )
+
+        benchmark_init = {}
+        for name, over, index_names, address, meaning in benchmark_cells:
+            index_sets = tuple(getattr(self.m, set_name) for set_name in over)
+            initializer = _sam_cell_initializer(address, index_names)
+            benchmark_init[name] = initializer
+            setattr(self.m, name,
+                    Param(*index_sets, initialize=initializer,
+                          doc=meaning, mutable=True))
+
         # ------------------------------------------------------------------ #
         # BENCHMARK MAGNITUDES (GAMS *0 parameters)
         # Each initializer reads one cell or margin of the SAM. These are
@@ -201,80 +286,9 @@ class StdModelDef:
         # through the calibrated share/scale parameters below and through
         # variable initialization.
         # ------------------------------------------------------------------ #
-        def Td0_init(model):
-            r"""Benchmark direct-tax revenue.
 
-            .. math::
-                T^{d}_{0} = \mathrm{SAM}[\mathrm{GOV}, \mathrm{HOH}]
 
-            Args:
-                model (AbstractModel): model under construction
 
-            Returns:
-                Td0 (scalar): base-year direct tax paid by the household
-            """
-            return model.sam[GOV, HOH]
-
-        self.m.Td0 = Param(initialize=Td0_init,
-                           doc='benchmark direct tax', mutable=True)
-
-        def Tz0_init(model, i):
-            r"""Benchmark production-tax revenue on good :math:`i`.
-
-            .. math::
-                T^{z}_{0,i} = \mathrm{SAM}[\mathrm{IDT}, i]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                Tz0 (scalar): base-year production (indirect) tax on
-                    sector :math:`i`
-            """
-            return model.sam[IDT, i]
-
-        self.m.Tz0 = Param(self.m.i, initialize=Tz0_init,
-                           doc='benchmark production tax', mutable=True)
-
-        def Tm0_init(model, i):
-            r"""Benchmark import-tariff revenue on good :math:`i`.
-
-            .. math::
-                T^{m}_{0,i} = \mathrm{SAM}[\mathrm{TRF}, i]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                Tm0 (scalar): base-year tariff revenue on good :math:`i`
-            """
-            return model.sam[TRF, i]
-
-        self.m.Tm0 = Param(self.m.i, initialize=Tm0_init,
-                           doc='benchmark import tariff', mutable=True)
-
-        def F0_init(model, h, i):
-            r"""Benchmark factor input (factor payments block of the SAM).
-
-            .. math::
-                F_{0,h,i} = \mathrm{SAM}[h, i]
-
-            Args:
-                model (AbstractModel): model under construction
-                h (str): element of factor set ``h``
-                i (str): element of goods set ``i``
-
-            Returns:
-                F0 (scalar): base-year payment by sector :math:`i` to
-                    factor :math:`h`
-            """
-            return model.sam[h, i]
-
-        self.m.F0 = Param(self.m.h, self.m.i, initialize=F0_init,
-                          doc='benchmark factor input by the j-th firm',
-                          mutable=True)
 
         def Y0_init(model, i):
             r"""Benchmark composite factor (value added) of sector :math:`i`.
@@ -294,25 +308,6 @@ class StdModelDef:
         self.m.Y0 = Param(self.m.i, initialize=Y0_init,
                           doc='benchmark composite factor', mutable=True)
 
-        def X0_init(model, i, j):
-            r"""Benchmark intermediate input of good :math:`i` into sector
-            :math:`j` (the interindustry block of the SAM).
-
-            .. math::
-                X_{0,i,j} = \mathrm{SAM}[i, j]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): supplying good, element of set ``i``
-                j (str): using sector, element of set ``i``
-
-            Returns:
-                X0 (scalar): base-year intermediate flow :math:`i \to j`
-            """
-            return model.sam[i, j]
-
-        self.m.X0 = Param(self.m.i, self.m.i, initialize=X0_init,
-                          doc='benchmark intermediate input', mutable=True)
 
         def Z0_init(model, j):
             r"""Benchmark gross output of sector :math:`j`.
@@ -333,24 +328,6 @@ class StdModelDef:
                           doc='benchmark gross output of the j-th good',
                           mutable=True)
 
-        def M0_init(model, i):
-            r"""Benchmark imports of good :math:`i` (payments to the
-            external account row).
-
-            .. math::
-                M_{0,i} = \mathrm{SAM}[\mathrm{EXT}, i]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                M0 (scalar): base-year imports of good :math:`i`
-            """
-            return model.sam[EXT, i]
-
-        self.m.M0 = Param(self.m.i, initialize=M0_init,
-                          doc='benchmark imports', mutable=True)
 
         def tauz_init(model, i):
             r"""Production-tax rate implied by the benchmark.
@@ -389,103 +366,10 @@ class StdModelDef:
         self.m.taum = Param(self.m.i, initialize=taum_init,
                             doc='import tariff rate', mutable=True)
 
-        def Xp0_init(model, i):
-            r"""Benchmark household consumption of good :math:`i`.
 
-            .. math::
-                X^{p}_{0,i} = \mathrm{SAM}[i, \mathrm{HOH}]
 
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
 
-            Returns:
-                Xp0 (scalar): base-year household purchase of good
-                    :math:`i`
-            """
-            return model.sam[i, HOH]
 
-        self.m.Xp0 = Param(self.m.i, initialize=Xp0_init,
-                           doc='benchmark household consumption',
-                           mutable=True)
-
-        def FF_init(model, h):
-            r"""Factor endowment of the household (exogenous supply).
-
-            .. math::
-                FF_{h} = \mathrm{SAM}[\mathrm{HOH}, h]
-
-            Args:
-                model (AbstractModel): model under construction
-                h (str): element of factor set ``h``
-
-            Returns:
-                FF (scalar): endowment of factor :math:`h`; fixed over
-                    the simulation (full-employment closure)
-            """
-            return model.sam[HOH, h]
-
-        self.m.FF = Param(self.m.h, initialize=FF_init,
-                          doc='factor endowment of the h-th factor',
-                          mutable=True)
-
-        def Xg0_init(model, i):
-            r"""Benchmark government consumption of good :math:`i`.
-
-            .. math::
-                X^{g}_{0,i} = \mathrm{SAM}[i, \mathrm{GOV}]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                Xg0 (scalar): base-year government purchase of good
-                    :math:`i`
-            """
-            return model.sam[i, GOV]
-
-        self.m.Xg0 = Param(self.m.i, initialize=Xg0_init,
-                           doc='benchmark government consumption',
-                           mutable=True)
-
-        def Xv0_init(model, i):
-            r"""Benchmark investment demand for good :math:`i`.
-
-            .. math::
-                X^{v}_{0,i} = \mathrm{SAM}[i, \mathrm{INV}]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                Xv0 (scalar): base-year investment purchase of good
-                    :math:`i`
-            """
-            return model.sam[i, INV]
-
-        self.m.Xv0 = Param(self.m.i, initialize=Xv0_init,
-                           doc='benchmark investment demand', mutable=True)
-
-        def E0_init(model, i):
-            r"""Benchmark exports of good :math:`i` (receipts from the
-            external account column).
-
-            .. math::
-                E_{0,i} = \mathrm{SAM}[i, \mathrm{EXT}]
-
-            Args:
-                model (AbstractModel): model under construction
-                i (str): element of goods set ``i``
-
-            Returns:
-                E0 (scalar): base-year exports of good :math:`i`
-            """
-            return model.sam[i, EXT]
-
-        self.m.E0 = Param(self.m.i, initialize=E0_init,
-                          doc='benchmark exports', mutable=True)
 
         def Q0_init(model, i):
             r"""Benchmark Armington composite supply of good :math:`i`
@@ -528,59 +412,8 @@ class StdModelDef:
         self.m.D0 = Param(self.m.i, initialize=D0_init,
                           doc='benchmark domestic good', mutable=True)
 
-        def Sp0_init(model):
-            r"""Benchmark private saving.
 
-            .. math::
-                S^{p}_{0} = \mathrm{SAM}[\mathrm{INV}, \mathrm{HOH}]
 
-            Args:
-                model (AbstractModel): model under construction
-
-            Returns:
-                Sp0 (scalar): base-year household saving
-            """
-            return model.sam[INV, HOH]
-
-        self.m.Sp0 = Param(initialize=Sp0_init,
-                           doc='benchmark private saving', mutable=True)
-
-        def Sg0_init(model):
-            r"""Benchmark government saving.
-
-            .. math::
-                S^{g}_{0} = \mathrm{SAM}[\mathrm{INV}, \mathrm{GOV}]
-
-            Args:
-                model (AbstractModel): model under construction
-
-            Returns:
-                Sg0 (scalar): base-year government saving (fiscal
-                    surplus channelled to investment)
-            """
-            return model.sam[INV, GOV]
-
-        self.m.Sg0 = Param(initialize=Sg0_init,
-                           doc='benchmark government saving', mutable=True)
-
-        def Sf_init(model):
-            r"""Foreign saving in foreign-currency units (exogenous).
-
-            .. math::
-                S^{f} = \mathrm{SAM}[\mathrm{INV}, \mathrm{EXT}]
-
-            Args:
-                model (AbstractModel): model under construction
-
-            Returns:
-                Sf (scalar): current-account deficit financing
-                    investment; held fixed across simulations
-                    (savings-driven closure)
-            """
-            return model.sam[INV, EXT]
-
-        self.m.Sf = Param(initialize=Sf_init,
-                          doc='foreign saving in US dollars', mutable=True)
 
         def pWe_init(model, i):
             r"""World export price (small-country assumption).
@@ -1064,13 +897,13 @@ class StdModelDef:
                        doc='composite factor')
 
         self.m.F = Var(self.m.h, self.m.i,
-                       initialize=F0_init,
+                       initialize=benchmark_init['F0'],
                        within=PositiveReals,
                        bounds=(STDCGE_LOWER_BOUND, None),
                        doc='the h-th factor input by the j-th firm')
 
         self.m.X = Var(self.m.i, self.m.i,
-                       initialize=X0_init,
+                       initialize=benchmark_init['X0'],
                        within=PositiveReals,
                        bounds=(STDCGE_LOWER_BOUND, None),
                        doc='intermediate input')
@@ -1082,31 +915,31 @@ class StdModelDef:
                        doc='output of the j-th good')
 
         self.m.Xp = Var(self.m.i,
-                        initialize=Xp0_init,
+                        initialize=benchmark_init['Xp0'],
                         within=PositiveReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='household consumption of the i-th good')
 
         self.m.Xg = Var(self.m.i,
-                        initialize=Xg0_init,
+                        initialize=benchmark_init['Xg0'],
                         within=PositiveReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='government consumption')
 
         self.m.Xv = Var(self.m.i,
-                        initialize=Xv0_init,
+                        initialize=benchmark_init['Xv0'],
                         within=PositiveReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='investment demand')
 
         self.m.E = Var(self.m.i,
-                       initialize=E0_init,
+                       initialize=benchmark_init['E0'],
                        within=PositiveReals,
                        bounds=(STDCGE_LOWER_BOUND, None),
                        doc='exports')
 
         self.m.M = Var(self.m.i,
-                       initialize=M0_init,
+                       initialize=benchmark_init['M0'],
                        within=PositiveReals,
                        bounds=(STDCGE_LOWER_BOUND, None),
                        doc='imports')
@@ -1183,17 +1016,17 @@ class StdModelDef:
                              bounds=(STDCGE_LOWER_BOUND, None),
                              doc='exchange rate')
 
-        self.m.Sp = Var(initialize=Sp0_init,
+        self.m.Sp = Var(initialize=benchmark_init['Sp0'],
                         within=PositiveReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='private saving')
 
-        self.m.Sg = Var(initialize=Sg0_init,
+        self.m.Sg = Var(initialize=benchmark_init['Sg0'],
                         within=NonNegativeReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='government saving')
 
-        self.m.Td = Var(initialize=Td0_init,
+        self.m.Td = Var(initialize=benchmark_init['Td0'],
                         within=NonNegativeReals,
                         bounds=(STDCGE_LOWER_BOUND, None),
                         doc='direct tax')
@@ -1201,12 +1034,12 @@ class StdModelDef:
         # Tz and Tm may be driven exactly to zero by tax-abolition
         # experiments, so they carry no positive lower bound.
         self.m.Tz = Var(self.m.i,
-                        initialize=Tz0_init,
+                        initialize=benchmark_init['Tz0'],
                         within=NonNegativeReals,
                         doc='production tax')
 
         self.m.Tm = Var(self.m.i,
-                        initialize=Tm0_init,
+                        initialize=benchmark_init['Tm0'],
                         within=NonNegativeReals,
                         doc='import tariff')
 

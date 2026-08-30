@@ -3,7 +3,7 @@
 
 This module builds the five counterfactuals recorded in the external GAMS
 reference run without embedding or translating the official GAMS source.  The
-Pyomo equations come from :mod:`cge_core.ifpri.model`; this layer changes only
+Pyomo equations come from :mod:`cge_core.models.ifpri.model`; this layer changes only
 exogenous data and closure choices.
 """
 from __future__ import annotations

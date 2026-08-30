@@ -12,15 +12,8 @@ def _doctor(_args):
     return 0
 
 
-def _install_solver(_args):
-    from cge_core.solver import install_solver
-    selected = install_solver()
-    print(f"Ready: {selected}")
-    return 0
-
-
 def _check(args):
-    from cge_core.spec import parse_file, validate_document
+    from cge_core.experimental.spec import parse_file, validate_document
     doc = validate_document(parse_file(args.path))
     count = sum(map(len, [doc.sets, doc.data, doc.parameters, doc.variables,
                           doc.equations, doc.fixes, doc.drops, doc.shockables]))
@@ -32,7 +25,7 @@ def _solve(args):
     from pyomo.environ import Var, SolverFactory, value
     from pyomo.opt import check_optimal_termination
     from cge_core.solver import resolve_solver
-    from cge_core.spec import compile_document, parse_file
+    from cge_core.experimental.spec import compile_document, parse_file
 
     path = Path(args.path)
     model = compile_document(parse_file(path), base_dir=path.parent)
@@ -59,8 +52,6 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     doctor = sub.add_parser("doctor", help="show solver/backend diagnostics")
     doctor.set_defaults(func=_doctor)
-    installer = sub.add_parser("install-solver", help="install the default open-source NLP solver")
-    installer.set_defaults(func=_install_solver)
     check = sub.add_parser("check", help="parse and validate a .cge.md file")
     check.add_argument("path")
     check.set_defaults(func=_check)
@@ -73,7 +64,7 @@ def main(argv=None):
         return args.func(args)
     except Exception as exc:
         from cge_core.solver import SolverResolutionError
-        from cge_core.spec import CGESpecError
+        from cge_core.experimental.spec import CGESpecError
         if isinstance(exc, (SolverResolutionError, CGESpecError)):
             parser.exit(1, f"error: {exc}\n")
         raise

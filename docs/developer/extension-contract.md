@@ -10,7 +10,7 @@ reaching into the lower-level engine or raw Pyomo state.
 
 ## Scope
 
-The v0.6 extension contract applies to the public Hosoe Simple and Standard
+This extension contract applies to the public Hosoe Simple and Standard
 workflow:
 
 ```python
@@ -164,12 +164,12 @@ used to realize it.
 | `cge_core.example_data` | supported public helper |
 | `cge_core.models.SplCGE` | supported public model import |
 | `cge_core.models.StdCGE` | supported public model import |
-| `cge_core.engine.PyCGE` | advanced/lower-level API; not this contract |
+| `cge_core._pycge.PyCGE` | advanced/lower-level API; not this contract |
 | `Equilibrium._engine` | private implementation detail |
 | `Result._snapshot` | private implementation detail |
 | raw Pyomo objects reached through private state | private implementation detail |
 
-The lower-level `PyCGE` API remains supported for advanced users in v0.6, but
+The lower-level `PyCGE` API remains supported for advanced users, but
 a downstream package that chooses to depend on its mutable `base`/`sim` state
 machine is intentionally outside this extension-stability promise.
 
@@ -199,6 +199,6 @@ or calibration state. That is enough for downstream static-equilibrium
 composition, including future packages that may coordinate repeated
 equilibrium solves.
 
-For the v0.6 line, regression tests treat this lifecycle as a compatibility
+Regression tests treat this lifecycle as a public behavioral
 requirement. Internal cleanup may change how the capability is implemented,
 but should not silently remove the documented behavior.

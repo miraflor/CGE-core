@@ -25,7 +25,7 @@ This dataset is not the official IFPRI benchmark.
 
 The official benchmark comparison requires separately obtained source material. CGE-Core does not redistribute that source package or `test.dat`.
 
-Users who possess the required source material can use the advanced `cge_core.ifpri` official-source path. External-data tests remain marked separately from public synthetic tests.
+Users who possess the required source material can use the advanced `cge_core.models.ifpri` official-source path. External-data tests remain marked separately from public synthetic tests.
 
 ## What may be claimed
 

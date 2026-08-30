@@ -18,12 +18,21 @@ SPL_DATA_DIR = os.path.join(DATA_ROOT, 'splcge_data_dir')
 
 
 def _available_solver():
-    """Return the engine's usable local NLP solver, or ``None``."""
-    from cge_core.compat.pycge import PyCGE, SolveError
+    """Return a solver this machine can run, or ``None`` if there is none.
+
+    This gate decides whether the solver-dependent tests run or are skipped, so
+    it has to ask the same question the product asks.  It previously used a
+    narrower search that knew about only two of the four supported backends,
+    which meant that on a machine relying on either of the other two the whole
+    solver half of the suite skipped silently while the package itself worked.
+    Continuous integration never showed this, because it installs a solver the
+    narrow search does recognise.
+    """
+    from cge_core.solver import SolverResolutionError, resolve_solver
 
     try:
-        return PyCGE._available_solver()
-    except SolveError:
+        return resolve_solver()
+    except SolverResolutionError:
         return None
 
 
@@ -48,7 +57,7 @@ def quiet():
 
 def std_instance(drop_redundant=True, quiet_setup=True):
     """Build a stdcge PyCGE with the numeraire fixed (Hosoe: pf_LAB = 1)."""
-    from cge_core.compat.pycge import PyCGE
+    from cge_core._pycge import PyCGE
     from cge_core.models.standard.model import StdModelDef
 
     ctx = quiet() if quiet_setup else contextlib.nullcontext()
@@ -63,7 +72,7 @@ def std_instance(drop_redundant=True, quiet_setup=True):
 
 def spl_instance(drop_redundant=True, quiet_setup=True):
     """Build a splcge PyCGE with the numeraire fixed (pf_LAB = 1)."""
-    from cge_core.compat.pycge import PyCGE
+    from cge_core._pycge import PyCGE
     from cge_core.models.simple.model import SplModelDef
 
     ctx = quiet() if quiet_setup else contextlib.nullcontext()

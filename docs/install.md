@@ -2,10 +2,10 @@
 
 ## Local Python
 
-Install the **v0.7.0 release wheel**:
+Install the **v0.8.0 release wheel**:
 
 ```bash
-pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
+pip install "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
 ```
 
 The wheel contains the installed CGE-Core runtime packages and required model data. It does
@@ -30,7 +30,7 @@ available and otherwise prepares its default open-source backend internally on f
 Every canonical notebook has one installation cell:
 
 ```python
-%pip install -q "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
+%pip install -q "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
 ```
 
 The next cell is modelling code.

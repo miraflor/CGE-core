@@ -3,7 +3,7 @@
 [![tests](https://github.com/miraflor/CGE-core/actions/workflows/tests.yml/badge.svg)](https://github.com/miraflor/CGE-core/actions/workflows/tests.yml)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb)
 
 **CGE-Core is an open-source, Pyomo-based framework for computable general
 equilibrium modelling, built for policy simulation, teaching, replication,
@@ -99,7 +99,7 @@ benchmark, define a scenario, apply an economic shock, solve again, and compare
 the two equilibria.
 
 Advanced users can still select a solver explicitly, inspect Pyomo objects,
-work with the lower-level compatibility API, or build custom models.
+work with the lower-level API, or build custom models.
 
 ## What a CGE experiment means
 
@@ -136,7 +136,7 @@ That economy-wide adjustment is the point of CGE.
 - **[Notebook course](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)** —
   a progressive sequence from the first solve to SAMs, CAMCGE, IFPRI, model
   authoring, and internals.
-- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb)** —
+- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb)** —
   one installation cell, then modelling code.
 - **[Documentation](https://miraflor.github.io/CGE-core/)** —
   theory, models, tutorials, validation, API reference, and developer
@@ -146,10 +146,10 @@ That economy-wide adjustment is the point of CGE.
 
 ## Install
 
-Install the v0.7.0 release wheel:
+Install the v0.8.0 release wheel:
 
 ```bash
-pip install "https://github.com/miraflor/CGE-core/releases/download/v0.7.0/cge_core-0.7.0-py3-none-any.whl"
+pip install "https://github.com/miraflor/CGE-core/releases/download/v0.8.0/cge_core-0.8.0-py3-none-any.whl"
 ```
 
 Then:
@@ -428,22 +428,21 @@ See:
 
 ## Notebook course
 
-The canonical v0.7.0 sequence is:
+The canonical v0.8.0 sequence is:
 
 | # | Notebook | What you will do | Open in Colab |
 |---:|---|---|---|
-| 01 | [`01_first_cge.ipynb`](notebooks/01_first_cge.ipynb) | Solve and read an economy | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/01_first_cge.ipynb) |
-| 02 | [`02_policy_experiments.ipynb`](notebooks/02_policy_experiments.ipynb) | Benchmark → shock → counterfactual → comparison | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/02_policy_experiments.ipynb) |
-| 03 | [`03_your_own_sam.ipynb`](notebooks/03_your_own_sam.ipynb) | Inspect and load a SAM | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/03_your_own_sam.ipynb) |
-| 04 | [`04_camcge.ipynb`](notebooks/04_camcge.ipynb) | Reproduce a published CGE model | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/04_camcge.ipynb) |
-| 05 | [`05_ifpri.ipynb`](notebooks/05_ifpri.ipynb) | IFPRI synthetic public path and clean-room boundary | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/05_ifpri.ipynb) |
-| 06 | [`06_build_a_model.ipynb`](notebooks/06_build_a_model.ipynb) | Functional Python and experimental `.cge.md` authoring | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/06_build_a_model.ipynb) |
-| 90 | [`90_internals.ipynb`](notebooks/90_internals.ipynb) | Pyomo and lower-level CGE-Core internals | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.7.0/notebooks/90_internals.ipynb) |
+| 01 | [`01_first_cge.ipynb`](notebooks/01_first_cge.ipynb) | Solve and read an economy | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb) |
+| 02 | [`02_policy_experiments.ipynb`](notebooks/02_policy_experiments.ipynb) | Benchmark → shock → counterfactual → comparison | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/02_policy_experiments.ipynb) |
+| 03 | [`03_your_own_sam.ipynb`](notebooks/03_your_own_sam.ipynb) | Inspect and load a SAM | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/03_your_own_sam.ipynb) |
+| 04 | [`04_camcge.ipynb`](notebooks/04_camcge.ipynb) | Reproduce a published CGE model | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/04_camcge.ipynb) |
+| 05 | [`05_ifpri.ipynb`](notebooks/05_ifpri.ipynb) | IFPRI synthetic public path and clean-room boundary | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/05_ifpri.ipynb) |
+| 06 | [`06_build_a_model.ipynb`](notebooks/06_build_a_model.ipynb) | Functional Python and experimental `.cge.md` authoring | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/06_build_a_model.ipynb) |
+| 90 | [`90_internals.ipynb`](notebooks/90_internals.ipynb) | Pyomo and lower-level CGE-Core internals | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/90_internals.ipynb) |
 
 **[View the full notebook course →](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)**
 
-Legacy notebook filenames are retained only as small redirect notebooks so old
-links do not break.
+Historical notebook filenames remain available in earlier Git tags; the active directory contains one course only.
 
 ---
 
@@ -484,12 +483,13 @@ uniformity.
 
 ## Source layout
 
-The v0.7.0 source tree is organized around the concepts a reader needs to
-understand:
+The v0.8.0 source tree has one canonical location for each responsibility:
 
 ```text
 cge_core/
 ├── workflow.py          benchmark → scenario → result lifecycle
+├── _engine.py           v0.8 engine policy adapter
+├── _pycge.py            inherited lower-level PyCGE engine
 ├── solver.py            numerical-backend resolution
 ├── sam.py               social-accounting-matrix tools
 ├── models/              bundled economic model families
@@ -497,15 +497,15 @@ cge_core/
 │   ├── standard/
 │   ├── camcge/
 │   └── ifpri/
-├── experimental/        optional authoring and .cge.md work
-└── compat/              retained lower-level PyCGE implementation
+└── experimental/        optional authoring and .cge.md work
 
 validation/
 └── cam/                 CAMCGE replication and validation utilities
 ```
 
-Historical import paths remain available through small compatibility shims so
-existing v0.6/v0.7 code does not need to be rewritten immediately.
+Pre-v0.8 module paths are documented in `docs/migration-v0.8.md` and remain
+recoverable from earlier Git tags rather than being duplicated as executable
+redirect modules in the current package.
 
 ---
 
@@ -542,7 +542,7 @@ See:
 
 ---
 
-## Advanced and compatibility APIs
+## Advanced API
 
 Most users should begin with:
 
@@ -550,28 +550,25 @@ Most users should begin with:
 from cge_core import SimpleCGE, StandardCGE, CamCGE, IFPRICGE
 ```
 
-The lower-level lifecycle remains available for advanced inspection and
-existing code:
+The lower-level lifecycle remains intentionally available for advanced
+inspection, validation, and engine-level work:
 
 ```python
 from cge_core import CGE, PyCGE, example_data
 ```
 
-Historical modules such as `cge_core.engine`, `cge_core.api`,
-`cge_core.practitioner`, `cge_core.solvers`, and the earlier model-definition
-import paths remain as compatibility shims rather than parallel
-implementations.
+This is a supported lower-level API, not a preserved historical namespace.
+Obsolete module paths from earlier releases were removed in v0.8.0; see
+[`docs/migration-v0.8.md`](docs/migration-v0.8.md).
 
 ---
 
-## Scientific scope of v0.7.0
+## Scientific scope of v0.8.0
 
-v0.7.0 is primarily an architecture, packaging, and usability release.
-
-It adds a common practitioner workflow, automatic solver resolution, a
-progressive notebook course, a first-class CAMCGE package, public synthetic
-IFPRI data, functional authoring, experimental `.cge.md`, and a cleaner source
-layout.
+v0.8.0 is an architecture-consolidation release. It keeps the validated model
+implementations and practitioner workflow while removing obsolete redirect
+namespaces, re-homing the inherited PyCGE engine, and making the notebook
+course and source tree unambiguous.
 
 It does **not** use those software changes as justification for silently
 changing validated economic equations.
@@ -616,7 +613,7 @@ sources.
   author  = {James Matthew Miraflor},
   title   = {{CGE-Core}: an open-source Python framework for computable general equilibrium modelling},
   year    = {2026},
-  version = {0.7.0},
+  version = {0.8.0},
   url     = {https://github.com/miraflor/CGE-core}
 }
 ```

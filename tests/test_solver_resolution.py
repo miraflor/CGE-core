@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def test_ampl_ipopt_uses_pyomo_nl_driver(monkeypatch, tmp_path):
-    from cge_core import solvers
+    from cge_core import solver as solvers
 
     executable = tmp_path / "ipopt"
     executable.write_text("fake", encoding="utf-8")
@@ -47,7 +47,7 @@ def test_ampl_ipopt_uses_pyomo_nl_driver(monkeypatch, tmp_path):
 
 
 def test_default_fresh_environment_falls_back_to_ampl_nl(monkeypatch):
-    from cge_core import solvers
+    from cge_core import solver as solvers
 
     calls = []
     monkeypatch.setattr(solvers, "_probe", lambda name: False)
@@ -65,7 +65,7 @@ def test_default_fresh_environment_falls_back_to_ampl_nl(monkeypatch):
 
 
 def test_explicit_ipopt_can_resolve_to_ampl_ipoptnl(monkeypatch):
-    from cge_core import solvers
+    from cge_core import solver as solvers
 
     monkeypatch.setattr(solvers, "_probe", lambda name: False)
     monkeypatch.setattr(solvers, "_activate_ampl_ipopt", lambda: True)

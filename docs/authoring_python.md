@@ -27,7 +27,7 @@ def apply_default_closure(model):
 Use it:
 
 ```python
-from cge_core.authoring import model_from_module
+from cge_core.experimental.authoring import model_from_module
 
 economy = model_from_module("my_model.py", data=my_data)
 base = economy.solve()

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pyomo.environ import value
 
-from cge_core.ifpri import (
+from cge_core.models.ifpri import (
     IFPRI_POLICY_SCENARIOS,
     IfpriScenario,
     build_ifpri_base_solve_model,

@@ -8,9 +8,9 @@ from .ast import (
     DataDecl, DropStmt, EquationDecl, FixStmt, Location, ModelDocument,
     ParamDecl, SetDecl, ShockableDecl, VarDecl,
 )
-from .errors import CGESpecError
+from .errors import CGESpecError, NAME_PATTERN
 
-_NAME = r"[A-Za-z_][A-Za-z0-9_]*"
+_NAME = NAME_PATTERN
 _SET_RE = re.compile(rf"^set\s+({_NAME})\s*=\s*\[(.*)\]\s*$")
 _DATA_RE = re.compile(rf'^data\s+({_NAME})\s*=\s*["\']([^"\']+)["\']\s*$')
 _PARAM_RE = re.compile(rf"^param\s+({_NAME})(?:\[([^\]]+)\])?\s*=\s*(.+)$")
