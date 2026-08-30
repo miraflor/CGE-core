@@ -6,6 +6,10 @@
 from cge_core import SimpleCGE, StandardCGE, CamCGE, IFPRICGE
 ```
 
+The four façades share a practitioner vocabulary—solve a benchmark, create a policy
+counterfactual, solve again, and inspect results—but they do not all use the same internal
+workflow classes.
+
 ### SimpleCGE
 
 ```python
@@ -43,9 +47,13 @@ base = IFPRICGE.synthetic().solve()
 result = base.scenario("TARCUT1").solve()
 ```
 
-## Equilibrium
+IFPRI deliberately uses its own `IFPRIEquilibrium`, `IFPRIScenario`, and `IFPRIResult`
+classes because its calibration, macro closure, and named policy experiments are
+model-specific.
 
-A solved benchmark supports:
+## Generic Equilibrium
+
+For SimpleCGE, StandardCGE, and CamCGE, a solved benchmark supports:
 
 - `summary()`
 - `value(component, *index)`
@@ -53,7 +61,7 @@ A solved benchmark supports:
 - `.raw` as an advanced escape hatch
 - `.closure` for model-owned closure information
 
-## Scenario
+## Generic Scenario
 
 The Hosoe/CAMCGE scenario object supports:
 
@@ -64,11 +72,11 @@ The Hosoe/CAMCGE scenario object supports:
 - `endowment(factor, value=None, change=None)` where declared by the model
 - `solve()`
 
-A scenario is an independent mutable counterfactual derived from a protected benchmark.
+A generic scenario is an independent mutable clone derived from a protected benchmark.
 
-## Result
+## Generic Result
 
-A solved result supports:
+A generic solved result supports:
 
 - `summary()`
 - `value(component, *index)`
@@ -78,14 +86,25 @@ A solved result supports:
 Ordinary numerical reads come from the result snapshot, not from later mutation of a live
 Pyomo object.
 
-## Lower-level lifecycle
+## IFPRI result surface
 
-The lower-level public lifecycle remains available:
+`IFPRIEquilibrium` and `IFPRIResult` provide the corresponding `summary()`, `value()`,
+`.raw`, and comparison operations appropriate to the IFPRI implementation. IFPRI scenarios
+are named model-specific experiments rather than the generic semantic-shock object.
+
+See {doc}`ifpri` for the advanced IFPRI API.
+
+## Lower-level generic lifecycle
+
+The lower-level generic lifecycle remains available:
 
 ```python
 from cge_core import CGE
 ```
 
 `CGE → Equilibrium → Scenario → Result` is retained for downstream and advanced code.
-The v0.8 façades configure this lifecycle for bundled models so ordinary users do not have
-to supply closure and solver plumbing themselves.
+`SimpleCGE`, `StandardCGE`, and `CamCGE` configure this lifecycle so ordinary users do not
+have to supply closure and solver plumbing themselves.
+
+`IFPRICGE` intentionally uses its separate IFPRI adapter rather than being forced through
+this generic lifecycle.

@@ -1,6 +1,6 @@
 # Choose a bundled model
 
-CGE-Core 0.8.0 gives four model families a similar lifecycle while preserving their different economics.
+CGE-Core 0.8.0 gives four model families a similar practitioner workflow while preserving their different economics and, where appropriate, different internal execution paths.
 
 | Model | Best used for | Important boundary |
 |---|---|---|
@@ -41,4 +41,4 @@ from cge_core import IFPRICGE
 base = IFPRICGE.synthetic().solve()
 ```
 
-Named scenarios include `TARCUT1`, `TARCUT2`, `FSAVINCR`, `PWMINCR`, and `DEVAL`. Their meaning depends on the IFPRI macro closure, so they are intentionally model-specific rather than generic policy toggles.
+Named scenarios include `TARCUT1`, `TARCUT2`, `FSAVINCR`, `PWMINCR`, and `DEVAL`. Their meaning depends on the IFPRI macro closure, so they are intentionally model-specific rather than generic policy toggles. `IFPRICGE` therefore uses IFPRI-specific equilibrium/scenario/result classes rather than the generic `CGE → Equilibrium → Scenario → Result` implementation.

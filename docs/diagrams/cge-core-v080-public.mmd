@@ -1,42 +1,50 @@
-flowchart LR
+flowchart TB
     U["Practitioner"]
-    F["Model façade<br/>SimpleCGE · StandardCGE<br/>CamCGE · IFPRICGE"]
-    B["Solved benchmark<br/>Equilibrium"]
-    S["Independent scenario<br/>one concrete model clone"]
-    R["Immutable numerical result<br/>summary · value · compare"]
 
-    subgraph ECON["Model-specific economics"]
-      H["Hosoe Simple / Standard"]
-      C["CAMCGE"]
-      I["IFPRI Standard CGE"]
+    subgraph PUBLIC["Practitioner entry points"]
+      G["SimpleCGE · StandardCGE · CamCGE"]
+      I["IFPRICGE"]
     end
 
-    subgraph CORE["CGE-Core lower-level engine"]
-      A["CGE lifecycle"]
-      E["CoreEngine / PyCGE"]
+    subgraph GENERIC["Generic Simple / Standard / CAMCGE path"]
+      GW["Scientific workflow<br/>CGE → Equilibrium → Scenario → Result"]
+      MD["Model definition + ModelSpec"]
+      CE["CoreEngine<br/>model-declared policy"]
+      PY["PyCGE<br/>instance · mutation · rollback · solve bookkeeping"]
     end
 
-    P["Pyomo model"]
-    N["NLP solver"]
+    subgraph IFPRI["IFPRI-specific path"]
+      IW["IFPRI workflow<br/>IFPRIEquilibrium → IFPRIScenario → IFPRIResult"]
+      IM["IFPRI calibration · closure<br/>named scenario builders"]
+    end
 
-    U --> F
-    F --> B
-    B --> S
-    S --> R
+    subgraph NUM["Shared numerical boundary"]
+      P["Pyomo model"]
+      SR["cge_core.solver<br/>backend resolution"]
+      N["Supported NLP backend<br/>Ipopt · cyipopt · COIN/ipoptnl"]
+    end
 
-    F --> H
-    F --> C
-    F --> I
-    H --> A
-    C --> A
-    A --> E
-    I --> P
-    E --> P
-    P --> N
+    U --> G
+    U --> I
+
+    G --> GW
+    GW --> MD
+    MD --> CE
+    CE --> PY
+    PY --> P
+
+    I --> IW
+    IW --> IM
+    IM --> P
+
+    P --> SR
+    SR --> N
 
     classDef public fill:#eef4ff,stroke:#4f6fad,stroke-width:2px,color:#172033;
-    classDef econ fill:#edf8f4,stroke:#3c806b,stroke-width:1.5px,color:#172033;
-    classDef internal fill:#f6f2ff,stroke:#7252b8,stroke-width:1.5px,color:#172033;
-    class U,F,B,S,R public;
-    class H,C,I econ;
-    class A,E,P,N internal;
+    classDef generic fill:#f6f2ff,stroke:#7252b8,stroke-width:1.5px,color:#172033;
+    classDef ifpri fill:#edf8f4,stroke:#3c806b,stroke-width:1.5px,color:#172033;
+    classDef numerical fill:#fff7e8,stroke:#9a6b22,stroke-width:1.5px,color:#172033;
+    class U,G,I public;
+    class GW,MD,CE,PY generic;
+    class IW,IM ifpri;
+    class P,SR,N numerical;

@@ -1,61 +1,52 @@
 flowchart TB
+    USER["Model façade / advanced user"]
 
-    USER["User script / notebook"]
-
-    subgraph INPUT["Data layer"]
-        SAM["SAM / model CSV files"]
-        SAMTOOLS["sam.build_dataset()"]
-        EXAMPLE["example_data()"]
-        DATA["Pyomo DataPortal"]
+    subgraph DEF["Model-specific definition and policy"]
+      MODEL["Economic model definition<br/>sets · parameters · variables · equations"]
+      SPEC["ModelSpec<br/>closure metadata · protection<br/>semantic shocks · required data"]
+      DATA["SAM / packaged model data"]
     end
 
-    subgraph DEF["Economic model definition"]
-        SPL["SplModelDef"]
-        STD["StdModelDef"]
-        ABSTRACT["Pyomo AbstractModel<br/>sets · parameters · variables · equations"]
+    subgraph WF["Generic scientific workflow"]
+      CGE["CGE"]
+      EQ["Equilibrium<br/>protected benchmark + snapshot"]
+      SC["Scenario<br/>one independent model clone"]
+      RES["Result<br/>immutable numerical snapshot"]
     end
 
-    subgraph ENG["PyCGE workflow engine"]
-        LOAD["model_data()"]
-        INSTANCE["model_instance()"]
-        CLOSURE["Closure<br/>fix numeraire + drop redundant equation"]
-        CAL["model_calibrate()"]
-        CLONE["model_sim()"]
-        SHOCK["model_modify_sim()"]
-        SOLVE["model_solve()"]
-        COMPARE["model_compare() / model_postprocess()"]
+    subgraph ENG["Engine layers"]
+      CORE["CoreEngine<br/>ModelSpec-driven policy"]
+      PYCGE["PyCGE<br/>instance construction · mutation<br/>undo/rollback · solve bookkeeping"]
     end
 
-    subgraph RUN["Runtime state"]
-        BASE["BASE<br/>ConcreteModel"]
-        SIM["SIM<br/>deep copy of BASE"]
-        SOLVER["Nonlinear solver<br/>IPOPT / cyipopt"]
-        RESULTS["Results<br/>DataFrame / files"]
+    subgraph RUN["Numerical runtime"]
+      PYOMO["Pyomo ConcreteModel"]
+      SOLVER["cge_core.solver<br/>resolve supported backend"]
+      NLP["NLP backend<br/>Ipopt · cyipopt · COIN/ipoptnl"]
     end
 
-    USER --> SAMTOOLS
-    USER --> EXAMPLE
-    USER --> SPL
-    USER --> STD
-    SAM --> SAMTOOLS
-    SAMTOOLS --> LOAD
-    EXAMPLE --> LOAD
-    LOAD --> DATA
-    SPL --> ABSTRACT
-    STD --> ABSTRACT
-    ABSTRACT --> INSTANCE
-    DATA --> INSTANCE
-    INSTANCE --> BASE
-    BASE --> CLOSURE
-    CLOSURE --> CAL
-    CAL --> SOLVER
-    SOLVER --> BASE
-    BASE --> CLONE
-    CLONE --> SIM
-    SHOCK --> SIM
-    SIM --> SOLVE
-    SOLVE --> SOLVER
-    SOLVER --> SIM
-    BASE --> COMPARE
-    SIM --> COMPARE
-    COMPARE --> RESULTS
+    USER --> CGE
+    MODEL --> CGE
+    SPEC --> CGE
+    DATA --> CGE
+
+    CGE --> CORE
+    SPEC --> CORE
+    CORE --> PYCGE
+    PYCGE --> PYOMO
+    PYOMO --> SOLVER
+    SOLVER --> NLP
+    NLP --> EQ
+
+    EQ --> SC
+    SC --> PYCGE
+    NLP --> RES
+
+    classDef model fill:#edf8f4,stroke:#3c806b,stroke-width:1.5px,color:#172033;
+    classDef workflow fill:#eef4ff,stroke:#4f6fad,stroke-width:1.5px,color:#172033;
+    classDef engine fill:#f6f2ff,stroke:#7252b8,stroke-width:1.5px,color:#172033;
+    classDef runtime fill:#fff7e8,stroke:#9a6b22,stroke-width:1.5px,color:#172033;
+    class MODEL,SPEC,DATA model;
+    class CGE,EQ,SC,RES workflow;
+    class CORE,PYCGE engine;
+    class PYOMO,SOLVER,NLP runtime;

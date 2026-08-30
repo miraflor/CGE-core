@@ -20,7 +20,11 @@ from cge_core import CGE, PyCGE, example_data
 from cge_core.models import StdCGE
 ```
 
-The lower-level PyCGE lifecycle remains an escape hatch for debugging, validation, and engine development. New tutorials use the model façades instead.
+For SimpleCGE, StandardCGE, and CamCGE, the generic `CGE → Equilibrium → Scenario → Result` workflow sits above `CoreEngine`, which in turn subclasses the retained `PyCGE` engine. These layers remain escape hatches for debugging, validation, and engine development.
+
+IFPRI has its own advanced API under `cge_core.models.ifpri`; it shares the Pyomo/solver boundary without being routed through `CoreEngine`.
+
+New tutorials use the model façades instead.
 
 ## Solver override
 
@@ -40,4 +44,4 @@ Use `cge doctor` to inspect what CGE-Core detects.
 
 ## Why the public layer exists
 
-The public API encodes recurring software decisions—model construction, canonical closure, scenario isolation, result snapshots and solver selection—so practitioner code can expose the economic decisions instead of repeating framework plumbing.
+The public API encodes recurring software decisions—model construction, model-owned closure, counterfactual isolation, result inspection and solver selection—so practitioner code can expose the economic decisions instead of repeating framework plumbing. The implementation is allowed to differ by model family when those differences are economically meaningful.
