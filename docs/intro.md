@@ -55,10 +55,13 @@ The shared surface is a workflow, not a claim that these models have the same eq
 
 ## Advanced lower-level API
 
-The `CGE → Equilibrium → Scenario → Result` lifecycle and lower-level `PyCGE`
-engine remain available for advanced or downstream code. They are intentional advanced
-inspection paths; new practitioner material should start with the four model-specific
-entry points above.
+For `SimpleCGE`, `StandardCGE`, and `CamCGE`, the `CGE → Equilibrium → Scenario → Result`
+lifecycle sits above `CoreEngine` and the retained lower-level `PyCGE` engine. `IFPRICGE`
+uses its own IFPRI-specific equilibrium/scenario/result adapter while sharing the same Pyomo
+and solver boundary.
+
+These are intentional advanced implementation distinctions; new practitioner material
+should still start with the four model-specific entry points above.
 
 ```{note}
 CGE-Core is an independent project. It is not affiliated with or endorsed by the
