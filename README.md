@@ -428,14 +428,14 @@ For example:
 - work that relies materially on inherited PyCGE should acknowledge/cite Fung &
   Burtwistle as appropriate.
 
-**James Matthew Miraflor is the project maintainer, not the sole software
-author.**
-
 ---
 
 ## Maintainer
 
 **James Matthew Miraflor**
+**X1**
+**X2**
+
 
 Maintenance includes release coordination, integration, review, testing,
 documentation, and project stewardship. Maintainer status is not presented as a
