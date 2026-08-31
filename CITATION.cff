@@ -1,20 +1,25 @@
 cff-version: 1.2.0
 message: >-
-  If you use CGE-Core, please cite it as below. Also cite the original PyCGE
-  (Fung & Burtwistle, NIST) and the relevant underlying model sources: Hosoe,
-  Gasawa & Hashimoto (2010), the separately obtained IFPRI Standard CGE
-  documentation/source package where applicable, or Condon, Dahl & Devarajan
-  (1987) for the CAMCGE replication.
+  If you use CGE-Core, please cite CGE-Core as software and also cite the
+  original PyCGE and the relevant underlying model source(s) for the model
+  family you use.
 title: "CGE-Core: a practitioner-first computable general equilibrium toolkit"
 type: software
+
 authors:
+  - name: "CGE-Core contributors"
+
+contact:
   - family-names: Miraflor
     given-names: James Matthew
     email: jbmiraflor@up.edu.ph
     affiliation: "Scientific Computing Laboratory, Department of Computer Science, University of the Philippines Diliman"
-version: 0.8.0
+
+version: "0.8.0"
+date-released: "2026-08-30"
 repository-code: "https://github.com/miraflor/CGE-core"
 license: MIT
+
 keywords:
   - cge
   - computable-general-equilibrium
@@ -24,22 +29,19 @@ keywords:
   - social-accounting-matrix
   - ifpri-standard-cge
   - camcge
+
 abstract: >-
-  CGE-Core is a corrected and substantially revised fork of PyCGE by Juan Fung
-  and Charley Burtwistle (U.S. National Institute of Standards and Technology,
-  2017; public domain under 17 U.S.C. 105). Version 0.8.0 consolidates the
-  practitioner architecture around one canonical namespace and one notebook
-  course, re-homes the inherited PyCGE engine, removes historical redirect
-  modules, and preserves the bundled Hosoe, CAMCGE and IFPRI model families,
-  semantic policy shocks, SAM support, public Colab tutorials, Control Room,
-  functional model authoring, and experimental deterministic .cge.md
-  specification. The inherited PyCGE code and underlying model specifications
-  are not James Matthew Miraflor's original work. He directed and reviewed an
-  AI-assisted process covering the fork's corrections, public API, testing,
-  documentation, IFPRI implementation, CAMCGE replication benchmark, and
-  release workflow. The official IFPRI source package and test data remain
-  external; the installed synthetic IFPRI-format economy is independently
-  authored and redistributable.
+  CGE-Core is an open-source, maintained and extended fork of PyCGE that
+  provides a common Python workflow for several computable general equilibrium
+  model traditions. The repository includes practitioner-facing APIs, tests,
+  documentation, validation workflows, packaging, tutorials, and additional
+  implementation work. Inherited PyCGE code and the underlying published
+  economic model specifications retain their original provenance. Development
+  of the fork has been substantially AI-assisted, with human maintenance and
+  review. The project therefore uses collective project authorship for software
+  citation; James Matthew Miraflor is listed as maintainer/contact rather than
+  as the sole software author.
+
 references:
   - type: software
     title: "PyCGE: A Python Interface for Solving CGE Models"
@@ -52,6 +54,7 @@ references:
     url: "https://github.com/juanfung/pycge"
     institution:
       name: "National Institute of Standards and Technology"
+
   - type: book
     title: >-
       Textbook of Computable General Equilibrium Modelling: Programming and
@@ -67,6 +70,7 @@ references:
     publisher:
       name: "Palgrave Macmillan"
     doi: "10.1057/9780230281653"
+
   - type: report
     title: >-
       Implementing a Computable General Equilibrium Model on GAMS: The
@@ -82,3 +86,17 @@ references:
     institution:
       name: "World Bank"
     number: "DRD290"
+
+  - type: book
+    title: "A Standard Computable General Equilibrium (CGE) Model in GAMS"
+    authors:
+      - family-names: Lofgren
+        given-names: Hans
+      - family-names: Harris
+        given-names: Rebecca Lee
+      - family-names: Robinson
+        given-names: Sherman
+    year: 2002
+    publisher:
+      name: "International Food Policy Research Institute"
+    doi: "10.22004/ag.econ.42483"

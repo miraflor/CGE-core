@@ -6,57 +6,51 @@
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb)
 
 **CGE-Core is an open-source, Pyomo-based framework for computable general
-equilibrium modelling, built for policy simulation, teaching, replication,
-and reproducible research in Python.**
+equilibrium (CGE) modelling in Python, built for policy simulation, teaching,
+replication, and reproducible research.**
 
-Computable general equilibrium (CGE) models are useful precisely because policy
-changes do not stop where they begin. A tariff, tax, subsidy, productivity
-change, or factor-supply shock can propagate through production, household
-income, trade, government accounts, saving and investment, factor markets,
-relative prices, and welfare. A CGE model makes those economy-wide connections
-explicit and solves for a new internally consistent equilibrium.
+CGE models are useful because policy changes do not stop where they begin. A
+tariff, tax, subsidy, productivity change, factor-supply shock, or external
+price change can propagate through production, household income, trade,
+government accounts, saving and investment, factor markets, relative prices,
+and welfare.
 
-The difficulty is that learning or applying CGE often means learning several
-things at once: the economics, the social accounting structure, calibration,
-closure choices, nonlinear solution, and the surrounding software workflow.
-
-**CGE-Core exists to make CGE easier to inspect, teach, reproduce, extend, and
-use in scientific Python without simplifying away the economics.**
-
-## Why CGE-Core?
-
-CGE-Core is intended to provide a common scientific home for CGE work in
-Python.
-
-- **Learn from complete models.** Start with small textbook economies and move
-  toward richer open-economy and published models without changing programming
-  ecosystems.
-- **Run policy experiments.** Begin from a calibrated benchmark, change an
-  exogenous policy or assumption, solve the counterfactual equilibrium, and
-  compare it with the benchmark.
-- **Bring economic data into the workflow.** Use a social accounting matrix
-  (SAM) as the empirical accounting foundation of a model, with explicit
-  validation of the structure required by the chosen specification.
-- **Reproduce published models.** Treat benchmark targets, closures,
-  provenance, and numerical validation as part of the software rather than as
-  external afterthoughts.
-- **Keep the economics visible.** CGE-Core removes routine repository, solver,
-  and framework setup from ordinary use, but it does not hide model equations,
-  closure assumptions, shocks, benchmark data, or validation evidence.
-- **Fit CGE into scientific Python.** Models, data preparation, experiments,
-  reporting, tests, notebooks, and extensions can live in the same environment
-  as the rest of a Python research workflow.
-
-The goal is **not** to impose one universal CGE equation system. Different CGE
-traditions make different modelling choices. CGE-Core instead gives distinct
-model families a common high-level lifecycle:
+CGE-Core provides a common Python workflow for working with several established
+CGE model traditions while keeping their economic equations, calibration,
+closure assumptions, source material, and validation evidence explicit.
 
 ```text
 benchmark → scenario → solve → compare
 ```
 
-while allowing each family to retain its own equations, calibration, closure,
-variables, data requirements, and validation targets.
+> **Independent project.** CGE-Core is not affiliated with or endorsed by the
+> Policy Simulation Library. The `*-Core` name follows the broader naming
+> convention used by projects such as
+> [OG-Core](https://github.com/PSLmodels/OG-Core).
+
+---
+
+## Why CGE-Core?
+
+CGE-Core is intended to make CGE modelling easier to inspect, teach, reproduce,
+extend, and use in scientific Python without hiding the economics.
+
+- **Learn from complete models.** Start with small textbook economies and move
+  toward richer open-economy and published models in the same programming
+  environment.
+- **Run policy experiments.** Solve a benchmark, change an exogenous policy or
+  assumption, solve the counterfactual equilibrium, and compare the results.
+- **Use social accounting matrices.** Bring empirical economy-wide accounting
+  data into the same workflow as calibration, simulation, and reporting.
+- **Reproduce published models.** Keep benchmark targets, closures, provenance,
+  and numerical validation alongside the implementation.
+- **Keep model differences visible.** CGE-Core does not pretend that every CGE
+  tradition is one universal equation system.
+- **Fit into scientific Python.** Models, data preparation, experiments,
+  notebooks, tests, documentation, and extensions can live in the same
+  ecosystem.
+
+---
 
 ## Included model families
 
@@ -65,16 +59,10 @@ variables, data requirements, and validation targets.
 | `SimpleCGE` | Hosoe, Gasawa & Hashimoto (2010), ch. 3–4 | Small closed-economy model for learning CGE mechanics |
 | `StandardCGE` | Hosoe, Gasawa & Hashimoto (2010), ch. 5–6 | Open economy with intermediate inputs, government, Armington/CET trade, saving, and investment |
 | `CamCGE` | Condon, Dahl & Devarajan (1987) | Published Cameroon model used for historical replication and policy-experiment validation |
-| `IFPRICGE` | IFPRI Standard CGE tradition | Richer CGE implementation with explicit macro closures and recorded policy scenarios |
+| `IFPRICGE` | Lofgren, Harris & Robinson / IFPRI Standard CGE tradition | Richer CGE implementation with explicit macro closures and recorded policy scenarios |
 
-These are not four skins over the same model. They are separate economic
-implementations brought together by a common project, validation philosophy,
-and practitioner workflow.
-
-> **Independent project.** CGE-Core is not affiliated with or endorsed by the
-> Policy Simulation Library. The `*-Core` name follows the broader naming
-> convention used by projects such as
-> [OG-Core](https://github.com/PSLmodels/OG-Core).
+These are separate economic implementations brought together by a common
+project, validation philosophy, and practitioner workflow.
 
 ---
 
@@ -94,53 +82,17 @@ result.summary()
 result.compare(base)
 ```
 
-The ordinary workflow stays at the modelling level: choose a model, solve the
-benchmark, define a scenario, apply an economic shock, solve again, and compare
-the two equilibria.
+The ordinary workflow stays at the modelling level:
 
-Advanced users can still select a solver explicitly, inspect Pyomo objects,
-work with the lower-level API, or build custom models.
+1. choose a model;
+2. solve the benchmark;
+3. create an isolated scenario;
+4. apply an economic shock;
+5. solve the counterfactual;
+6. compare it with the benchmark.
 
-## What a CGE experiment means
-
-A CGE experiment is not a manually imposed change in output or price.
-
-Instead:
-
-```text
-benchmark economy
-      ↓
-change an exogenous policy, endowment, or external assumption
-      ↓
-solve the entire system again
-      ↓
-new equilibrium
-      ↓
-compare with benchmark
-```
-
-For example, removing a tariff changes the relevant tax wedge. The model then
-endogenously determines the resulting changes in imports, domestic production,
-factor demand, household income, government revenue, prices, saving,
-investment, and welfare according to the equations and closure of that model.
-
-That economy-wide adjustment is the point of CGE.
-
----
-
-## Explore without installing
-
-- **[CGE-Core Control Room](https://miraflor.github.io/CGE-core/control-room/)** —
-  inspect bundled models, read their economic structure, configure a policy
-  experiment, and generate runnable Python.
-- **[Notebook course](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)** —
-  a progressive sequence from the first solve to SAMs, CAMCGE, IFPRI, model
-  authoring, and internals.
-- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb)** —
-  one installation cell, then modelling code.
-- **[Documentation](https://miraflor.github.io/CGE-core/)** —
-  theory, models, tutorials, validation, API reference, and developer
-  documentation.
+Advanced users can still choose a solver explicitly, inspect Pyomo objects,
+work with lower-level APIs, or build custom models.
 
 ---
 
@@ -160,16 +112,7 @@ from cge_core import StandardCGE
 base = StandardCGE.example().solve()
 ```
 
-The release wheel contains the runtime package and required bundled model data,
-not the entire GitHub repository. Runtime dependencies such as Pyomo and solver
-support are resolved separately by `pip`.
-
-CGE-Core uses an existing supported nonlinear solver when one is available.
-Otherwise the normal `.solve()` path prepares the supported default open-source
-backend internally.
-
-For reproducibility or solver-specific work, advanced users can request a
-particular backend explicitly:
+For solver-specific or reproducibility work:
 
 ```python
 base = StandardCGE.example().solve(solver="ipopt")
@@ -177,28 +120,47 @@ base = StandardCGE.example().solve(solver="ipopt")
 
 ---
 
-## The common modelling workflow
+## What a CGE experiment means
 
-Although the bundled model families are economically different, the
-practitioner workflow is deliberately consistent.
+A CGE experiment is not a manually imposed change in an endogenous output or
+price.
 
-### 1. Solve a benchmark
+Instead:
+
+```text
+benchmark economy
+      ↓
+change an exogenous policy, endowment, or external assumption
+      ↓
+solve the complete equilibrium system again
+      ↓
+counterfactual equilibrium
+      ↓
+compare with benchmark
+```
+
+For example, removing a tariff changes the relevant policy wedge. The model
+then determines the resulting changes in imports, domestic production, factor
+demand, household income, government revenue, prices, saving, investment, and
+welfare according to that model's equations and closure.
+
+---
+
+## Common workflow
+
+### Solve a benchmark
 
 ```python
 base = StandardCGE.example().solve()
 ```
 
-The benchmark is the calibrated reference equilibrium.
-
-### 2. Create an isolated scenario
+### Create a scenario
 
 ```python
 policy = base.scenario("Policy reform")
 ```
 
-A scenario is independent of the solved benchmark and of other scenarios.
-
-### 3. Apply an economic shock
+### Apply shocks
 
 ```python
 policy.tariff("BRD", change=-0.50)
@@ -206,15 +168,13 @@ policy.production_tax("MLK", 0.05)
 policy.endowment("CAP", change=0.10)
 ```
 
-Semantic helpers are used where a model has a clear economic interpretation.
-
-For an advanced component without a dedicated helper:
+For a model component without a dedicated semantic helper:
 
 ```python
 policy.set("taum", "BRD", 0.0)
 ```
 
-### 4. Solve and compare
+### Solve and compare
 
 ```python
 result = policy.solve()
@@ -223,15 +183,14 @@ result.summary()
 result.compare(base)
 ```
 
-The comparison reports the counterfactual relative to the benchmark rather
-than mutating or replacing the original equilibrium.
+The benchmark remains unchanged.
 
 ---
 
 ## What can be studied?
 
-The exact shocks available depend on the model, but CGE-Core is designed for
-experiments involving changes such as:
+The exact shocks available depend on the selected model, but CGE-Core supports
+work involving changes such as:
 
 - tariffs and trade-policy wedges;
 - production and indirect taxes;
@@ -240,21 +199,22 @@ experiments involving changes such as:
 - foreign saving and external-balance assumptions;
 - world prices;
 - exchange-rate and macro-closure choices;
-- government saving or direct-tax adjustment;
+- government saving or direct-tax adjustment; and
 - model-specific policy parameters.
 
 The economic interpretation of a shock belongs to the model itself. CGE-Core
-does not assume that every model has the same variables or policy instruments.
+does not assume that every model exposes the same variables, closures, or policy
+instruments.
 
 ---
 
 ## Bring your own SAM
 
-A social accounting matrix records the circular flow of income and expenditure
-across production activities, commodities, factors, households, government,
-investment, and the rest of the world.
+A social accounting matrix (SAM) records the circular flow of income and
+expenditure across production activities, commodities, factors, households,
+government, investment, and the rest of the world.
 
-For a balanced SAM using the canonical Hosoe account labels:
+For a balanced SAM using canonical Hosoe-style account labels:
 
 ```python
 from cge_core import StandardCGE
@@ -263,7 +223,7 @@ economy = StandardCGE.from_sam("sam.csv")
 base = economy.solve()
 ```
 
-For country-specific account labels, state the economic roles explicitly:
+For country-specific account labels:
 
 ```python
 economy = StandardCGE.from_sam(
@@ -278,32 +238,19 @@ economy = StandardCGE.from_sam(
 )
 ```
 
-`from_sam()` validates the accounting table and constructs the internal model
-dataset.
-
 A balanced SAM is necessary but not sufficient for a particular CGE
-specification. The SAM must also satisfy that model's institutional structure,
-nonzero-flow requirements, and calibration assumptions.
+specification. The data must also satisfy the institutional structure,
+nonzero-flow requirements, and calibration assumptions of the selected model.
 
 ---
 
-## SimpleCGE and StandardCGE
+## Model notes
 
-The Hosoe models provide the clearest route into CGE-Core.
+### SimpleCGE
 
-### `SimpleCGE`
-
-`SimpleCGE` is a small closed-economy model useful for learning the mechanics
-of:
-
-- production;
-- factor demand;
-- household income;
-- consumption;
-- factor markets;
-- commodity markets;
-- relative prices;
-- the benchmark/counterfactual distinction.
+`SimpleCGE` is a small closed-economy model useful for learning production,
+factor demand, household income, consumption, market clearing, relative prices,
+and the benchmark/counterfactual distinction.
 
 ```python
 from cge_core import SimpleCGE
@@ -311,19 +258,11 @@ from cge_core import SimpleCGE
 base = SimpleCGE.example().solve()
 ```
 
-### `StandardCGE`
+### StandardCGE
 
-`StandardCGE` extends the structure to include:
-
-- intermediate inputs;
-- government;
-- indirect taxes;
-- tariffs;
-- imports and exports;
-- Armington composite demand;
-- CET transformation;
-- saving and investment;
-- an open-economy external account.
+`StandardCGE` extends the structure to include intermediate inputs, government,
+indirect taxes, tariffs, imports and exports, Armington composite demand, CET
+transformation, saving and investment, and an open-economy external account.
 
 ```python
 from cge_core import StandardCGE
@@ -331,12 +270,7 @@ from cge_core import StandardCGE
 base = StandardCGE.example().solve()
 ```
 
-These implementations follow the textbook models of Hosoe, Gasawa, and
-Hashimoto and remain separately validated against their reference behavior.
-
----
-
-## CAMCGE
+### CamCGE
 
 ```python
 from cge_core import CamCGE
@@ -349,27 +283,10 @@ windfall.set("fsav", None, 500)
 result = windfall.solve()
 ```
 
-`CamCGE` is based on the Cameroon model published by Condon, Dahl, and
-Devarajan (1987).
-
-It is included as a first-class installed model because it provides something
-different from the Hosoe models: a published historical CGE specification with
-reported benchmark levels and policy experiments that can be used as
-independent replication targets.
-
-The runtime model lives under:
-
-```text
-cge_core/models/camcge/
-```
-
-while replication and validation utilities live separately under:
-
-```text
-validation/cam/
-```
-
-This keeps the installed model distinct from the evidence used to verify it.
+`CamCGE` is based on the published Cameroon model of Condon, Dahl, and
+Devarajan (1987). It is included as a historical replication target with
+model-specific validation evidence kept separate from the installed runtime
+implementation.
 
 See:
 
@@ -377,9 +294,7 @@ See:
 - [`CAMCGE_VALIDATION_REPORT.md`](CAMCGE_VALIDATION_REPORT.md)
 - [`validation/cam/README.md`](validation/cam/README.md)
 
----
-
-## IFPRI Standard CGE
+### IFPRI Standard CGE
 
 ```python
 from cge_core import IFPRICGE
@@ -390,33 +305,15 @@ reform = base.scenario("TARCUT1").solve()
 reform.compare(base)
 ```
 
-The IFPRI implementation is architecturally richer than the Hosoe models and
-retains its own:
+The IFPRI implementation retains its own dataset schema, algebraic calibration,
+macro closures, factor-market treatment, scenario construction, nonlinear
+solve path, reporting, and validation machinery.
 
-- dataset schema;
-- algebraic calibration;
-- macro closures;
-- factor-market treatment;
-- scenario construction;
-- nonlinear solve path;
-- reporting;
-- validation machinery.
-
-Recorded policy scenarios include experiments such as tariff cuts, changes in
-foreign saving, changes in world import prices, and devaluation under the
-appropriate closure.
-
-### IFPRI clean-room boundary
-
-The public package includes an **independently authored, redistributable
-synthetic IFPRI-format economy** so that the implementation can be exercised in
-CI, notebooks, and tutorials.
-
-It is not the official IFPRI benchmark dataset.
-
-Official-source replication remains a separate validation path for users who
-possess the required external material. CGE-Core does not redistribute the
-official IFPRI source package or `test.dat`.
+The public package contains an independently authored, redistributable
+synthetic IFPRI-format economy for tests, tutorials, and continuous
+integration. It is **not** the official IFPRI benchmark dataset. Official-source
+replication remains a separate path for users who possess the required
+external material.
 
 See:
 
@@ -426,220 +323,141 @@ See:
 
 ---
 
-## Notebook course
+## Learn without installing
 
-The canonical v0.8.0 sequence is:
+- **[CGE-Core Control Room](https://miraflor.github.io/CGE-core/control-room/)** —
+  inspect models, their economic structure, and policy experiments.
+- **[Notebook course](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)** —
+  progress from a first solve to SAMs, CAMCGE, IFPRI, model authoring, and
+  internals.
+- **[Open the first notebook in Colab](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb)**.
+- **[Documentation](https://miraflor.github.io/CGE-core/)** —
+  theory, models, tutorials, validation, API reference, and developer
+  documentation.
 
-| # | Notebook | What you will do | Open in Colab |
-|---:|---|---|---|
-| 01 | [`01_first_cge.ipynb`](notebooks/01_first_cge.ipynb) | Solve and read an economy | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/01_first_cge.ipynb) |
-| 02 | [`02_policy_experiments.ipynb`](notebooks/02_policy_experiments.ipynb) | Benchmark → shock → counterfactual → comparison | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/02_policy_experiments.ipynb) |
-| 03 | [`03_your_own_sam.ipynb`](notebooks/03_your_own_sam.ipynb) | Inspect and load a SAM | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/03_your_own_sam.ipynb) |
-| 04 | [`04_camcge.ipynb`](notebooks/04_camcge.ipynb) | Reproduce a published CGE model | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/04_camcge.ipynb) |
-| 05 | [`05_ifpri.ipynb`](notebooks/05_ifpri.ipynb) | IFPRI synthetic public path and clean-room boundary | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/05_ifpri.ipynb) |
-| 06 | [`06_build_a_model.ipynb`](notebooks/06_build_a_model.ipynb) | Functional Python and experimental `.cge.md` authoring | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/06_build_a_model.ipynb) |
-| 90 | [`90_internals.ipynb`](notebooks/90_internals.ipynb) | Pyomo and lower-level CGE-Core internals | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/miraflor/CGE-core/blob/v0.8.0/notebooks/90_internals.ipynb) |
+The canonical v0.8.0 notebook sequence is:
 
-**[View the full notebook course →](https://miraflor.github.io/CGE-core/tutorials/colab-notebooks.html)**
-
-Historical notebook filenames remain available in earlier Git tags; the active directory contains one course only.
-
----
-
-## Build or extend a model
-
-CGE-Core has two extension paths.
-
-### Functional Python authoring
-
-A custom model can be constructed with ordinary Python functions rather than
-requiring inheritance from a framework base class:
-
-```python
-def build_model(data):
-    ...
-    return model
-
-
-def apply_default_closure(model):
-    ...
-```
-
-Model metadata can explicitly declare concepts such as benchmark-only
-components and shockable parameters.
-
-### Experimental `.cge.md`
-
-The experimental `.cge.md` format allows prose and executable model
-specification to coexist in one Markdown document.
-
-Only fenced `cge` blocks are executable; surrounding prose is inert.
-
-The format is intentionally limited and experimental. The validated bundled
-models are **not** being rewritten into the DSL merely for architectural
-uniformity.
+| # | Notebook | Purpose |
+|---:|---|---|
+| 01 | [`01_first_cge.ipynb`](notebooks/01_first_cge.ipynb) | Solve and read an economy |
+| 02 | [`02_policy_experiments.ipynb`](notebooks/02_policy_experiments.ipynb) | Benchmark → shock → counterfactual → comparison |
+| 03 | [`03_your_own_sam.ipynb`](notebooks/03_your_own_sam.ipynb) | Inspect and load a SAM |
+| 04 | [`04_camcge.ipynb`](notebooks/04_camcge.ipynb) | Reproduce a published CGE model |
+| 05 | [`05_ifpri.ipynb`](notebooks/05_ifpri.ipynb) | IFPRI synthetic public path and clean-room boundary |
+| 06 | [`06_build_a_model.ipynb`](notebooks/06_build_a_model.ipynb) | Functional Python and experimental `.cge.md` authoring |
+| 90 | [`90_internals.ipynb`](notebooks/90_internals.ipynb) | Pyomo and lower-level CGE-Core internals |
 
 ---
 
-## Source layout
+## Validation
 
-The v0.8.0 source tree has one canonical location for each responsibility:
+CGE-Core treats numerical validation and provenance as part of the software.
 
-```text
-cge_core/
-├── workflow.py          benchmark → scenario → result lifecycle
-├── _engine.py           v0.8 engine policy adapter
-├── _pycge.py            inherited lower-level PyCGE engine
-├── solver.py            numerical-backend resolution
-├── sam.py               social-accounting-matrix tools
-├── models/              bundled economic model families
-│   ├── simple/
-│   ├── standard/
-│   ├── camcge/
-│   └── ifpri/
-└── experimental/        optional authoring and .cge.md work
+The bundled families are tested against the relevant benchmark behavior and
+source material. Validation code and evidence are kept distinct from ordinary
+runtime use so that users can distinguish:
 
-validation/
-└── cam/                 CAMCGE replication and validation utilities
-```
+- an implementation used for simulation;
+- the source model or published specification it follows; and
+- the tests or replication evidence used to check it.
 
-Pre-v0.8 module paths are documented in `docs/migration-v0.8.md` and remain
-recoverable from earlier Git tags rather than being duplicated as executable
-redirect modules in the current package.
+No claim of originality is implied merely because a model is implemented,
+reorganized, tested, documented, or exposed through a new API.
 
 ---
 
-## Validation and scientific safeguards
+## Provenance and credit
 
-CGE-Core treats validation as part of the model implementation.
+CGE-Core is a **corrected, maintained, and extended fork of
+[PyCGE](https://github.com/juanfung/pycge)** by **Juan Fung and Charley
+Burtwistle** of the U.S. National Institute of Standards and Technology (NIST).
 
-The repository includes checks for:
-
-- balanced, square, finite SAM inputs;
-- complete and structurally compatible model datasets;
-- valid goods/factor/institution partitions;
-- model-owned closure information;
-- zero degrees of freedom after closure;
-- isolated scenario state;
-- preservation of solved benchmarks;
-- solver optimality and termination;
-- immutable numerical result snapshots;
-- model-specific replication targets;
-- published CAMCGE benchmark levels and policy experiments;
-- IFPRI synthetic/public validation and separate official-source evidence;
-- executable notebook regression tests;
-- wheel/package-content boundaries.
-
-The current release is designed so that changes to software architecture do not
-silently become changes to economic equations.
-
-See:
-
-- [`docs/validation.md`](docs/validation.md)
-- [`docs/GAMS_STDCGE_VALIDATION.md`](docs/GAMS_STDCGE_VALIDATION.md)
-- [`CAMCGE_VALIDATION_REPORT.md`](CAMCGE_VALIDATION_REPORT.md)
-- [`docs/IFPRI.md`](docs/IFPRI.md)
-
----
-
-## Advanced API
-
-Most users should begin with:
-
-```python
-from cge_core import SimpleCGE, StandardCGE, CamCGE, IFPRICGE
-```
-
-The lower-level lifecycle remains intentionally available for advanced
-inspection, validation, and engine-level work:
-
-```python
-from cge_core import CGE, PyCGE, example_data
-```
-
-This is a supported lower-level API, not a preserved historical namespace.
-Obsolete module paths from earlier releases were removed in v0.8.0; see
-[`docs/migration-v0.8.md`](docs/migration-v0.8.md).
-
----
-
-## Scientific scope of v0.8.0
-
-v0.8.0 is an architecture-consolidation release. It keeps the validated model
-implementations and practitioner workflow while removing obsolete redirect
-namespaces, re-homing the inherited PyCGE engine, and making the notebook
-course and source tree unambiguous.
-
-It does **not** use those software changes as justification for silently
-changing validated economic equations.
-
-Hosoe, CAMCGE, and IFPRI retain their own model-specific equations, calibration
-logic, closures, provenance, and validation evidence.
-
----
-
-## Provenance
-
-CGE-Core is a corrected and extended fork of
-[PyCGE](https://github.com/juanfung/pycge), originally developed by Juan Fung
-and Charley Burtwistle of the U.S. National Institute of Standards and
-Technology.
-
-The original PyCGE code is a U.S. Government work and is public domain under
-17 U.S.C. 105; the original notice is retained in
+The inherited PyCGE code is a work of the U.S. federal government and is in the
+public domain under 17 U.S.C. §105. The original NIST notice is preserved in
 [`LICENSE_NIST.txt`](LICENSE_NIST.txt).
 
-The underlying economic models also retain their original intellectual
-provenance:
+The economic model families also have their own intellectual sources:
 
-- Hosoe, Gasawa & Hashimoto for the Simple and Standard textbook models;
-- Condon, Dahl & Devarajan for CAMCGE;
-- the IFPRI Standard CGE tradition for the IFPRI implementation.
+- `SimpleCGE` and `StandardCGE`: Hosoe, Gasawa & Hashimoto (2010);
+- `CamCGE`: Condon, Dahl & Devarajan (1987);
+- `IFPRICGE`: the IFPRI Standard CGE tradition, including Lofgren, Harris &
+  Robinson (2002), together with the separately obtained official source
+  material where applicable.
 
-CGE-Core's contribution is the Python framework, corrected workflow,
-validation infrastructure, model integration, practitioner API, SAM tooling,
-replication machinery, notebooks, documentation, tests, and related
-extensions—not authorship of the underlying published model specifications.
+CGE-Core's repository-level work includes corrections, integration,
+maintenance, API design, tests, documentation, validation workflows, packaging,
+tutorials, and additional implementation work. **Those activities do not
+transfer authorship of inherited code or of the underlying published economic
+models to the repository maintainer.**
+
+Development of the fork has been substantially AI-assisted. Human maintenance
+has included directing changes, reviewing outputs, checking numerical behavior,
+curating releases, and deciding project scope. The project therefore uses
+**collective project authorship for software citation** rather than presenting
+the maintainer as the sole author.
 
 ---
 
 ## Citation
 
-If you use CGE-Core, cite the software and the relevant underlying model
-sources.
+If you use CGE-Core, cite:
+
+1. **CGE-Core as software**, using the project-level metadata in
+   [`CITATION.cff`](CITATION.cff); and
+2. **the upstream model/source material relevant to the model you actually
+   use**.
+
+The project-level BibTeX form is:
 
 ```bibtex
-@software{miraflor2026cgecore,
-  author  = {James Matthew Miraflor},
-  title   = {{CGE-Core}: an open-source Python framework for computable general equilibrium modelling},
+@software{cgecore2026,
+  author  = {{CGE-Core contributors}},
+  title   = {{CGE-Core}: a practitioner-first computable general equilibrium toolkit},
   year    = {2026},
   version = {0.8.0},
   url     = {https://github.com/miraflor/CGE-core}
 }
 ```
 
-Machine-readable citation metadata is available in
-[`CITATION.cff`](CITATION.cff).
+For example:
 
-When applicable, also cite the corresponding model source:
+- using `SimpleCGE` or `StandardCGE` should also cite Hosoe, Gasawa & Hashimoto;
+- using `CamCGE` should also cite Condon, Dahl & Devarajan;
+- using `IFPRICGE` should also cite the relevant IFPRI Standard CGE
+  documentation/source;
+- work that relies materially on inherited PyCGE should acknowledge/cite Fung &
+  Burtwistle as appropriate.
 
-- Hosoe, N., Gasawa, K. & Hashimoto, H. (2010), *Textbook of Computable
-  General Equilibrium Modelling: Programming and Simulations*;
-- Condon, T., Dahl, H. & Devarajan, S. (1987), *Implementing a Computable
-  General Equilibrium Model on GAMS: The Cameroon Model*;
-- the relevant IFPRI Standard CGE documentation/source;
-- PyCGE/NIST for inherited PyCGE code.
+**James Matthew Miraflor is the project maintainer, not the sole software
+author.**
+
+---
+
+## Maintainer
+
+**James Matthew Miraflor**
+
+Maintenance includes release coordination, integration, review, testing,
+documentation, and project stewardship. Maintainer status is not presented as a
+claim of sole authorship over the inherited software or underlying model
+specifications.
+
+Contributions, bug reports, replication checks, documentation improvements, and
+model extensions are welcome through GitHub issues and pull requests.
 
 ---
 
 ## License
 
-CGE-Core modifications are released under the MIT License.
+CGE-Core contains code with different provenance:
+
+- inherited PyCGE material: public domain as a U.S. federal government work;
+- modifications and new repository material: MIT License;
+- underlying books, papers, model documentation, datasets, and external source
+  packages retain their own copyrights and terms.
 
 See:
 
 - [`LICENSE`](LICENSE)
 - [`LICENSE_NIST.txt`](LICENSE_NIST.txt)
 - [`CITATION.cff`](CITATION.cff)
-
-CGE-Core is maintained by **James Matthew Miraflor**.
